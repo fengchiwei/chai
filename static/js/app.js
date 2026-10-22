@@ -556,12 +556,20 @@ function renderAiStatus(ai) {
 
 async function checkAiStatus() {
   setAiStatus("checking", "檢查 AI 連線中…", "");
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);  // never spin forever
   try {
-    const res = await fetch("/api/status?probe=1", { cache: "no-store" });
+    const res = await fetch("/api/status?probe=1", { cache: "no-store", signal: controller.signal });
     if (!res.ok) throw new Error(String(res.status));
     renderAiStatus((await res.json()).ai);
-  } catch (_) {
-    setAiStatus("down", "伺服器沒有回應", "可能是網路中斷或伺服器沒有啟動；需要協助可直接撥 1925 或 119。");
+  } catch (err) {
+    if (err && err.name === "AbortError") {
+      setAiStatus("warn", "AI 連線檢查逾時", "伺服器在 12 秒內沒有回覆檢查結果；可以先繼續聊天，傳出訊息後會再更新。");
+    } else {
+      setAiStatus("down", "伺服器沒有回應", "可能是網路中斷或伺服器沒有啟動；需要協助可直接撥 1925 或 119。");
+    }
+  } finally {
+    clearTimeout(timer);
   }
 }
 

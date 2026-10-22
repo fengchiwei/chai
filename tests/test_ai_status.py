@@ -84,5 +84,34 @@ class StatusRouteTests(unittest.TestCase):
         self.assertNotIn(b"secret-key-xyz", response.data)
 
 
+class StaleAssetTests(unittest.TestCase):
+    """Regression: an unchanged ?v= query let the offline service worker keep serving an old app.js,
+    so the status light never left 「檢查 AI 連線中…」 after an update."""
+
+    def test_page_links_scripts_by_content_hash(self):
+        import hashlib
+        import re
+        from pathlib import Path
+        from app import app
+        html = app.test_client().get("/").get_data(as_text=True)
+        version = re.search(r"/static/js/app\.js\?v=([0-9a-f]{10})", html)
+        self.assertIsNotNone(version, "app.js must carry a content-hash version")
+        source = Path(app.static_folder, "js", "app.js").read_bytes()
+        self.assertEqual(version.group(1), hashlib.sha256(source).hexdigest()[:10])
+
+    def test_no_template_uses_a_hand_written_static_url(self):
+        import re
+        from pathlib import Path
+        for template in Path(__file__).resolve().parents[1].joinpath("templates").glob("*.html"):
+            with self.subTest(template=template.name):
+                self.assertIsNone(re.search(r"[\"']/static/(?:css|js)/", template.read_text(encoding="utf-8")))
+
+    def test_service_worker_fetches_static_files_network_first(self):
+        from pathlib import Path
+        worker = Path(__file__).resolve().parents[1].joinpath("static", "sw.js").read_text(encoding="utf-8")
+        body = worker[worker.index("async function handleStatic"):worker.index('self.addEventListener("fetch"')]
+        self.assertLess(body.index("await fetch(request)"), body.index("cache.match(request)"))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,6 @@
 """少年仔、安啦會客室：本機展示用 Flask 應用。"""
 
+import hashlib
 import hmac
 import json
 import os
@@ -93,6 +94,26 @@ with open(os.path.join(BASE_DIR, "data", "nantou_resources.json"), encoding="utf
 with open(os.path.join(BASE_DIR, "data", "mock_cases.json"), encoding="utf-8") as f:
     MOCK_CASES = json.load(f)
 EXPLAIN_SCENARIOS = load_scenarios()
+_asset_versions = {}
+
+
+def asset(path):
+    """`/static/<path>?v=<content hash>`: a changed file gets a new URL, so neither the browser cache nor
+    the offline service worker can keep serving old JavaScript after an update."""
+    full = os.path.join(app.static_folder, path)
+    try:
+        mtime = os.path.getmtime(full)
+    except OSError:
+        return url_for("static", filename=path)
+    cached = _asset_versions.get(path)
+    if not cached or cached[0] != mtime:
+        with open(full, "rb") as f:
+            cached = (mtime, hashlib.sha256(f.read()).hexdigest()[:10])
+        _asset_versions[path] = cached
+    return url_for("static", filename=path, v=cached[1])
+
+
+app.jinja_env.globals["asset"] = asset
 
 EMAIL_PATTERN = re.compile(r"^[^\s@]{1,64}@[^\s@]{1,253}$")
 TOWNSHIPS = {

@@ -12,9 +12,9 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
-  <link rel="stylesheet" href="/static/css/style.css?v=satir-20261016">
-  <link rel="stylesheet" href="/static/css/themes.css?v=theme-20261022">
-  <script src="/static/js/theme.js?v=theme-20261022"></script>
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/themes.css') }}">
+  <script src="{{ asset('js/theme.js') }}"></script>
 </head>
 <body class="student-page">
 
@@ -344,8 +344,8 @@
   </dialog>
 
   <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
-  <script src="/static/js/app.js?v=theme-20261022"></script>
-  <script src="/static/js/referral.js?v=satir-20261016"></script>
-  <script src="/static/js/pwa.js?v=theme-20261022"></script>
+  <script src="{{ asset('js/app.js') }}"></script>
+  <script src="{{ asset('js/referral.js') }}"></script>
+  <script src="{{ asset('js/pwa.js') }}"></script>
 </body>
 </html>

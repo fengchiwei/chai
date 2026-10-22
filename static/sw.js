@@ -7,7 +7,7 @@
 "use strict";
 
 const CACHE_PREFIX = "anla-shell-";
-const CACHE_NAME = CACHE_PREFIX + "v2026-10-22.2";
+const CACHE_NAME = CACHE_PREFIX + "v2026-10-23.1";
 const OFFLINE_URLS = ["/offline", "/static/offline.html"];
 const SHELL = [
   ...OFFLINE_URLS,
@@ -83,23 +83,17 @@ async function handleNavigation(request, url) {
   }
 }
 
-// 靜態資源：先回快取（若有），同時在背景更新；離線時忽略 ?v= 版本參數找舊檔。
-async function handleStatic(request, event) {
+// 靜態資源：網路優先（更新後立刻生效，不會卡在舊版程式），只有離線時才用快取；
+// 離線時忽略 ?v= 版本參數找最近一次的副本。
+async function handleStatic(request) {
   const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
-  const network = fetch(request).then(response => {
+  try {
+    const response = await fetch(request);
     if (response.ok && response.type === "basic") cache.put(request, response.clone());
     return response;
-  });
-  if (cached) {
-    event.waitUntil(network.catch(() => null));
-    return cached;
-  }
-  try {
-    return await network;
   } catch (error) {
-    const loose = await cache.match(request, { ignoreSearch: true });
-    if (loose) return loose;
+    const hit = await cache.match(request) || await cache.match(request, { ignoreSearch: true });
+    if (hit) return hit;
     throw error;
   }
 }
@@ -118,6 +112,6 @@ self.addEventListener("fetch", event => {
     return;
   }
   if (url.pathname.startsWith("/static/") || url.pathname === "/manifest.json") {
-    event.respondWith(handleStatic(request, event));
+    event.respondWith(handleStatic(request));
   }
 });

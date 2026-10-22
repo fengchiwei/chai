@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>示範工作臺 - 少年仔、安啦會客室</title>
-  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body style="background: #f1f5f9;">
 
@@ -150,6 +150,6 @@
   </footer>
 
   <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
-  <script src="/static/js/counselor.js"></script>
+  <script src="{{ asset('js/counselor.js') }}"></script>
 </body>
 </html>
