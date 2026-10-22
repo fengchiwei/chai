@@ -12,6 +12,9 @@ WEIGHTS = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
 STAGES = ("event", "feeling", "perception", "expectation", "yearning", "self")
 RISK_TYPES = ("none", "self_harm", "suicide", "abuse", "violence", "digital_sexual_violence", "other")
 REPLY_STYLES = ("warm", "lively", "rational", "listen_only")
+# Short reactions to the assistant's last sentence (punctuation already removed by compact()).
+REACTION_DOUBT = r"真的(?:嗎|假的|喔|哦)?|真假|是喔|是哦|是嗎|有嗎|會嗎|你確定(?:嗎)?|是這樣嗎|蛤|騙人|最好是"
+REACTION_ASK = r"為什麼|為啥|怎麼說|什麼意思|啥意思|然後呢|所以呢|例如呢|比如說呢?"
 LOW_REPLIES = {"不知道", "我不知道", "不曉得", "嗯", "嗯嗯", "喔", "哦", "沒事", "還好", "差不多吧", "不知道怎麼說", "說不上來"}
 BOUNDARY = r"不想(?:再)?(?:講|說|談)|不要(?:再|一直)?問|別(?:再|一直)?問|不想(?:一直)?被問|關你什麼事|只想.{0,4}(?:聽|陪)|只要.{0,4}(?:聽|陪)"
 HIGH_EMOTION = r"哭到|哭不停|哭得停不下|一直哭|暴怒|氣到發抖|恐慌|腦袋一片空白|完全無法思考|快崩潰|全部的人都在針對我|閉嘴"
@@ -428,6 +431,11 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
     state["confidentiality_limit_needed"] = state["privacy_concern"] or state["safety_override"]
     state["advice_request"] = wants_practical_help(message)
     correction = bool(re.search(r"^(?:不是|不對)|你誤會|你聽錯|不是那個意思|我不是.{0,6}[，,].*(?:是|而是)", message)) and not state["safety_denied"]
+    # 「真的嗎」「為什麼」right after a reply react to that reply; they are not a new event to explore.
+    replied = any(t["role"] == "assistant" for t in turns)
+    stripped = re.sub(r"[～~…]+", "", text)
+    state["reaction"] = ("doubt" if replied and re.fullmatch(REACTION_DOUBT, stripped)
+                         else "ask" if replied and re.fullmatch(REACTION_ASK, stripped) else "")
     if re.search(r"換個話題|換件事|另一件事|先不聊這個", message):
         state["earlier_topics"] = (old.get("earlier_topics", []) + [{stage: state[stage + "_summary"] for stage in STAGES}])[-2:]
         for stage in STAGES:
@@ -475,6 +483,8 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
         goal, strategy, ask = "integrate", "summarize", False
     elif correction:
         goal, strategy, ask = "integrate", "reflect_only", False
+    elif state["reaction"]:
+        goal, strategy, ask = "respond_to_reaction", "reflect_only", False
     elif short:
         goal, strategy, ask = "explore_feeling", "reflect_only", False
     else:
@@ -502,7 +512,7 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
     banned = ["ask_multiple_questions", "diagnose", "interpret_for_user", "force_positive", "promise_absolute_confidentiality", "minimize_risk"]
     if goal != "support_choice" or no_advice:
         banned.append("give_advice")
-    if goal in ("safety_support", "stabilize", "respect_boundary", "establish_safety", "integrate"):
+    if goal in ("safety_support", "stabilize", "respect_boundary", "establish_safety", "integrate", "respond_to_reaction"):
         banned.extend(("explore_yearning", "deep_reflection", "continue_drilling"))
     state["forbidden_actions"] = banned
     return state

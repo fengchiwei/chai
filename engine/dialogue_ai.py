@@ -13,7 +13,8 @@ import requests
 from config import Config
 from engine.dialogue_policy import (STAGES, build_state, history_clean, observe_safety,
                                     raise_triage, remember_turn)
-from engine.dialogue_reply import drop_trailing_questions, local_reply, response_violations, safety_reply
+from engine.dialogue_reply import (drop_trailing_questions, local_reply, response_violations, safety_reply,
+                                   tidy_surface)
 from engine.dialogue_role import ROLE_RULES, role_notice, role_user_message
 from engine import model_router
 from engine.privacy_scrubber import scrub_pii
@@ -46,6 +47,7 @@ SYSTEM_PROMPT = """
 分享開心、期待的事時就跟著那份好心情回應；不要自行加上壓力、緊繃、需要喘息等學生沒說的狀態。
 不要替家人、老師或任何人斷定善意或動機，尤其不要預設「他們都是為你好」；只反映使用者提到的立場或行為。
 當 current_goal=integrate 且本輪無求助時，簡短收束而不深挖；current_goal=support_choice 時，接一句理解後給一個可選擇的實際小步驟。
+current_goal=respond_to_reaction 表示使用者只回「真的嗎」「為什麼」「什麼意思」這類反應，是在回應你上一句：針對上一句簡短說明你的意思，或承認可能說得不準，把解釋權還給使用者；不要當成新話題，也不要轉去問感受。
 已連續問兩輪就休息一輪。感受已明確，不再問一次「你什麼感覺」。
 連續兩輪已反映相同委屈或期待，就不要換句話繼續安慰；優先承接本輪的新意思或新的求助。
 第一次不知道可以輕輕接住；再次不知道就停止深入；嗯、喔、還好不等於抗拒。
@@ -84,7 +86,9 @@ ULTRA_WARM_SYSTEM_PROMPT = SYSTEM_PROMPT
 # v2.3 reply-style buttons. Safety checks replace the style (see build_state: style_overridden_by_safety).
 STYLE_INSTRUCTIONS = {
     "warm": "【回覆風格：溫馨陪伴】溫暖、接納、不批判；日常話題自然陪聊，不用「喘息空間、緊繃感、內在負荷、承接情緒、生命課題」這類諮商詞。",
-    "lively": "【回覆風格：活潑元氣】語氣輕快、像同儕，可以用一個表情符號或「太讚了吧」這類口語；開心就一起開心，不用諮商腔。",
+    "lively": ("【回覆風格：活潑元氣】語氣輕快、像同儕，可以用一個表情符號或「太讚了吧」這類口語；開心就一起開心，不用諮商腔。"
+               "用正確的字，不寫注音文、火星文或故意的錯字（寫「吧」，不寫「包」「ㄅ」）。"
+               "表情符號要合學生的心情：學生在說不開心或困擾的事時，不用 🥰😍🤩😆🎉 這類開心或愛心表情，也可以不用表情。"),
     "rational": ("【回覆風格：沉穩理性】冷靜、條理分明、不煽情。學生想規劃或解決事情時，直接用三行回覆"
                  "（本風格可以使用編號，優先於前面「不列點」的規定）：「1. 重點整理：…」「2. 目前卡點：…」"
                  "「3. 下一步：…」，每行一句；第三行給一個學生自己可以決定要不要做的具體小步驟。"
@@ -598,7 +602,7 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
         model, status = _call_model(_reply_prompt(state, offer), _student_input(state, message),
                                     state.get("history"), timeout=min(Config.LLM_TIMEOUT, remaining))
     if model:
-        model["reply"] = role_notice(state) + model["reply"]
+        model["reply"] = role_notice(state) + tidy_surface(model["reply"], message, state)
         issues = response_violations(model["reply"], state, message, offer) + output_issues(model["reply"], SYSTEM_PROMPT)
         trimmed = drop_trailing_questions(model["reply"]) if issues == ["questions"] else None
         if trimmed and not (response_violations(trimmed, state, message, offer) + output_issues(trimmed, SYSTEM_PROMPT)):

@@ -185,6 +185,11 @@ def _local_reply(message, state):
                  else "剛才那份不好受仍可以繼續說。"))
     if state.get("corrections") and state["corrections"][-1] == message[:240]:
         return echo + "剛才是我沒有聽準，我先收回那個解讀，照你現在說的來。"
+    if goal == "respond_to_reaction":
+        # Without the model we cannot re-explain the last sentence itself; own it and hand interpretation back.
+        if state.get("reaction") == "ask":
+            return "我剛剛可能說得太快了。我的意思只是先聽你說，不急著下結論；如果聽起來怪怪的，可以直接跟我說。"
+        return "你好像不太確定我剛剛說的。我也可能沒聽準，有說錯的地方可以直接告訴我，照你的感覺為主。"
     if re.search(r"活著的意義|人生.*意義|生命.*意義", message):
         return echo + "活著的意義未必只有一個答案，也不一定要靠成績或成就來證明。現在還沒找到，也不用急著替自己下結論。"
     if goal == "support_choice" and state.get("effective_style") == "rational":
@@ -269,6 +274,24 @@ OVERPSYCHOLOGIZING = r"喘息空間|緊繃感|內在負荷|承接(?:情緒|你�
 
 
 RATIONAL_LINES = re.compile(r"1[.．、]\s*重點整理[:：].+?2[.．、]\s*目前卡點[:：].+?3[.．、]\s*下一步[:：]\s*\S", re.S)
+
+
+CHEERFUL_EMOJI = r"(?:🥰|😍|🤩|😆|😂|🤣|🎉|🥳|😁|😄|😃|😘|💕|💖|💗)️?"
+# Cute spellings of 吧 seen in live Gemini output: 「心情多少會受影響包 🥰」, 「好ㄅ」.
+# 包 is only rewritten right before an emoji or ～, and never after the first character of a real word (麵包、紅包…).
+CUTESY_BA = (r"(?<=[一-鿿])(?:(?<![麵紅書錢背荷皮肉菜包打帶提拿買豆湯煎])包"
+             r"(?=\s*(?:[\U0001F300-\U0001FAFF☀-➿]|[～~]))|ㄅ)")
+
+
+def tidy_surface(reply, message, state=None):
+    """Repair surface slips in a model reply instead of discarding it: 「包／ㄅ」 written for 「吧」, and
+    party or heart emoji when the student is not sharing good news (「跟朋友有小摩擦」 → 🥰)."""
+    text = re.sub(CUTESY_BA, "吧", reply)
+    if not positive_context(message, state) and re.search(CHEERFUL_EMOJI, text):
+        text = re.sub(r"\s*(?:" + CHEERFUL_EMOJI + r")+\s*", "\0", text)
+        # An emoji that stood between two sentences leaves a sentence break, not a run-on.
+        text = re.sub(r"(?<=[一-鿿])\0(?=[一-鿿])", "。", text).replace("\0", "")
+    return text.strip()
 
 
 def drop_trailing_questions(reply):
