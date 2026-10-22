@@ -1,2 +1,6 @@
 flask>=3.0,<4
 requests>=2.28,<3
+# v2.3：SQLite 欄位 AES-256-GCM 加密（缺少時改用標準庫備援加密）
+cryptography>=42,<47
+# v2.3：手機掃碼安裝 PWA 的 QR Code（純 Python）
+segno>=1.6,<2

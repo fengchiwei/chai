@@ -11,6 +11,8 @@
 - 具備具體工具、時間、地點或正在行動 -> 直接進入「紅色｜立即危機」。
 """
 
+import re
+
 from engine.bsrs5 import evaluate_bsrs5
 from engine.rules import analyze_crisis_rules
 
@@ -100,6 +102,13 @@ def perform_triage(
             current_level = "yellow"
         reasons.append(f"文字呈現顯著壓力或困擾訊號: {', '.join(rule_result['yellow_flags'])}")
 
+    # LIN-01 / SIG-02：誇飾語不直接鎖紅燈，也不當作沒說；至少黃色並進行一次軟性確認。
+    pending_disambiguation = bool(rule_result.get("hyperbole_flags")) and not rule_result["has_self_harm_signal"]
+    if pending_disambiguation:
+        if RISK_LEVEL_WEIGHTS["yellow"] > RISK_LEVEL_WEIGHTS[current_level]:
+            current_level = "yellow"
+        reasons.append(f"誇飾語待消歧（LIN-01）：{', '.join(rule_result['hyperbole_flags'])}；需軟性確認，不直接視為危機或安全")
+
     # 3. 質性加權考量 (只能拉高，不可降低)
     duration_clean = duration.replace(" ", "").lower()
     if any(k in duration_clean for k in ["1個月", "超過", "2個月", "3週", "4週", "長期"]) and current_level == "green":
@@ -120,11 +129,21 @@ def perform_triage(
             if current_level == "yellow":
                 reasons.append("支持系統顯著缺乏或無法發揮保護功能")
 
-    if previous_level in RISK_LEVEL_WEIGHTS and RISK_LEVEL_WEIGHTS[previous_level] > RISK_LEVEL_WEIGHTS[current_level]:
+    ratchet = previous_level in RISK_LEVEL_WEIGHTS and RISK_LEVEL_WEIGHTS[previous_level] > RISK_LEVEL_WEIGHTS[current_level]
+    if ratchet:
         current_level = previous_level
         reasons.append("本次對話先前曾出現較高安全警訊，仍需真人覆核")
 
     meta = RISK_METADATA[current_level]
+    basis = []
+    if rule_result["red_flags"]:
+        basis += ["PSY-01", "ENG-03"]
+    if rule_result["orange_flags"]:
+        basis.append("PSY-04" if any(re.search(r"割|劃|划|刀|自殘|自傷|流血", f) for f in rule_result["orange_flags"]) else "PSY-01")
+    if pending_disambiguation:
+        basis += ["LIN-01", "SIG-02"]
+    if ratchet:
+        basis.append("ENG-03")
 
     return {
         "level": current_level,
@@ -138,5 +157,7 @@ def perform_triage(
         "bsrs_details": bsrs_result,
         "rule_details": rule_result,
         "reasons": reasons,
+        "pending_disambiguation": pending_disambiguation,
+        "theoretical_basis": list(dict.fromkeys(basis)),
         "explainability": "；".join(reasons) if reasons else "目前資訊不足以判定完整身心狀態；暫未偵測到規則警訊。"
     }

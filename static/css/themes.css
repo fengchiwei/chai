@@ -1,0 +1,492 @@
+/* =====================================================================
+   少年仔、安啦會客室：學生端四套視覺主題、回覆風格按鈕、Boss Key、PWA／手機適配
+   只作用於 <html data-theme="..."> 的頁面（學生頁、資源頁）；工作臺頁面不受影響。
+   文字對比皆以 WCAG AA（一般文字 4.5:1）為目標。
+   ===================================================================== */
+
+/* ---------- 主題色票 ---------- */
+html[data-theme="warm"] {
+  --t-bg: #FDFBF7;
+  --t-surface: #FFFFFF;
+  --t-surface-2: #F6EDE4;
+  --t-surface-3: #FBF6F0;
+  --t-text: #3A2E2A;
+  --t-muted: #6B5A50;
+  --t-border: #E8DCCF;
+  --t-border-strong: #B9A493;
+  --t-accent: #E07A5F;          /* 暖橘焦糖：裝飾、邊框 */
+  --t-accent-strong: #A94A2A;   /* 按鈕底色、連結（白字對比 5.7:1） */
+  --t-on-accent: #FFFFFF;
+  --t-accent-soft: #FBE6DE;
+  --t-accent-ink: #9A4325;
+  --t-focus: #A94A2A;
+  --t-input-bg: #FFFFFF;
+  --t-danger-bg: #FEF2F2;
+  --t-danger-border: #FCA5A5;
+  --t-danger-text: #991B1B;
+  --t-danger-btn-bg: #FFFFFF;
+  --t-note-bg: #FFF7E6;
+  --t-note-border: #F2D49B;
+  --t-note-text: #6B4A12;
+  --t-ok-bg: #F0FAF3;
+  --t-ok-border: #BFE3CB;
+  --t-ok-text: #1F5133;
+  --t-shadow: 0 6px 18px rgba(120, 80, 50, 0.08);
+  --t-radius: 18px;
+  color-scheme: light;
+}
+
+html[data-theme="forest"] {
+  --t-bg: #F2F6F3;
+  --t-surface: #FFFFFF;
+  --t-surface-2: #E5EDE7;
+  --t-surface-3: #F7FAF8;
+  --t-text: #1F2E24;
+  --t-muted: #4A5D50;
+  --t-border: #D3DFD6;
+  --t-border-strong: #8FA697;
+  --t-accent: #3D5A45;
+  --t-accent-strong: #3D5A45;
+  --t-on-accent: #FFFFFF;
+  --t-accent-soft: #DDE9E0;
+  --t-accent-ink: #2F4A37;
+  --t-focus: #3D5A45;
+  --t-input-bg: #FFFFFF;
+  --t-danger-bg: #FEF2F2;
+  --t-danger-border: #FCA5A5;
+  --t-danger-text: #991B1B;
+  --t-danger-btn-bg: #FFFFFF;
+  --t-note-bg: #FBF7E8;
+  --t-note-border: #E2D3A0;
+  --t-note-text: #5C4A12;
+  --t-ok-bg: #EEF5F0;
+  --t-ok-border: #C3D8C9;
+  --t-ok-text: #24452F;
+  --t-shadow: 0 6px 18px rgba(40, 70, 50, 0.08);
+  --t-radius: 16px;
+  color-scheme: light;
+}
+
+html[data-theme="midnight"] {
+  --t-bg: #181C24;
+  --t-surface: #212734;
+  --t-surface-2: #2A3142;
+  --t-surface-3: #1D222C;
+  --t-text: #E6EAF2;
+  --t-muted: #AAB4C5;
+  --t-border: #3A4357;
+  --t-border-strong: #5B6680;
+  --t-accent: #8AB4F8;
+  --t-accent-strong: #8AB4F8;
+  --t-on-accent: #0F1726;       /* 深色字放在淺藍按鈕上（8.5:1） */
+  --t-accent-soft: #26324A;
+  --t-accent-ink: #A8C7FA;
+  --t-focus: #A8C7FA;
+  --t-input-bg: #181C24;
+  --t-danger-bg: #3B1A1F;
+  --t-danger-border: #7F2D35;
+  --t-danger-text: #FECACA;
+  --t-danger-btn-bg: #2A1416;
+  --t-note-bg: #2B2A1C;
+  --t-note-border: #6B5E2E;
+  --t-note-text: #F5E6B8;
+  --t-ok-bg: #1E2B25;
+  --t-ok-border: #3B5A4A;
+  --t-ok-text: #CDEBD9;
+  --t-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  --t-radius: 16px;
+  color-scheme: dark;
+}
+
+html[data-theme="paper"] {
+  --t-bg: #FFFDF8;
+  --t-surface: #FFFFFF;
+  --t-surface-2: #F1F0EC;
+  --t-surface-3: #FAF9F5;
+  --t-text: #111111;
+  --t-muted: #333333;
+  --t-border: #8A8A8A;
+  --t-border-strong: #111111;
+  --t-accent: #111111;
+  --t-accent-strong: #111111;
+  --t-on-accent: #FFFFFF;
+  --t-accent-soft: #ECEBE6;
+  --t-accent-ink: #111111;
+  --t-focus: #0047B3;
+  --t-input-bg: #FFFFFF;
+  --t-danger-bg: #FFFFFF;
+  --t-danger-border: #8B0000;
+  --t-danger-text: #8B0000;
+  --t-danger-btn-bg: #FFFFFF;
+  --t-note-bg: #FFFFFF;
+  --t-note-border: #111111;
+  --t-note-text: #111111;
+  --t-ok-bg: #FFFFFF;
+  --t-ok-border: #111111;
+  --t-ok-text: #111111;
+  --t-shadow: none;
+  --t-radius: 6px;
+  color-scheme: light;
+}
+
+/* 舊樣式表的變數改接主題色，讓既有元件自動跟著換色。 */
+html[data-theme] {
+  --primary: var(--t-accent-strong);
+  --primary-light: var(--t-accent-strong);
+  --primary-dark: var(--t-accent-ink);
+  --accent: var(--t-accent);
+  --bg-main: var(--t-bg);
+  --card-bg: var(--t-surface);
+  --text-primary: var(--t-text);
+  --text-secondary: var(--t-muted);
+  --border-color: var(--t-border);
+}
+
+/* ---------- 共用：版面、焦點、無障礙 ---------- */
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition: none !important; }
+html[data-theme] body {
+  background: var(--t-bg);
+  color: var(--t-text);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+html[data-theme] :focus-visible {
+  outline: 3px solid var(--t-focus);
+  outline-offset: 2px;
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+html[data-theme] a { color: var(--t-accent-ink); }
+
+/* ---------- 導覽列 ---------- */
+html[data-theme] .navbar {
+  background: var(--t-surface);
+  border-bottom-color: var(--t-border);
+  padding-top: max(0.85rem, env(safe-area-inset-top));
+}
+html[data-theme] .nav-brand { color: var(--t-text); }
+html[data-theme] .nav-logo { background: var(--t-accent-soft); }
+html[data-theme] .brand-text h1 { color: var(--t-text); }
+html[data-theme] .brand-tag { background: var(--t-accent-soft); color: var(--t-accent-ink); }
+html[data-theme] .nav-item { color: var(--t-muted); }
+html[data-theme] .nav-item:hover,
+html[data-theme] .nav-item.active { color: var(--t-accent-ink); background: var(--t-surface-2); }
+html[data-theme] .header-tool { color: var(--t-muted); }
+html[data-theme] .student-profile-button { color: var(--t-muted); }
+html[data-theme] .student-header-tools button:focus-visible,
+html[data-theme] .student-header-tools a:focus-visible,
+html[data-theme] .student-header-tools select:focus-visible { outline: 3px solid var(--t-focus); outline-offset: 2px; }
+#brandTitle { cursor: default; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
+
+html[data-theme] .voice-toggle-btn,
+.header-chip,
+.theme-picker select {
+  background: var(--t-surface-3, #f8fafc);
+  border: 1px solid var(--t-border, #e2e8f0);
+  color: var(--t-muted, #475569);
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .2rem .6rem;
+  min-height: 30px;
+  cursor: pointer;
+  font-family: inherit;
+}
+html[data-theme] .voice-toggle-btn:hover,
+.header-chip:hover { background: var(--t-surface-2); color: var(--t-text); }
+html[data-theme] .voice-toggle-btn.active { background: var(--t-accent-soft); border-color: var(--t-accent); color: var(--t-accent-ink); }
+.theme-picker { display: inline-flex; align-items: center; }
+.theme-picker select { padding-right: .4rem; }
+.theme-picker select option { background: var(--t-surface); color: var(--t-text); }
+
+/* ---------- 對話卡 ---------- */
+html[data-theme] .chat-card,
+html[data-theme] .panel-card {
+  background: var(--t-surface);
+  border-color: var(--t-border);
+  box-shadow: var(--t-shadow);
+  border-radius: var(--t-radius);
+}
+html[data-theme] .chat-header { background: var(--t-surface-3); border-bottom-color: var(--t-border); }
+html[data-theme] .chat-status-indicator { color: var(--t-muted); }
+.chat-status-text { font-weight: 600; color: var(--t-text, #334155); }
+html[data-theme] .model-badge { background: var(--t-surface-2); color: var(--t-muted); border-color: var(--t-border); }
+html[data-theme] .model-badge:hover { background: var(--t-accent-soft); color: var(--t-accent-ink); }
+.chat-region-badge { font-size: .8rem; background: var(--t-accent-soft, #eef2ff); color: var(--t-accent-ink, #4338ca); padding: 2px 8px; border-radius: 6px; }
+html[data-theme] .companion-role-note { background: var(--t-ok-bg); border-bottom-color: var(--t-border); }
+html[data-theme] .companion-role-note > span { color: var(--t-ok-text); }
+html[data-theme] .companion-role-note > p { color: var(--t-muted); }
+
+html[data-theme] .avatar { background: var(--t-accent-soft); }
+html[data-theme] .message.ai .bubble { background: var(--t-surface-2); color: var(--t-text); }
+html[data-theme] .message.user .bubble { background: var(--t-accent-strong); color: var(--t-on-accent); }
+.typing-bubble { color: var(--t-muted, #64748b); font-style: italic; }
+html[data-theme] .btn-play-voice { background: var(--t-surface); border-color: var(--t-border-strong); color: var(--t-muted); }
+html[data-theme] .btn-play-voice:hover { background: var(--t-accent-soft); color: var(--t-accent-ink); border-color: var(--t-accent); }
+html[data-theme] .message.user .bubble a { color: inherit; }
+
+html[data-theme] .quick-tags { background: var(--t-surface); border-top-color: var(--t-border); }
+html[data-theme] .quick-tag { background: var(--t-surface-2); border-color: var(--t-border); color: var(--t-muted); }
+html[data-theme] .quick-tag:hover { background: var(--t-accent-soft); color: var(--t-accent-ink); }
+.quick-tag-featured { background: #ecfdf5 !important; border-color: #6ee7b7 !important; color: #047857 !important; font-weight: 700; }
+html[data-theme="midnight"] .quick-tag-featured { background: var(--t-ok-bg) !important; border-color: var(--t-ok-border) !important; color: var(--t-ok-text) !important; }
+html[data-theme="paper"] .quick-tag-featured { background: #fff !important; border-color: #111 !important; color: #111 !important; }
+
+html[data-theme] .chat-input-bar { background: var(--t-surface); border-top-color: var(--t-border); }
+html[data-theme] .chat-input-bar input,
+html[data-theme] .modal-content input,
+html[data-theme] .modal-content select,
+html[data-theme] .next-step-panel input,
+html[data-theme] .choice-text,
+html[data-theme] .container input,
+html[data-theme] .container select {
+  background: var(--t-input-bg);
+  color: var(--t-text);
+  border-color: var(--t-border-strong);
+}
+html[data-theme] input::placeholder { color: var(--t-muted); opacity: .85; }
+html[data-theme] .chat-input-bar input:focus { border-color: var(--t-accent); }
+html[data-theme] .btn-mic { background: var(--t-surface-2); border-color: var(--t-border-strong); color: var(--t-muted); }
+html[data-theme] .btn-mic:hover { background: var(--t-accent-soft); color: var(--t-accent-ink); }
+html[data-theme] .btn-mic.listening { background: #dc2626; color: #fff; border-color: #b91c1c; }
+html[data-theme] .btn-send,
+html[data-theme] .btn-primary-action { background: var(--t-accent-strong); color: var(--t-on-accent); }
+html[data-theme] .btn-send:hover { background: var(--t-accent-ink); color: var(--t-on-accent); }
+html[data-theme="midnight"] .btn-send:hover { background: #A8C7FA; }
+html[data-theme] .btn-primary-action:hover { box-shadow: var(--t-shadow); }
+
+/* ---------- 右側面板 ---------- */
+html[data-theme] .panel-card p { color: var(--t-muted); }
+.panel-note { font-size: .85rem; color: var(--t-muted, #475569); line-height: 1.6; }
+.panel-list { font-size: .84rem; color: var(--t-muted, #475569); margin-left: 1.2rem; line-height: 1.65; }
+html[data-theme] .panel-card[style*="border-top"] { border-top-color: var(--t-accent) !important; }
+
+html[data-theme] .emergency-strip { background: var(--t-danger-bg); border-color: var(--t-danger-border); }
+html[data-theme] .emergency-strip h4 { color: var(--t-danger-text); }
+.emergency-note { font-size: .8rem; color: var(--t-danger-text, #7f1d1d); margin-bottom: .5rem; }
+html[data-theme] .btn-hotline { background: var(--t-danger-btn-bg); border-color: var(--t-danger-border); color: var(--t-danger-text); }
+html[data-theme] .btn-hotline:hover { background: var(--t-danger-bg); }
+.lifeline-link { display: block; margin-top: .65rem; font-size: .82rem; font-weight: 600; color: var(--t-danger-text, #991b1b) !important; text-underline-offset: .2em; }
+
+/* 立即求助面板維持固定的高對比淺色，不隨主題改變，確保在任何主題都一眼可辨。 */
+html[data-theme] .urgent-help .btn-hotline { background: #ffffff; border-color: #fca5a5; color: #b91c1c; }
+html[data-theme] .urgent-help { color: #431407; color-scheme: light; }
+html[data-theme] .urgent-help a:not(.btn-hotline) { color: #9a3412; }
+html[data-theme] .urgent-help .next-step-panel { background: #ffffff; color: #1e293b; }
+
+/* ---------- 下一步、資料說明 ---------- */
+html[data-theme] .next-step-panel { background: var(--t-surface-3); border-color: var(--t-border-strong); color: var(--t-text); }
+html[data-theme] .choice-chip { background: var(--t-surface); color: var(--t-accent-ink); border-color: var(--t-border-strong); }
+html[data-theme] .choice-note { color: var(--t-muted); }
+html[data-theme] .inline-support-link { color: var(--t-accent-ink); }
+html[data-theme] .student-consent-label { border-color: var(--t-ok-border); color: var(--t-ok-text); }
+html[data-theme] .urgent-help .choice-chip { background: #ffffff; color: #1e3a5f; border-color: #64748b; }
+html[data-theme] .urgent-help .choice-note { color: #475569; }
+
+html[data-theme] .modal-content { background: var(--t-surface); color: var(--t-text); }
+html[data-theme] .modal-close { background: var(--t-surface-2); color: var(--t-text); }
+html[data-theme] .optional-contact-fields summary { color: var(--t-text); }
+html[data-theme] .optional-contact-fields p { color: var(--t-muted); }
+.privacy-note-box { background: var(--t-ok-bg, #f0fdf4); border: 1px solid var(--t-ok-border, #bbf7d0); border-radius: 10px; padding: .9rem; margin-bottom: 1.25rem; }
+.privacy-note-title { font-size: .88rem; font-weight: 700; color: var(--t-ok-text, #166534); margin-bottom: .25rem; }
+.privacy-note-body { font-size: .82rem; color: var(--t-ok-text, #14532d); line-height: 1.55; }
+.form-label { font-size: .85rem; font-weight: 600; color: var(--t-text, #334155); display: block; margin-bottom: .35rem; }
+.onboarding-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; margin-bottom: 1.25rem; }
+
+/* ---------- 頁尾 ---------- */
+html[data-theme] .footer { background: var(--t-surface); border-top-color: var(--t-border); color: var(--t-muted); padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+html[data-theme] .footer-links a { color: var(--t-muted); }
+html[data-theme] .footer-links a:hover { color: var(--t-accent-ink); }
+.footer-fine { color: var(--t-muted, #64748b); font-size: .75rem; margin-top: .3rem; }
+
+/* ---------- 回覆風格膠囊按鈕 ---------- */
+.reply-style-area { padding: .45rem 1.25rem .1rem; background: var(--t-surface, #fff); border-top: 1px solid var(--t-border, #e2e8f0); }
+.reply-style-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .4rem; }
+.reply-style-label { font-size: .75rem; font-weight: 600; color: var(--t-muted, #64748b); margin-right: .15rem; }
+.style-capsule {
+  border: 1px solid var(--t-border-strong, #94a3b8);
+  background: var(--t-surface, #fff);
+  color: var(--t-text, #1e293b);
+  border-radius: 999px;
+  padding: .28rem .7rem;
+  min-height: 32px;
+  font: inherit;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s;
+}
+.style-capsule:hover { background: var(--t-accent-soft, #eef2ff); }
+.style-capsule[aria-pressed="true"] {
+  background: var(--t-accent-strong, #4f46e5);
+  border-color: var(--t-accent-strong, #4f46e5);
+  color: var(--t-on-accent, #fff);
+  font-weight: 700;
+}
+.style-capsule:focus-visible { outline: 3px solid var(--t-focus, #2563eb); outline-offset: 2px; }
+/* 安全優先時：保留所選風格，但以虛線與降低飽和度表示「暫時由穩定語氣接手」。 */
+.reply-style-bar.is-overridden .style-capsule { border-style: dashed; }
+.reply-style-bar.is-overridden .style-capsule[aria-pressed="true"] {
+  background: var(--t-surface-2, #f1f5f9);
+  color: var(--t-text, #1e293b);
+  border-color: var(--t-border-strong, #94a3b8);
+}
+.reply-style-bar.is-overridden .reply-style-label::after { content: "（暫時以安全為優先）"; font-weight: 400; }
+.style-safety-note {
+  margin: .4rem 0 .2rem;
+  padding: .4rem .65rem;
+  border-radius: 10px;
+  background: var(--t-note-bg, #fff7e6);
+  border: 1px solid var(--t-note-border, #f2d49b);
+  color: var(--t-note-text, #6b4a12);
+  font-size: .8rem;
+  line-height: 1.5;
+}
+.style-safety-note[hidden] { display: none; }
+
+/* ---------- 離線提示條 ---------- */
+.offline-banner {
+  display: flex; flex-wrap: wrap; gap: .3rem .75rem; align-items: center; justify-content: center;
+  padding: .55rem 1rem; font-size: .88rem;
+  background: var(--t-note-bg, #fff7e6); color: var(--t-note-text, #6b4a12);
+  border-bottom: 1px solid var(--t-note-border, #f2d49b);
+}
+.offline-banner[hidden] { display: none; }
+.offline-banner a { color: inherit; font-weight: 700; text-underline-offset: .2em; }
+
+/* ---------- 手機安裝對話框 ---------- */
+.install-dialog {
+  margin: auto;
+  border: 1px solid var(--t-border, #e2e8f0);
+  border-radius: 18px;
+  padding: 0;
+  width: min(560px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  background: var(--t-surface, #fff);
+  color: var(--t-text, #1e293b);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .25);
+}
+.install-dialog::backdrop { background: rgba(15, 23, 42, .6); }
+.install-dialog-body { padding: 1.25rem 1.25rem 1.1rem; overflow-y: auto; }
+.install-dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: .75rem; }
+.install-dialog-head h2 { font-size: 1.1rem; }
+.install-close { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--t-border, #e2e8f0); background: var(--t-surface-2, #f1f5f9); color: var(--t-text, #1e293b); font-size: 1.25rem; cursor: pointer; }
+.install-qr-wrap { display: flex; justify-content: center; margin: .25rem 0 .75rem; }
+.install-qr-wrap img { width: 200px; height: 200px; background: #fff; padding: 8px; border-radius: 12px; border: 1px solid var(--t-border, #e2e8f0); }
+.install-qr-fallback { padding: 1rem; border: 1px dashed var(--t-border-strong, #94a3b8); border-radius: 12px; font-size: .88rem; }
+.install-url-note { font-size: .8rem; color: var(--t-muted, #64748b); text-align: center; margin-bottom: .9rem; overflow-wrap: anywhere; }
+.install-url-note code { color: var(--t-text, #1e293b); }
+.install-steps { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+.install-steps section { background: var(--t-surface-3, #f8fafc); border: 1px solid var(--t-border, #e2e8f0); border-radius: 12px; padding: .75rem; }
+.install-steps h3 { font-size: .92rem; margin-bottom: .35rem; }
+.install-steps ol { margin-left: 1.15rem; font-size: .84rem; line-height: 1.6; }
+.install-dialog #installNowButton { margin-top: .9rem; }
+.install-dialog #installNowButton[hidden] { display: none; }
+.install-privacy { margin-top: .75rem; font-size: .78rem; color: var(--t-muted, #64748b); }
+
+/* ---------- Boss Key 偽裝畫面（單字卡／數學測驗） ---------- */
+html.boss-active, html.boss-active body { overflow: hidden; }
+.boss-overlay {
+  --b-bg: #F5F7FB; --b-surface: #FFFFFF; --b-text: #1F2937; --b-muted: #4B5563;
+  --b-border: #D7DEE8; --b-accent: #1D4ED8; --b-accent-soft: #E3EBFD; --b-ok: #15803D; --b-ok-bg: #E8F7EE; --b-bad: #B91C1C; --b-bad-bg: #FDECEC;
+  position: fixed; inset: 0; z-index: 4000;
+  display: flex; flex-direction: column;
+  background: var(--b-bg); color: var(--b-text);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", Arial, sans-serif;
+}
+html[data-theme="midnight"] .boss-overlay {
+  --b-bg: #15181F; --b-surface: #1F2430; --b-text: #E5E9F0; --b-muted: #A9B3C4;
+  --b-border: #343C4E; --b-accent: #8AB4F8; --b-accent-soft: #24304A; --b-ok: #86EFAC; --b-ok-bg: #173225; --b-bad: #FCA5A5; --b-bad-bg: #3A1C20;
+}
+.boss-overlay[hidden] { display: none !important; }
+.boss-overlay button { font-family: inherit; }
+html[data-theme] .boss-overlay :focus-visible, .boss-overlay :focus-visible { outline: 3px solid var(--b-accent); outline-offset: 2px; }
+.boss-bar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding: .7rem 1rem; background: var(--b-surface); border-bottom: 1px solid var(--b-border); }
+.boss-title { display: flex; align-items: center; gap: .45rem; font-weight: 700; font-size: 1rem; flex: 1 1 auto; min-width: 0; }
+.boss-logo { font-size: 1.3rem; }
+.boss-tabs { display: flex; gap: .3rem; background: var(--b-bg); padding: .2rem; border-radius: 10px; }
+.boss-tab { border: 0; background: transparent; color: var(--b-muted); padding: .4rem .8rem; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer; min-height: 36px; }
+.boss-tab[aria-selected="true"] { background: var(--b-surface); color: var(--b-accent); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.boss-return { position: relative; border: 1px solid var(--b-border); background: transparent; color: var(--b-muted); font-size: .78rem; padding: .3rem .7rem; border-radius: 8px; cursor: pointer; min-height: 32px; }
+.boss-return.has-alert::after { content: ""; position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; border-radius: 50%; background: #DC2626; }
+.boss-body { flex: 1; overflow-y: auto; display: flex; justify-content: center; padding: 1.25rem 1rem 2rem; }
+.boss-panel { width: min(640px, 100%); display: flex; flex-direction: column; align-items: stretch; gap: 1rem; }
+.boss-panel[hidden] { display: none; }
+.boss-progress { font-size: .85rem; color: var(--b-muted); text-align: center; }
+.flashcard { border: 0; padding: 0; background: transparent; cursor: pointer; perspective: 1200px; width: 100%; height: min(320px, 46vh); min-height: 220px; color: inherit; border-radius: 20px; }
+.flashcard-inner { position: relative; display: block; width: 100%; height: 100%; transition: transform .35s ease; transform-style: preserve-3d; }
+.flashcard.is-flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; padding: 1.25rem; border-radius: 20px; background: var(--b-surface); border: 1px solid var(--b-border); box-shadow: 0 10px 30px rgba(15, 23, 42, .08); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flashcard-back { transform: rotateY(180deg); background: var(--b-accent-soft); }
+.flashcard-word { font-size: clamp(2rem, 7vw, 3rem); font-weight: 800; letter-spacing: .01em; color: var(--b-text); font-family: Georgia, "Times New Roman", serif; }
+.flashcard-word.small { font-size: 1.25rem; font-weight: 700; color: var(--b-muted); }
+.flashcard-hint { font-size: .85rem; color: var(--b-muted); }
+.flashcard-pos { font-size: 1rem; font-style: italic; color: var(--b-accent); font-weight: 700; }
+.flashcard-zh { font-size: clamp(1.4rem, 5vw, 2rem); font-weight: 700; color: var(--b-text); text-align: center; }
+.boss-controls { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+.boss-btn { border: 1px solid var(--b-border); background: var(--b-surface); color: var(--b-text); padding: .55rem 1rem; border-radius: 10px; font-size: .9rem; font-weight: 600; cursor: pointer; min-height: 44px; }
+.boss-btn:hover { border-color: var(--b-accent); }
+.boss-btn[aria-pressed="true"] { background: var(--b-ok-bg); color: var(--b-ok); border-color: var(--b-ok); }
+.boss-btn-primary { background: var(--b-accent); border-color: var(--b-accent); color: #FFFFFF; }
+html[data-theme="midnight"] .boss-btn-primary { color: #0F1726; }
+.boss-tip { text-align: center; font-size: .78rem; color: var(--b-muted); }
+.quiz-question { background: var(--b-surface); border: 1px solid var(--b-border); border-radius: 16px; padding: 1.25rem; font-size: 1.15rem; font-weight: 700; line-height: 1.6; }
+.quiz-options { display: grid; gap: .5rem; }
+.quiz-option { text-align: left; border: 1px solid var(--b-border); background: var(--b-surface); color: var(--b-text); padding: .75rem 1rem; border-radius: 12px; font-size: .98rem; cursor: pointer; min-height: 48px; }
+.quiz-option:hover:not(:disabled) { border-color: var(--b-accent); background: var(--b-accent-soft); }
+.quiz-option:disabled { cursor: default; opacity: 1; }
+.quiz-option.is-correct { background: var(--b-ok-bg); border-color: var(--b-ok); color: var(--b-ok); font-weight: 700; }
+.quiz-option.is-wrong { background: var(--b-bad-bg); border-color: var(--b-bad); color: var(--b-bad); }
+.quiz-feedback { min-height: 1.5em; font-size: .92rem; color: var(--b-muted); text-align: center; }
+@media (prefers-reduced-motion: reduce) {
+  .flashcard-inner { transition: none; }
+}
+
+/* ---------- 手機與 PWA ---------- */
+@supports (height: 100dvh) {
+  .student-page .chat-card { height: min(660px, calc(100dvh - 7rem)); min-height: 460px; }
+}
+@media (max-width: 900px) {
+  .student-page .chat-card { height: 620px; }
+  @supports (height: 100dvh) {
+    .student-page .chat-card { height: calc(var(--anla-vh, 100dvh) - 1rem - env(safe-area-inset-top) - env(safe-area-inset-bottom)); min-height: 420px; max-height: 760px; }
+  }
+}
+@media (max-width: 650px) {
+  /* 手機上頁首不固定，聊天區可以用滿整個可視高度（含虛擬鍵盤彈出時）。 */
+  html[data-theme] .student-navbar { position: static; }
+  .student-page .container { margin: .5rem auto; padding: 0 .5rem; }
+  .student-page .chat-messages { padding: .9rem .75rem; }
+  .student-page .chat-input-bar { padding: .6rem .6rem calc(.6rem + env(safe-area-inset-bottom)); gap: .4rem; }
+  .student-page .chat-input-bar input { font-size: 16px; padding: .65rem .75rem; } /* 16px 避免 iOS 自動放大 */
+  .student-page .btn-send { padding: .7rem .8rem; }
+  .student-page .quick-tags { padding: .45rem .75rem; }
+  .reply-style-area { padding: .4rem .6rem .1rem; }
+  .style-capsule { padding: .25rem .55rem; font-size: .78rem; }
+  .reply-style-label { width: 100%; }
+  .message { max-width: 94%; }
+  .onboarding-grid { grid-template-columns: 1fr; }
+  .modal-content { padding: 1.4rem !important; }
+  .install-steps { grid-template-columns: 1fr; }
+  .header-chip, .theme-picker select, html[data-theme] .voice-toggle-btn { min-height: 36px; }
+  .boss-title { font-size: .9rem; flex-basis: 100%; }
+}
+html.is-standalone #installButton { display: none; }
+
+/* ---------- 南投資源地圖頁 ---------- */
+.res-township { font-size: .75rem; background: var(--t-accent-soft, #e0e7ff); color: var(--t-accent-ink, #4338ca); padding: 2px 8px; border-radius: 6px; font-weight: 600; }
+.res-flag { font-size: .72rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+.res-flag-free { background: var(--t-ok-bg, #d1fae5); color: var(--t-ok-text, #065f46); border: 1px solid var(--t-ok-border, transparent); }
+.res-flag-online { background: var(--t-surface-2, #e0f2fe); color: var(--t-text, #0369a1); border: 1px solid var(--t-border, transparent); }
+.res-meta { font-size: .82rem; color: var(--t-muted, #64748b); margin-bottom: .75rem; }
+.res-services-title { font-size: .78rem; font-weight: 600; color: var(--t-muted, #475569); margin-bottom: .3rem; }
+.res-service { font-size: .72rem; background: var(--t-surface-2, #f1f5f9); color: var(--t-muted, #475569); padding: 1px 6px; border-radius: 4px; }
+.res-source { font-size: .75rem; color: var(--t-muted, #64748b); margin-top: .75rem; }
+.res-phones { margin-top: 1rem; border-top: 1px solid var(--t-border, #f1f5f9); padding-top: .75rem; display: flex; flex-direction: column; gap: .4rem; }
+.res-empty { grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--t-surface, #fff); border-radius: 12px; color: var(--t-muted, #64748b); }
+.resources-page .nav-links { flex-wrap: wrap; }

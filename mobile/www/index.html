@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>安啦會客室｜暫時連不上</title>
+  <style>
+    :root { --bg: #f6f4ef; --fg: #2b2b2b; --muted: #666; --card: #fff; --accent: #2f7a6b; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #1d1f1e; --fg: #ececec; --muted: #aaa; --card: #2a2d2c; --accent: #6cc2ae; }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--fg);
+      font-family: system-ui, -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+      line-height: 1.6;
+      padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+               max(24px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+    main { max-width: 520px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 .5rem; }
+    p { margin: .5rem 0; }
+    .card { background: var(--card); border-radius: 14px; padding: 16px; margin: 16px 0; }
+    .muted { color: var(--muted); font-size: .9rem; }
+    button, a.tel {
+      display: block; width: 100%; text-align: center; text-decoration: none;
+      border: 0; border-radius: 12px; padding: 14px; margin: 8px 0; font-size: 1rem;
+      background: var(--accent); color: #fff;
+    }
+    a.tel { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+    code { word-break: break-all; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>暫時連不上安啦會客室</h1>
+  <p>這個 App 需要連到學校／單位架設的伺服器才能聊天。現在可能是：</p>
+  <ul>
+    <li>手機沒有網路，或 Wi-Fi 需要先登入</li>
+    <li>伺服器正在維護或尚未開機</li>
+    <li id="unset" hidden>這個安裝檔還沒有設定伺服器網址（請向提供 App 的老師詢問）</li>
+  </ul>
+  <p class="muted" id="target"></p>
+  <button id="retry" type="button">重新連線</button>
+
+  <div class="card">
+    <p><strong>如果你現在很難受，不用等 App：</strong></p>
+    <a class="tel" href="tel:1925">1925 安心專線（24 小時）</a>
+    <a class="tel" href="tel:1995">1995 生命線</a>
+    <a class="tel" href="tel:1980">1980 張老師</a>
+    <a class="tel" href="tel:110">有立即危險：110 ／ 119</a>
+    <p class="muted">也可以直接去找你信任的大人、導師或輔導室。</p>
+  </div>
+</main>
+<script src="server-config.js"></script>
+<script>
+  (function () {
+    var url = window.ANLA_SERVER_URL || "";
+    var target = document.getElementById("target");
+    if (url) {
+      target.textContent = "伺服器：" + url;
+    } else {
+      document.getElementById("unset").hidden = false;
+    }
+    document.getElementById("retry").addEventListener("click", function () {
+      if (url) { window.location.href = url; } else { window.location.reload(); }
+    });
+  })();
+</script>
+</body>
+</html>

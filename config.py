@@ -24,9 +24,13 @@ class Config:
     # 一般陪伴 1–4 短句；安全與界線以決策層優先。
     LLM_TEMPERATURE = 0.8
     LLM_TIMEOUT = 25
+    # 分析＋回覆兩次模型呼叫合計的上限秒數；超過就改用本機備援，不讓學生久等。
+    LLM_TURN_BUDGET = float(os.environ.get("LLM_TURN_BUDGET", "30"))
     DIALOGUE_SEMANTIC_ANALYSIS = os.environ.get("DIALOGUE_SEMANTIC_ANALYSIS", "true").lower() == "true"
     WORKBENCH_PASSWORD = os.environ.get("WORKBENCH_PASSWORD", "")
     
     DATABASE_PATH = os.environ.get("DATABASE_PATH") or os.path.join(os.path.dirname(__file__), "anla_youth.db")
     DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
     HOST = os.environ.get("HOST", "127.0.0.1")
+    # 手機掃碼安裝 PWA 時要開啟的網址（例如 https://anla.example.tw/）；未設定時使用本機區網位址。
+    PUBLIC_URL = os.environ.get("PUBLIC_URL", "")

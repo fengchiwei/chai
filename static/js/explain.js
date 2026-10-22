@@ -8,6 +8,25 @@ const RISK_TYPE_LABELS = {suicide: "自殺意念", self_harm: "自傷", abuse: "
 function E(value) {
   return String(value == null ? "" : value).replace(/[&<>"']/g, ch => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"})[ch]);
 }
+// Wrap each verbatim evidence span in <mark>, escaping everything (spans may overlap).
+function highlight(text, spans) {
+  const marks = new Array(text.length).fill(false);
+  (spans || []).forEach(span => {
+    if (!span) return;
+    for (let at = text.indexOf(span); at !== -1; at = text.indexOf(span, at + 1)) {
+      for (let i = at; i < at + span.length; i++) marks[i] = true;
+    }
+  });
+  let html = "", open = false;
+  for (let i = 0; i < text.length; i++) {
+    if (marks[i] !== open) { html += marks[i] ? "<mark>" : "</mark>"; open = marks[i]; }
+    html += E(text[i]);
+  }
+  return html + (open ? "</mark>" : "");
+}
+function theoryChips(codes, labels) {
+  return (codes || []).map(c => `<span class="explain-chip theory" title="${E((labels || {})[c] || c)}">${E(c)}</span>`).join("");
+}
 function badge(level) {
   return `<span class="badge-level badge-${E(level)}">${E(LEVEL_LABELS[level] || level)}</span>`;
 }
@@ -86,13 +105,18 @@ function renderTimeline(d) {
     const safety = s.risk_signal === "none" ? (s.safety_denied ? "學生自述否認（不等於已確認安全）" : "無")
       : `${E(SIGNAL_LABELS[s.risk_signal] || s.risk_signal)}／${E(RISK_TYPE_LABELS[s.risk_type] || s.risk_type)}／對象：${E(SUBJECT_LABELS[s.risk_subject] || s.risk_subject)}`
         + (s.risk_evidence ? `<br><span class="explain-meta">依據：「${E(s.risk_evidence)}」</span>` : "");
-    return `<li class="explain-turn">
+    const kind = t.confirmed ? "confirmed" : t.pending_disambiguation ? "pending" : "";
+    return `<li class="explain-turn ${kind}">
       <div class="explain-turn-head"><span>第 ${t.turn} 輪</span>${badge(t.level)}
-        ${t.highest_level !== t.level ? `<span class="explain-meta">歷史最高：${E(LEVEL_LABELS[t.highest_level])}</span>` : ""}</div>
-      <p class="explain-user">學生（虛構）：${E(t.message)}</p>
+        ${t.highest_level !== t.level ? `<span class="explain-meta">歷史最高：${E(LEVEL_LABELS[t.highest_level])}</span>` : ""}
+        ${t.confirmed ? '<span class="explain-tag confirmed">確認危機</span>' : ""}
+        ${t.pending_disambiguation ? '<span class="explain-tag pending">待消歧（軟性確認）</span>' : ""}
+        ${t.style_overridden_by_safety ? '<span class="explain-tag">安全優先覆寫風格</span>' : ""}</div>
+      <p class="explain-user">學生（虛構）：${highlight(t.message, t.highlights)}</p>
       <dl>
         <dt>規則來源</dt><dd>${rules}</dd>
         <dt>對話安全核對</dt><dd>${safety}</dd>
+        <dt>理論依據</dt><dd>${theoryChips(t.theoretical_basis, d.theory_labels) || '<span class="explain-meta">無</span>'}</dd>
         <dt>本輪對話任務</dt><dd>${E(t.goal_label)}</dd>
         <dt>判讀理由</dt><dd>${t.reasons.length ? t.reasons.map(E).join("<br>") : "未偵測到規則警訊；不代表已完成安全評估"}</dd>
       </dl>

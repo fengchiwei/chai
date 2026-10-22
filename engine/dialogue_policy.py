@@ -11,6 +11,7 @@ POLICY_VERSION = "satir-2026-10-19.2"
 WEIGHTS = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
 STAGES = ("event", "feeling", "perception", "expectation", "yearning", "self")
 RISK_TYPES = ("none", "self_harm", "suicide", "abuse", "violence", "digital_sexual_violence", "other")
+REPLY_STYLES = ("warm", "lively", "rational", "listen_only")
 LOW_REPLIES = {"不知道", "我不知道", "不曉得", "嗯", "嗯嗯", "喔", "哦", "沒事", "還好", "差不多吧", "不知道怎麼說", "說不上來"}
 BOUNDARY = r"不想(?:再)?(?:講|說|談)|不要(?:再|一直)?問|別(?:再|一直)?問|不想(?:一直)?被問|關你什麼事|只想.{0,4}(?:聽|陪)|只要.{0,4}(?:聽|陪)"
 HIGH_EMOTION = r"哭到|哭不停|哭得停不下|一直哭|暴怒|氣到發抖|恐慌|腦袋一片空白|完全無法思考|快崩潰|全部的人都在針對我|閉嘴"
@@ -110,7 +111,7 @@ def _affirmative_matches(pattern, text):
             before = clause[max(0, match.start() - 16):match.start()]
             # A negation before a comma does not negate an unrelated clause.
             before = re.split(r"[,，、]", before)[-1]
-            if re.search(r"(?:沒有|並未|從未|不會|不打算|不是|不想|不要|並不).{0,4}$", before):
+            if re.search(r"(?:沒有|並未|從未|不會|不打算|不是|不想|不要|並不).{0,4}$|(?:不覺得|不認為|才不是).{0,6}$", before):
                 continue
             if re.search(r"(?:沒有|不會|並未|從未|不打算).{0,6}(?:打我|揍我|性侵|拿刀|帶刀|持刀|殺|砍|捅|威脅|自殺|傷害|吃掉|吞|吃完)", match.group()):
                 continue
@@ -140,26 +141,72 @@ def _reaffirms_after_denial(message):
     return ""
 
 
-def observe_safety(message, triage, previous=None, hints=None):
+# v2.3 Phase 1 cross-disciplinary signals. All of them can only RAISE a floor or ask a soft
+# question; none lowers a rule or high-water level. Codes refer to docs/THEORETICAL_FOUNDATIONS.md.
+# PSY-02 IPTS: perceived burdensomeness / thwarted belongingness.
+PERCEIVED_BURDEN = (r"累贅|拖累(?:大家|家裡|家人|你們|他們)|(?:是|成了|變成)(?:大家|家裡|家人|爸媽|他們)?的?負擔"
+                    r"|沒有我.{0,12}(?:更好|輕鬆|比較好|沒差|快樂)|少了我.{0,6}(?:更好|輕鬆|比較好)")
+THWARTED_BELONGING = (r"沒(?:有)?人要我|沒(?:有)?人在乎我|沒有人需要我|格格不入|像(?:個)?透明人|沒有(?:半個|任何)朋友"
+                      r"|被所有人討厭|不屬於這裡|全世界都不要我")
+# PSY-03 IMV: entrapment.
+ENTRAPMENT = r"逃不出去|逃不掉|沒有出路|走投無路|無路可逃|怎麼掙扎都|被困住|困在這裡|看不到出口|掉進深淵|永遠不會好"
+# DYN-04 (heuristic only): negative-affect runs and abrupt farewells. A few turns cannot measure
+# critical slowing down; this is a digital-phenotype prompt for a human check, not CSD detection.
+NEGATIVE_AFFECT = (r"難過|好累|很累|好煩|痛苦|沒意義|無望|絕望|崩潰|想哭|哭了|沒希望|空虛|撐不|受不了|不開心|低落|孤單"
+                   r"|討厭自己|好糟|很糟|好爛|心好痛")
+FAREWELL = r"(?:(?:算了|謝謝你?(?:陪我)?|再見|掰掰|拜拜|bye|就這樣吧?|不用了)[\s，,。！!~～…\.]*){1,3}"
+# SOC-05: a friend's crisis disclosed to the student.
+THIRD_PARTY = (r"(?:朋友|同學|閨蜜|好友|室友|網友|學長|學姊|學姐|弟弟|妹妹|哥哥|姊姊|姐姐|表[哥姊姐弟妹]|他|她)"
+               r".{0,20}(?:說|表示|提到|傳|告訴我).{0,20}"
+               r"(?:不想活|想死|自殺|傷害自己|吞藥|吞了.{0,10}(?:藥|安眠藥)|吃了.{0,8}(?:很多|好多|一堆|整瓶|整包|全部).{0,4}藥"
+               r"|割(?:腕|手)|跳樓|燒炭|上吊)")
+CLARIFIED = r"只是(?:在)?(?:抱怨|開玩笑|說說|講講|誇張|形容|比喻|發牢騷)|開玩笑的|講好玩的|形容(?:詞|一下)?(?:啦|而已)"
+CONCERNING_PRIORS = {"sleep": ("reported_difficulty",), "daily_function": ("reported_impact",),
+                     "support_system": ("difficulty_seeking_support",), "safety": ("requires_human_review", "clarification_needed")}
+
+
+def _concerning_priors(previous):
+    """SIG-02 (heuristic): count earlier evidence-bound concerns. No probability is computed; the
+    threshold only encodes asymmetric costs (a miss is worse than a false alarm), not predictive validity."""
+    domains = ((previous.get("wellbeing_signals") or {}).get("domains") or {})
+    count = sum(1 for key, statuses in CONCERNING_PRIORS.items()
+                if (domains.get(key) or {}).get("status") in statuses)
+    return count + len(previous.get("ipts") or {})
+
+
+def _last_user_text(previous):
+    users = [t.get("text", "") for t in previous.get("history", []) if isinstance(t, dict) and t.get("role") == "user"]
+    return users[-1] if users else ""
+
+
+def observe_safety(message, triage, previous=None, hints=None, hour=None):
+    """`hour` is the student's local send hour; only the live chat route supplies it (DYN-04)."""
+    from engine.rules import mask_hyperbole
     previous = previous or {}
     rules = triage.get("rule_details", {})
     current = rules.get("triggered_level", "green")
+    scan, hyperbole = mask_hyperbole(message)
     risk = {"risk_signal": "none", "risk_type": "none", "risk_subject": "unknown",
             "risk_evidence": "", "immediate_danger": "none", "safety_denied": False,
-            "pending_safety_check": False, "minimum_level": "green", "risk_types": []}
+            "pending_safety_check": False, "minimum_level": "green", "risk_types": [],
+            "theoretical_basis": [], "pending_disambiguation": False,
+            "ipts": dict(previous.get("ipts") or {}),
+            "secondary_trauma_risk": bool(previous.get("secondary_trauma_risk")),
+            "dyn_checked": bool(previous.get("dyn_checked")), "negative_streak": 0}
     candidates = []
 
-    def add(kind, signal, danger, evidence, floor, subject="self"):
+    def add(kind, signal, danger, evidence, floor, subject="self", basis=()):
         candidates.append({"risk_signal": signal, "risk_type": kind, "risk_subject": subject,
                            "risk_evidence": evidence[:240], "immediate_danger": danger,
-                           "minimum_level": floor})
+                           "minimum_level": floor, "theoretical_basis": list(basis)})
 
     # Existing explicit rules and quantitative/high-water levels cannot be vetoed by the LLM.
     if current in ("orange", "red"):
         evidence = "；".join(rules.get("red_flags", []) or rules.get("orange_flags", []))
         kind = "abuse" if re.search(r"被打(?!槍)|家暴", evidence) else "suicide" if re.search(
             r"想死|自殺|自傷|不想活|活不下去|活著|死亡|遺書|吞藥|跳樓|跳橋|燒炭|上吊|不想醒|不要醒|結束(?:生命|自己)|工具", evidence) else "self_harm"
-        add(kind, "direct", "imminent" if current == "red" else "possible", evidence, current)
+        add(kind, "direct", "imminent" if current == "red" else "possible", evidence, current,
+            basis=triage.get("theoretical_basis") or ("PSY-01",))
 
     specs = [
         (r"(?:威脅|恐嚇|逼我|強迫).{0,25}(?:私密照|裸照|性影像|性愛影片)|(?:私密照|裸照|性影像).{0,25}(?:外流|威脅|散布|散佈|公開)", "digital_sexual_violence", "orange"),
@@ -168,41 +215,76 @@ def observe_safety(message, triage, previous=None, hints=None):
         (r"(?:我今晚|我現在|我等一下|我今天).{0,12}(?:打算|要).{0,12}(?:這些藥|全部.*藥|整瓶.*藥).{0,8}(?:吃掉|吞|吃完)", "suicide", "red"),
     ]
     for pattern, kind, floor in specs:
-        for clause, evidence in _affirmative_matches(pattern, message):
+        for clause, evidence in _affirmative_matches(pattern, scan):
             if kind in ("abuse", "violence") and re.search(r"現在|正在|今晚|等一下|門外|門口|拿刀|帶刀|持刀", clause):
                 floor = "red"
-            add(kind, "direct", "imminent" if floor == "red" else "possible", evidence, floor)
+            add(kind, "direct", "imminent" if floor == "red" else "possible", evidence, floor, basis=("PSY-01",))
 
-    # Third-party disclosure stays third-party; it is still a reason to pause and help connect.
-    for clause, evidence in _affirmative_matches(
-            r"(?:朋友|同學|他|她).{0,8}(?:說|表示|提到).{0,15}(?:不想活|想死|自殺|傷害自己|吞藥)", message):
-        danger = "imminent" if re.search(r"今晚|現在|正在|已經|等一下", clause) else "possible"
-        add("suicide", "direct", danger, evidence, "red" if danger == "imminent" else "orange", "other")
+    # SOC-05: third-party disclosure stays third-party; it is still a reason to pause and help connect.
+    for clause, evidence in _affirmative_matches(THIRD_PARTY, scan):
+        danger = "imminent" if re.search(r"今晚|現在|正在|已經|等一下|剛剛|剛才|吞了|吃了|頭很暈|昏", clause) else "possible"
+        add("suicide", "direct", danger, evidence, "red" if danger == "imminent" else "orange", "other", ("SOC-05", "PSY-01"))
+        risk["secondary_trauma_risk"] = True
 
     ambiguous = r"撐不下去|受不了了|不想撐了|快撐不住"
     indirect = r"少了我.{0,4}也沒差|沒有我.{0,8}(?:更好|沒差)|(?:如果|希望).{0,5}(?:不要|不再)醒來|希望睡了就不醒|不想醒來"
     for pattern, signal in ((ambiguous, "ambiguous"), (indirect, "indirect")):
-        for _, evidence in _affirmative_matches(pattern, message):
-            add("suicide", signal, "possible", evidence, "yellow")
+        for _, evidence in _affirmative_matches(pattern, scan):
+            add("suicide", signal, "possible", evidence, "yellow", basis=("PSY-01",))
+
+    # PSY-02 / PSY-03: burdensomeness and thwarted belonging accumulate within the conversation.
+    hits = {}
+    for key, pattern in (("pb", PERCEIVED_BURDEN), ("tb", THWARTED_BELONGING), ("entrapment", ENTRAPMENT)):
+        for _, evidence in _affirmative_matches(pattern, scan):
+            hits[key] = evidence[:120]
+            break
+    if hits:
+        ipts = {**risk["ipts"], **hits}
+        risk["ipts"] = ipts
+        combined = ("pb" in ipts and "tb" in ipts) or ("entrapment" in ipts and ("pb" in ipts or "tb" in ipts))
+        basis = (["PSY-02"] if hits.keys() & {"pb", "tb"} or combined else []) + (["PSY-03"] if "entrapment" in ipts else [])
+        add("suicide", "indirect", "possible", next(iter(hits.values())), "orange" if combined else "yellow", basis=basis)
+
+    # LIN-01 + SIG-02: hyperbole is checked softly; with >=2 earlier concerns it goes to orange for human review.
+    if hyperbole:
+        own = any(not re.search(r"(?:朋友|同學|他|她|閨蜜|好友).{0,6}" + re.escape(span), message) for span in hyperbole)
+        floor = "orange" if _concerning_priors(previous) >= 2 else "yellow"
+        add("suicide", "ambiguous", "possible", hyperbole[0], floor, "self" if own else "other", ("LIN-01", "SIG-02"))
+
+    # DYN-04: affect inertia and abrupt farewell raise one soft check per conversation.
+    risk["negative_streak"] = previous.get("negative_streak", 0) + 1 if re.search(NEGATIVE_AFFECT, scan) else 0
+    if not risk["dyn_checked"]:
+        farewell = (re.fullmatch(FAREWELL, message.strip(), re.I) and len(_last_user_text(previous)) >= 40
+                    and (previous.get("negative_streak", 0) >= 1 or WEIGHTS.get(previous.get("risk_level", "green"), 1) >= 2))
+        if risk["negative_streak"] >= 3 or farewell:
+            add("suicide", "ambiguous", "possible", message[:120], "yellow", basis=("DYN-04",))
+            risk["dyn_checked"] = True
+    if hour is not None and 1 <= hour < 5:
+        # Late-night disclosures: an ambiguous or indirect signal is escalated for human review.
+        for candidate in candidates:
+            if candidate["risk_signal"] in ("ambiguous", "indirect") and candidate["minimum_level"] == "yellow":
+                candidate["minimum_level"] = "orange"
+                candidate["theoretical_basis"] = candidate["theoretical_basis"] + ["DYN-04"]
 
     # A short answer is interpreted only against a server-recorded pending safety question.
     pending = previous.get("pending_safety_check", False)
     denied = bool(re.search(r"^(?:沒有啦|沒有|沒啦|並沒有|沒有耶)(?:$|[，,。!！\s])", message) or re.search(
-        r"(?:沒有|不會|不想).{0,4}(?:傷害自己|自殺)|沒有.{0,3}不想活", message))
+        r"(?:沒有|不會|不想).{0,4}(?:傷害自己|自殺)|沒有.{0,3}不想活", message) or re.search(CLARIFIED, message))
     if pending and not candidates:
         reaffirms = _reaffirms_after_denial(message)
         if reaffirms:
             add(previous.get("risk_type") if previous.get("risk_type") in RISK_TYPES[1:] else "suicide",
                 "direct", "possible", reaffirms, "orange",
-                previous.get("risk_subject") if previous.get("risk_subject") in ("self", "other") else "self")
+                previous.get("risk_subject") if previous.get("risk_subject") in ("self", "other") else "self", ("PSY-01",))
         elif denied:
             risk["safety_denied"] = True
         elif re.search(r"^(?:有|有啊|有耶|對|是|嗯|有一點|會|想過)(?:$|[，,。!！\s])", message):
             add(previous.get("risk_type", "suicide"), "direct", "possible", message, "orange",
-                previous.get("risk_subject", "self"))
+                previous.get("risk_subject", "self"), ("PSY-01",))
         else:
             add(previous.get("risk_type", "suicide"), previous.get("risk_signal", "ambiguous"),
-                "possible", previous.get("risk_evidence", ""), "yellow", previous.get("risk_subject", "self"))
+                "possible", previous.get("risk_evidence", ""), "yellow", previous.get("risk_subject", "self"),
+                previous.get("theoretical_basis") or ())
 
     observation = _valid_observations(hints, message).get("risk", {})
     # Grounding alone is insufficient: a quote can explicitly deny a harmful intention.
@@ -213,15 +295,19 @@ def observe_safety(message, triage, previous=None, hints=None):
         if kind in RISK_TYPES[1:] and signal in ("ambiguous", "indirect", "direct") and danger in ("none", "possible", "imminent"):
             floor = "red" if signal == "direct" and danger == "imminent" else "orange" if signal == "direct" else "yellow"
             add(kind, signal, danger, observation["evidence"], floor,
-                observation.get("subject") if observation.get("subject") in ("self", "other") else "unknown")
+                observation.get("subject") if observation.get("subject") in ("self", "other") else "unknown",
+                ("ENG-03",))
     if candidates:
         # A direct current safety threat wins ties over a less specific signal.
         selected = max(candidates, key=lambda c: (WEIGHTS[c["minimum_level"]], c["immediate_danger"] == "imminent",
+                                                    c["risk_signal"] == "direct",
                                                     c["risk_type"] in ("violence", "abuse", "digital_sexual_violence"),
                                                     c["risk_subject"] == "self"))
         risk.update(selected)
         risk["risk_types"] = list(dict.fromkeys(c["risk_type"] for c in candidates))
+        risk["theoretical_basis"] = list(dict.fromkeys(code for c in candidates for code in c["theoretical_basis"]))
         risk["pending_safety_check"] = selected["risk_signal"] in ("ambiguous", "indirect")
+        risk["pending_disambiguation"] = "LIN-01" in selected["theoretical_basis"]
     return risk
 
 
@@ -237,11 +323,13 @@ def raise_triage(triage, safety):
         result["reasons"] = list(result.get("reasons", [])) + [
             "對話安全核對：" + safety["risk_type"] + " / " + safety["risk_signal"] + "；需真人確認"]
         result["explainability"] = "；".join(result["reasons"])
+    result["theoretical_basis"] = list(dict.fromkeys(
+        list(result.get("theoretical_basis") or []) + list(safety.get("theoretical_basis") or [])))
     result["dialogue_safety"] = safety
     return result
 
 
-def build_state(message, triage, previous=None, hints=None, history=None):
+def build_state(message, triage, previous=None, hints=None, history=None, reply_style=None):
     old = previous or {}
     state = {**initial_state(), **deepcopy(old)}
     state["policy_version"] = POLICY_VERSION
@@ -348,9 +436,21 @@ def build_state(message, triage, previous=None, hints=None, history=None):
     recent = [t["text"] for t in turns if t["role"] == "assistant"][-2:]
     if goal != "safety_support" and len(recent) == 2 and all(re.search(r"[？?]", r) for r in recent):
         ask, strategy = False, "reflect_only"
+    # v2.3 reply styles are the student's choice; any safety check takes the tone back (safety override).
+    style = reply_style if reply_style in REPLY_STYLES else old.get("reply_style") if old.get("reply_style") in REPLY_STYLES else "warm"
+    overridden = style != "warm" and state["safety_check_required"]
+    preferences = " ".join(state.get("companion_role", {}).get("preferences", []))
+    quiet = (style == "listen_only" and not overridden) or bool(re.search(r"不要.{0,8}問|別.{0,3}問|不想被問", preferences))
+    no_advice = (style == "listen_only" and not overridden) or bool(re.search(r"不(?:要|用).{0,8}建議|不要.{0,4}教我", preferences))
+    if quiet and goal != "safety_support":
+        ask, strategy = False, "reflect_only"
+    if no_advice and goal == "support_choice":
+        goal, strategy = "integrate", "reflect_only"
+    state.update(reply_style=style, style_overridden_by_safety=overridden,
+                 effective_style="safety" if overridden else style)
     state.update(current_goal=goal, response_strategy=strategy, ask_question=ask, max_questions=int(ask))
     banned = ["ask_multiple_questions", "diagnose", "interpret_for_user", "force_positive", "promise_absolute_confidentiality", "minimize_risk"]
-    if goal != "support_choice":
+    if goal != "support_choice" or no_advice:
         banned.append("give_advice")
     if goal in ("safety_support", "stabilize", "respect_boundary", "establish_safety", "integrate"):
         banned.extend(("explore_yearning", "deep_reflection", "continue_drilling"))
@@ -363,4 +463,5 @@ def remember_turn(state, message, reply):
     saved["history"] = (history_clean(state.get("history"), message) + [
         {"role": "user", "text": message[:2000]}, {"role": "assistant", "text": reply[:2000]}])[-24:]
     saved["last_reply"] = reply[:2000]
+    saved.pop("_turn_deadline", None)
     return saved

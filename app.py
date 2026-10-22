@@ -6,9 +6,14 @@ import os
 import re
 import secrets
 import threading
+from datetime import datetime
 from functools import wraps
 
-from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+import io
+import socket
+
+import segno
+from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 
 from config import Config
 from engine.ai_agent import (
@@ -17,7 +22,7 @@ from engine.ai_agent import (
     generate_youth_response,
     prepare_dialogue,
 )
-from engine.dialogue_policy import POLICY_VERSION, build_state, remember_turn
+from engine.dialogue_policy import POLICY_VERSION, REPLY_STYLES, build_state, remember_turn
 from engine.dialogue_role import public_role
 from engine.explain import VERSION as EXPLAIN_VERSION, explain, load_scenarios
 from engine.wellbeing_signals import update_wellbeing_signals
@@ -32,6 +37,7 @@ from models.database import (
     get_all_cases,
     get_case_by_id,
     init_db,
+    log_audit,
     update_case_status,
 )
 
@@ -206,6 +212,54 @@ def explain_dashboard():
     return render_template("explain.html", csrf_token=csrf_token())
 
 
+@app.route("/manifest.json")
+def pwa_manifest():
+    return send_from_directory(app.static_folder, "manifest.json", mimetype="application/manifest+json")
+
+
+@app.route("/sw.js")
+def service_worker():
+    # Served from the root so the worker may control the whole site (offline lifeline).
+    response = send_from_directory(app.static_folder, "sw.js", mimetype="application/javascript")
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
+@app.route("/offline")
+def offline_page():
+    return send_from_directory(app.static_folder, "offline.html")
+
+
+def install_url():
+    """URL a phone should open: PUBLIC_URL if set, else this server's LAN address (no packets are sent)."""
+    if Config.PUBLIC_URL:
+        return Config.PUBLIC_URL
+    host, _, port = request.host.partition(":")
+    if host in ("127.0.0.1", "localhost", "::1", "[::1]"):
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+                probe.connect(("10.255.255.255", 1))  # UDP connect only picks a route; nothing is transmitted
+                host = probe.getsockname()[0]
+        except OSError:
+            pass
+    return f"{request.scheme}://{host}" + (f":{port}" if port else "") + "/"
+
+
+@app.route("/api/install-info")
+def api_install_info():
+    url = install_url()
+    return jsonify({"url": url, "lan_reachable": Config.HOST != "127.0.0.1" or bool(Config.PUBLIC_URL),
+                    "note": "手機需與伺服器在同一網路；伺服器需以 HOST=0.0.0.0 或 PUBLIC_URL 啟動，正式使用請改用 HTTPS。"})
+
+
+@app.route("/api/qr.svg")
+def api_install_qr():
+    buffer = io.BytesIO()
+    segno.make(install_url(), error="m").save(buffer, kind="svg", scale=6, border=2, dark="#1e293b", light="#ffffff")
+    return app.response_class(buffer.getvalue(), mimetype="image/svg+xml")
+
+
 @app.route("/health")
 def health():
     return jsonify({"status": "ok", "service": "少年仔、安啦會客室 Demo", "dialogue_policy": POLICY_VERSION})
@@ -262,6 +316,8 @@ def api_chat_state():
         "show_urgent_help": session.get("highest_risk") == "red" or (context or {}).get("draft", {}).get("risk_level") == "red",
         "student_profile": context["profile"] if context else None,
         "companion_role": public_role((context or {}).get("dialogue_state")),
+        "reply_style": session.get("reply_style", "warm"),
+        "style_overridden_by_safety": bool((context or {}).get("dialogue_state", {}).get("style_overridden_by_safety")),
         "next_steps": student_next_steps(context),
     })
 
@@ -280,6 +336,9 @@ def api_chat():
     if not isinstance(message, str) or not message.strip() or len(message) > 2000:
         return jsonify({"error": "訊息需為 1 至 2000 字"}), 400
     message = message.strip()
+    # The reply style is the student's own choice; it can never lower safety (see build_state).
+    if data.get("reply_style") in REPLY_STYLES:
+        session["reply_style"] = data["reply_style"]
     # Browser-provided history/state is not authoritative. The expiring server context owns memory.
     lock = _dialogue_locks[sum(session["student_context_id"].encode("utf-8")) % len(_dialogue_locks)]
     with lock:
@@ -297,12 +356,15 @@ def process_chat_turn(message):
     triage = perform_triage(text=message, previous_level=previous_level)
     previous_state = context.get("dialogue_state", {})
     history = previous_state.get("history", [])
-    triage, dialogue_state = prepare_dialogue(message, triage, previous_state, history)
+    # DYN-04: the server's local hour (Taiwan deployment) lets late-night ambiguous messages get human review.
+    style = session.get("reply_style", "warm")
+    triage, dialogue_state = prepare_dialogue(message, triage, previous_state, history,
+                                              hour=datetime.now().hour, reply_style=style)
     context = stage_student_summary(session["student_context_id"], session["student_email_hash"], triage, {}, message)
     saved_triage = context["draft"]["triage"]
     if RISK_LEVEL_WEIGHTS[saved_triage["level"]] > RISK_LEVEL_WEIGHTS[triage["level"]]:
         triage = saved_triage
-        dialogue_state = build_state(message, triage, previous_state, history=history)
+        dialogue_state = build_state(message, triage, previous_state, history=history, reply_style=style)
     # v1.3-A: record evidence-bound wellbeing notes without affecting triage or the reply.
     dialogue_state["wellbeing_signals"] = update_wellbeing_signals(
         previous_state.get("wellbeing_signals"), message, dialogue_state)
@@ -321,7 +383,11 @@ def process_chat_turn(message):
     return jsonify({
         "reply": reply["reply"],
         "model_used": reply["model_used"],
+        # Why the local fallback answered (timeout, rate_limited, cooldown, rule_check…); no content.
+        "fallback_reason": reply.get("fallback_reason"),
         "companion_role": public_role(dialogue_state),
+        "reply_style": dialogue_state.get("reply_style", "warm"),
+        "style_overridden_by_safety": bool(dialogue_state.get("style_overridden_by_safety")),
         "support_offer": offer,
         "show_urgent_help": level == "red",
         "show_support_help": level in ("orange", "red"),
@@ -458,7 +524,11 @@ def api_get_cases():
 @staff_only
 def api_get_case(case_id):
     case = get_case_by_id(case_id)
-    return jsonify({"case": case}) if case else (jsonify({"error": "找不到個案"}), 404)
+    if not case:
+        return jsonify({"error": "找不到個案"}), 404
+    # Every staff read of a case is recorded in the hash-chained audit log.
+    log_audit("已登入工作臺人員", "view_case", case_id, "查閱個案摘要")
+    return jsonify({"case": case})
 
 
 @app.route("/api/cases/<case_id>/status", methods=["POST"])
@@ -519,6 +589,8 @@ def api_demo_evaluate(case_id):
         "expected_level": item.get("risk_level"),
         "actual_level": triage["level"],
         "explainability": triage["explainability"],
+        "theoretical_basis": triage.get("theoretical_basis", []),
+        "pending_disambiguation": triage.get("pending_disambiguation", False),
         "summary": generate_counselor_one_page_summary(item, triage),
     })
 

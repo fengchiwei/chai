@@ -4,17 +4,36 @@ SQLite 資料庫管理模組 (Database & Persistence Layer)
 遵循最小必要資料原則與去識別化規範
 """
 
+import hashlib
 import sqlite3
 import json
 from uuid import uuid4
 from datetime import datetime
 from config import Config
+from engine.crypto_store import decrypt_text, encrypt_text
 
 DB_PATH = Config.DATABASE_PATH
+# v2.3 Phase 2: columns holding student words or contact data are stored as ciphertext.
+# case_id / township / risk_level / status / timestamps stay plain for filtering and sorting.
+ENCRYPTED_CASE_FIELDS = ("student_alias", "student_email", "category", "duration", "life_impact",
+                         "support_system", "dialogue_snippet", "bsrs5_json", "triage_json", "summary_json",
+                         "counselor_notes", "decision_action")
+AUDIT_GENESIS = "GENESIS"
+
+
+def seal(value):
+    return encrypt_text(value, DB_PATH)
+
+
+def unseal(value):
+    return decrypt_text(value, DB_PATH)
+
 
 def get_connection():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
+    # Overwrite deleted rows so expired conversations do not linger in free pages.
+    conn.execute("PRAGMA secure_delete=ON")
     return conn
 
 def init_db():
@@ -61,6 +80,11 @@ def init_db():
             details TEXT
         )
     """)
+    for col in ("prev_hash", "entry_hash"):
+        try:
+            cursor.execute(f"ALTER TABLE audit_logs ADD COLUMN {col} TEXT")
+        except Exception:
+            pass
 
     # 對話暫存與工作臺案件分開；只有明確同意才建立 cases 紀錄。
     cursor.execute("""
@@ -77,15 +101,51 @@ def init_db():
 
     # 展示案例只從 data/mock_cases.json 讀取，不灌入真實個案資料表。
 
+def _audit_hash(prev_hash, timestamp, actor, action, case_id, details):
+    body = json.dumps([timestamp, actor, action, case_id, details], ensure_ascii=False)
+    return hashlib.sha256((prev_hash + body).encode("utf-8")).hexdigest()
+
+
+def append_audit(conn, actor: str, action: str, case_id: str = "", details: str = "", timestamp=None):
+    """Append to the SHA-256 hash chain; call inside the caller's write transaction."""
+    row = conn.execute("SELECT entry_hash FROM audit_logs WHERE entry_hash IS NOT NULL ORDER BY id DESC LIMIT 1").fetchone()
+    prev_hash = row[0] if row else AUDIT_GENESIS
+    timestamp = timestamp or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry_hash = _audit_hash(prev_hash, timestamp, actor, action, case_id, details)
+    conn.execute("""
+        INSERT INTO audit_logs (timestamp, actor, action, case_id, details, prev_hash, entry_hash)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (timestamp, actor, action, case_id, details, prev_hash, entry_hash))
+
+
 def log_audit(actor: str, action: str, case_id: str = "", details: str = ""):
     conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO audit_logs (timestamp, actor, action, case_id, details)
-        VALUES (?, ?, ?, ?, ?)
-    """, (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), actor, action, case_id, details))
-    conn.commit()
-    conn.close()
+    try:
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            append_audit(conn, actor, action, case_id, details)
+    finally:
+        conn.close()
+
+
+def verify_audit_chain():
+    """Return (ok, first_bad_id). Legacy rows written before the chain existed are skipped."""
+    conn = get_connection()
+    try:
+        prev_hash, started = AUDIT_GENESIS, False
+        for r in conn.execute("SELECT * FROM audit_logs ORDER BY id"):
+            if r["entry_hash"] is None:
+                if started:
+                    return False, r["id"]
+                continue
+            started = True
+            expected = _audit_hash(prev_hash, r["timestamp"], r["actor"], r["action"], r["case_id"], r["details"])
+            if r["prev_hash"] != prev_hash or r["entry_hash"] != expected:
+                return False, r["id"]
+            prev_hash = r["entry_hash"]
+        return True, None
+    finally:
+        conn.close()
 
 def save_case(case_data: dict, connection=None) -> str:
     conn = connection if connection is not None else get_connection()
@@ -102,21 +162,21 @@ def save_case(case_data: dict, connection=None) -> str:
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         case_id,
-        case_data.get("student_alias", case_data.get("persona", "匿名同學")),
-        case_data.get("student_email", ""),
+        seal(case_data.get("student_alias", case_data.get("persona", "匿名同學"))),
+        seal(case_data.get("student_email", "")),
         case_data.get("township", "南投市"),
         case_data.get("risk_level", "green"),
         case_data.get("status", "pending"),
-        case_data.get("category", "生活與學習調適"),
-        case_data.get("duration", "近期"),
-        case_data.get("life_impact", ""),
-        case_data.get("support_system", ""),
-        case_data.get("dialogue_snippet", ""),
-        json.dumps(case_data.get("bsrs5", {}), ensure_ascii=False),
-        json.dumps(case_data.get("triage", {}), ensure_ascii=False),
-        json.dumps(case_data.get("summary", {}), ensure_ascii=False),
-        case_data.get("counselor_notes", ""),
-        case_data.get("decision_action", ""),
+        seal(case_data.get("category", "生活與學習調適")),
+        seal(case_data.get("duration", "近期")),
+        seal(case_data.get("life_impact", "")),
+        seal(case_data.get("support_system", "")),
+        seal(case_data.get("dialogue_snippet", "")),
+        seal(json.dumps(case_data.get("bsrs5", {}), ensure_ascii=False)),
+        seal(json.dumps(case_data.get("triage", {}), ensure_ascii=False)),
+        seal(json.dumps(case_data.get("summary", {}), ensure_ascii=False)),
+        seal(case_data.get("counselor_notes", "")),
+        seal(case_data.get("decision_action", "")),
         case_data.get("created_at") or now_str,
         now_str
     ))
@@ -126,6 +186,33 @@ def save_case(case_data: dict, connection=None) -> str:
         conn.close()
         log_audit("system", "save_case", case_id, f"風險等級: {case_data.get('risk_level')}")
     return case_id
+
+
+def _row_to_case(r):
+    keys = r.keys()
+    value = lambda name: unseal(r[name]) if name in keys else ""
+    load = lambda name: json.loads(value(name)) if value(name) else {}
+    return {
+        "case_id": r["case_id"],
+        "student_alias": value("student_alias"),
+        "student_email": value("student_email") or "",
+        "township": r["township"],
+        "risk_level": r["risk_level"],
+        "status": r["status"],
+        "category": value("category"),
+        "duration": value("duration"),
+        "life_impact": value("life_impact"),
+        "support_system": value("support_system"),
+        "dialogue_snippet": value("dialogue_snippet"),
+        "bsrs5": load("bsrs5_json"),
+        "triage": load("triage_json"),
+        "summary": load("summary_json"),
+        "counselor_notes": value("counselor_notes"),
+        "decision_action": value("decision_action") or "",
+        "created_at": r["created_at"],
+        "updated_at": r["updated_at"]
+    }
+
 
 def get_all_cases(risk_filter=None, township_filter=None, status_filter=None):
     conn = get_connection()
@@ -147,43 +234,21 @@ def get_all_cases(risk_filter=None, township_filter=None, status_filter=None):
         params.append(status_filter)
 
     query += """
-        ORDER BY 
-            CASE risk_level 
-                WHEN 'red' THEN 1 
-                WHEN 'orange' THEN 2 
-                WHEN 'yellow' THEN 3 
-                ELSE 4 
+        ORDER BY
+            CASE risk_level
+                WHEN 'red' THEN 1
+                WHEN 'orange' THEN 2
+                WHEN 'yellow' THEN 3
+                ELSE 4
             END,
             updated_at DESC
     """
 
     cursor.execute(query, params)
-    rows = cursor.fetchall()
-    results = []
-    for r in rows:
-        results.append({
-            "case_id": r["case_id"],
-            "student_alias": r["student_alias"],
-            "student_email": r["student_email"] if "student_email" in r.keys() else "",
-            "township": r["township"],
-            "risk_level": r["risk_level"],
-            "status": r["status"],
-            "category": r["category"],
-            "duration": r["duration"],
-            "life_impact": r["life_impact"],
-            "support_system": r["support_system"],
-            "dialogue_snippet": r["dialogue_snippet"],
-            "bsrs5": json.loads(r["bsrs5_json"]) if r["bsrs5_json"] else {},
-            "triage": json.loads(r["triage_json"]) if r["triage_json"] else {},
-            "summary": json.loads(r["summary_json"]) if r["summary_json"] else {},
-            "counselor_notes": r["counselor_notes"],
-            "decision_action": r["decision_action"] if "decision_action" in r.keys() else "",
-            "created_at": r["created_at"],
-            "updated_at": r["updated_at"]
-        })
-
+    results = [_row_to_case(r) for r in cursor.fetchall()]
     conn.close()
     return results
+
 
 def get_case_by_id(case_id: str):
     conn = get_connection()
@@ -191,30 +256,8 @@ def get_case_by_id(case_id: str):
     cursor.execute("SELECT * FROM cases WHERE case_id = ?", (case_id,))
     r = cursor.fetchone()
     conn.close()
+    return _row_to_case(r) if r else None
 
-    if not r:
-        return None
-
-    return {
-        "case_id": r["case_id"],
-        "student_alias": r["student_alias"],
-        "student_email": r["student_email"] if "student_email" in r.keys() else "",
-        "township": r["township"],
-        "risk_level": r["risk_level"],
-        "status": r["status"],
-        "category": r["category"],
-        "duration": r["duration"],
-        "life_impact": r["life_impact"],
-        "support_system": r["support_system"],
-        "dialogue_snippet": r["dialogue_snippet"],
-        "bsrs5": json.loads(r["bsrs5_json"]) if r["bsrs5_json"] else {},
-        "triage": json.loads(r["triage_json"]) if r["triage_json"] else {},
-        "summary": json.loads(r["summary_json"]) if r["summary_json"] else {},
-        "counselor_notes": r["counselor_notes"],
-        "decision_action": r["decision_action"] if "decision_action" in r.keys() else "",
-        "created_at": r["created_at"],
-        "updated_at": r["updated_at"]
-    }
 
 def update_case_status(case_id: str, new_status: str, counselor_notes: str = "", decision_action: str = "", actor: str = "counselor"):
     if new_status not in {"pending", "reviewing", "contacted", "referred", "completed",
@@ -228,7 +271,7 @@ def update_case_status(case_id: str, new_status: str, counselor_notes: str = "",
         UPDATE cases
         SET status = ?, counselor_notes = ?, decision_action = ?, updated_at = ?
         WHERE case_id = ?
-    """, (new_status, counselor_notes, decision_action, now_str, case_id))
+    """, (new_status, seal(counselor_notes), seal(decision_action), now_str, case_id))
 
     changed = cursor.rowcount > 0
     conn.commit()

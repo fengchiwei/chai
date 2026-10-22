@@ -1,22 +1,32 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="warm">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FDFBF7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="安啦會客室">
   <title>少年仔、安啦會客室 - 南投青少年心聲傾訴與心理守護</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/css/style.css?v=satir-20261016">
+  <link rel="stylesheet" href="/static/css/themes.css?v=theme-20261022">
+  <script src="/static/js/theme.js?v=theme-20261022"></script>
 </head>
 <body class="student-page">
 
   <!-- 頂部導航列 -->
   <nav class="navbar student-navbar">
-    <a href="/" class="nav-brand">
-      <div class="nav-logo">🌱</div>
+    <div class="nav-brand" id="brandTitle">
+      <div class="nav-logo" aria-hidden="true">🌱</div>
       <div class="brand-text">
         <h1>少年仔、安啦會客室</h1>
         <span class="brand-tag">南投山城黑客松 ‧ AI 來尬聊</span>
       </div>
-    </a>
+    </div>
     <div class="student-header-tools">
       <div class="nav-links" aria-label="需要時再用的求助入口">
         <button type="button" class="nav-item header-tool" onclick="startConversationalCheckin()">聊聊近況</button>
@@ -29,9 +39,27 @@
           <span id="badgeAlias">先用暱稱聊聊</span> · <span id="badgeEmail">學校／信箱選填</span>
         </button>
         <button id="ttsToggleBtn" class="voice-toggle-btn" onclick="toggleAutoSpeech()" title="切換是否自動語音朗讀回覆">🔇 語音朗讀：已關閉</button>
+        <label class="theme-picker">
+          <span class="visually-hidden">畫面主題</span>
+          <select id="themeSelect" aria-label="切換畫面主題">
+            <option value="warm">🌸 溫馨暖陽</option>
+            <option value="forest">🌲 南投山林</option>
+            <option value="midnight">🌙 靜謐星空</option>
+            <option value="paper">📒 極簡手札</option>
+          </select>
+        </label>
+        <button type="button" id="installButton" class="header-chip" aria-haspopup="dialog" aria-controls="installDialog">📱 手機掃碼安裝</button>
+        <button type="button" id="bossKeyButton" class="header-chip boss-key-btn" aria-label="快速切換到英文單字卡畫面（也可以按 Esc）">📚 單字卡</button>
       </div>
     </div>
   </nav>
+
+  <!-- 離線提示：網路斷線時仍可使用離線安心逃生艙與撥號 -->
+  <div id="offlineBanner" class="offline-banner" role="status" hidden>
+    <span>📶 目前沒有網路，訊息暫時送不出去。</span>
+    <a href="/offline">打開離線安心逃生艙（呼吸練習＋求助電話）</a>
+    <span class="offline-banner-phones"><a href="tel:1925">1925</a>／<a href="tel:119">119</a></span>
+  </div>
 
   <!-- 主內容區 -->
   <div class="container">
@@ -42,15 +70,15 @@
       <div class="chat-card">
         <div class="chat-header">
           <div class="chat-status-indicator">
-            <span style="font-size: 1rem;">🌱</span>
-            <span id="statusText" style="font-weight: 600; color: #334155;">安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要</span>
+            <span style="font-size: 1rem;" aria-hidden="true">🌱</span>
+            <span id="statusText" class="chat-status-text">安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要</span>
           </div>
-          
+
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span id="modelIndicator" class="model-badge">
               🤖 AI 對話
             </span>
-            <span style="font-size: 0.8rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px;">
+            <span class="chat-region-badge">
               南投專屬
             </span>
           </div>
@@ -82,24 +110,36 @@
           <span class="quick-tag" onclick="quickSend('這陣子胸口常常覺得很緊繃，莫名其妙就很想發脾氣，好煩躁...')">🌪️ 聊聊最近緊繃煩躁的感覺</span>
           <span class="quick-tag" onclick="quickSend('最近心情好低落，做什麼事都提不起勁，覺得很空虛...')">🌧️ 聊聊心裡說不出的低落</span>
           <span class="quick-tag" onclick="quickSend('常常覺得自己很沒用、比不上身邊的同學，好迷惘好自卑...')">🫂 聊聊覺得比不上別人的自卑</span>
-          <span class="quick-tag" style="background: #ecfdf5; border-color: #6ee7b7; color: #047857; font-weight: 700;" onclick="startConversationalCheckin()">🔋 安啦，陪我聊聊身心電力</span>
+          <span class="quick-tag quick-tag-featured" onclick="startConversationalCheckin()">🔋 安啦，陪我聊聊身心電力</span>
         </div>
 
         <!-- 語音辨識錄音中提示條 -->
         <div id="recordingBanner" class="recording-banner" style="display: none;">
           <div class="recording-dot"></div>
           <span>正在傾聽您的聲音...（說完後再次點擊麥克風即可發送）</span>
-          <button onclick="stopVoiceRecognition()" style="background: none; border: none; color: #dc2626; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">取消</button>
+          <button onclick="stopVoiceRecognition()" style="background: none; border: none; color: #b91c1c; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">取消</button>
+        </div>
+
+        <!-- AI 回覆風格：選擇會記在這台裝置，並隨每則訊息送出；安全優先時伺服器會暫時改用穩定語氣。 -->
+        <div class="reply-style-area">
+          <div class="reply-style-bar" id="replyStyleBar" role="group" aria-labelledby="replyStyleLabel">
+            <span class="reply-style-label" id="replyStyleLabel">回覆風格</span>
+            <button type="button" class="style-capsule" data-style="warm" aria-pressed="true" title="溫暖、接納、不批判">🍵 溫馨陪伴</button>
+            <button type="button" class="style-capsule" data-style="lively" aria-pressed="false" title="輕快有朝氣，像朋友一起聊">⚡ 活潑元氣</button>
+            <button type="button" class="style-capsule" data-style="rational" aria-pressed="false" title="冷靜有條理，幫你整理重點與下一步">🧭 沉穩理性</button>
+            <button type="button" class="style-capsule" data-style="listen_only" aria-pressed="false" title="只安靜聽你說，不追問也不給建議">🤫 純粹樹洞</button>
+          </div>
+          <p id="styleSafetyNote" class="style-safety-note" role="status" aria-live="polite" hidden></p>
         </div>
 
         <!-- 輸入欄位 (含語音輸入麥克風) -->
         <div class="chat-input-bar">
           <!-- 語音輸入按鈕 -->
-          <button id="micBtn" class="btn-mic" onclick="toggleVoiceRecognition()" title="按一下用說的 (語音轉文字)">
+          <button id="micBtn" class="btn-mic" onclick="toggleVoiceRecognition()" title="按一下用說的 (語音轉文字)" aria-label="語音輸入（按一下開始或停止）">
             🎙️
           </button>
-          
-          <input type="text" id="userInput" placeholder="輸入文字或點擊左側 🎙️ 說說你的心情...（按 Enter 發送）" onkeypress="if(event.key === 'Enter') sendMessage()">
+
+          <input type="text" id="userInput" aria-label="想說的話" placeholder="輸入文字或點擊左側 🎙️ 說說你的心情...（按 Enter 發送）" onkeypress="if(event.key === 'Enter') sendMessage()">
           
           <button class="btn-send" onclick="sendMessage()">發送 ✈️</button>
         </div>
@@ -112,7 +152,7 @@
         <!-- 身心電力自然盤點卡 -->
         <div class="panel-card" style="border-top: 4px solid var(--primary);">
           <h3>🔋 身心電力自然檢核</h3>
-          <p style="font-size: 0.85rem; color: #475569; line-height: 1.6;">
+          <p class="panel-note">
             可以從最近的睡眠、壓力和心情聊起。自然對話不等於正式量表，後台會顯示「未施測」。
           </p>
           <button class="btn-primary-action" onclick="startConversationalCheckin()" style="margin-top: 0.5rem;">
@@ -126,7 +166,7 @@
           <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
             專為打字不便或疲憊無力的青少年設計：
           </p>
-          <ul style="font-size: 0.83rem; color: #475569; margin-left: 1.2rem; line-height: 1.6;">
+          <ul class="panel-list">
             <li><b>🎙️ 語音辨識</b>：點擊麥克風直接傾訴心事。</li>
             <li><b>🔊 溫柔朗讀</b>：陪伴語音溫和朗讀，閉上眼也能聽。</li>
             <li><b>⚡ 零門檻</b>：瀏覽器原生免安裝，手機電腦通用。</li>
@@ -136,7 +176,7 @@
         <!-- 隱私與安全承諾卡 -->
         <div class="panel-card">
           <h3>🛡️ 安全與隱私承諾</h3>
-          <ul style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 1.2rem; line-height: 1.7;">
+          <ul class="panel-list">
             <li><b>對話無燈號標籤</b>：學生端不呈現任何疾病評分與風險燈號。</li>
             <li><b>授權工作臺</b>：你明確同意後，授權人員才能在工作臺查看你分享的摘要；目前尚未接入正式學校值班機制。</li>
             <li><b>先用暱稱聊聊</b>：學校與信箱都可留白，需要分享摘要時再自行補充；填寫不會自動寄信或通報。</li>
@@ -146,7 +186,7 @@
         <!-- 在地求助專線 -->
         <div class="emergency-strip">
           <h4>🚨 需要幫忙時的聯絡方式</h4>
-          <p style="font-size: 0.8rem; color: #7f1d1d; margin-bottom: 0.5rem;">如果你現在處於極度痛苦或危急情況，請隨時直撥：</p>
+          <p class="emergency-note">如果你現在處於極度痛苦或危急情況，請隨時直撥：</p>
           <div class="hotline-buttons">
             <a href="tel:1925" class="btn-hotline">📞 1925 安心專線</a>
             <a href="tel:1995" class="btn-hotline">📞 1995 生命線</a>
@@ -154,6 +194,7 @@
             <a href="tel:119" class="btn-hotline">🚨 119 緊急救護</a>
             <a href="tel:110" class="btn-hotline">📞 110 報案</a>
           </div>
+          <a href="/offline" class="lifeline-link">🫧 4-7-8 呼吸練習與求助電話（離線也能開）</a>
         </div>
 
       </div>
@@ -193,11 +234,11 @@
         </p>
       </div>
 
-      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 0.9rem; margin-bottom: 1.25rem;">
-        <div style="font-size: 0.88rem; font-weight: 700; color: #166534; margin-bottom: 0.25rem;">
+      <div class="privacy-note-box">
+        <div class="privacy-note-title">
           🛡️ 資料使用說明
         </div>
-        <div style="font-size: 0.82rem; color: #14532d; line-height: 1.5;">
+        <div class="privacy-note-body">
           本原型會在伺服器暫存最近的對話片段、你說過的事件與感受等整理，以及你選填的資料，供你查看待分享摘要；暫存於最後使用後 24 小時失效，後續使用時清理。只有你明確同意分享後，摘要才會存入受密碼保護的真人工作臺。若使用雲端 AI，對話文字會傳給該模型服務，請避免在對話中寫出姓名、電話或地址。學校與信箱可以不填；填寫不代表身分已驗證，也不會自動通知學校。目前沒有正式值班服務，若有立即危險，請直接使用下方電話求助。
         </div>
       </div>
@@ -209,15 +250,15 @@
 
         <p style="font-size:.82rem;margin-bottom:1rem;">需要立即協助：<a href="tel:119">119 救護</a>／<a href="tel:110">110 報案</a>／<a href="tel:1925">1925 安心專線</a></p>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+        <div class="onboarding-grid">
           <div>
-            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">
+            <label for="onboardingAlias" class="form-label">
               如何稱呼您 (暱稱/代號)：
             </label>
             <input type="text" id="onboardingAlias" value="匿名同學" maxlength="30" placeholder="留白也可以，不用真實姓名" style="width: 100%; padding: 0.55rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
           </div>
           <div>
-            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">
+            <label for="onboardingTownship" class="form-label">
               所在南投鄉鎮市：
             </label>
             <select id="onboardingTownship" style="width: 100%; padding: 0.55rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
@@ -261,13 +302,51 @@
       <a href="/resources">南投心理地圖</a>
     </div>
     <p>南投縣 2026 年山城數位黑客松暨第四屆麥克松科技競賽 參賽作品 ‧ 團隊名稱：AI 來尬聊</p>
-    <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.3rem;">
+    <p class="footer-fine">
       指導老師：林家平 ‧ 隊長：蔡睿恩 ‧ 隊員：何小侓、洪聖傑、李欣亮 ‧ 同德高中 / 台中女中 / 台中一中 跨校聯隊
     </p>
   </footer>
 
+  <!-- 手機掃碼安裝：QR Code 由伺服器產生（/api/qr.svg），指向手機應開啟的網址。 -->
+  <dialog id="installDialog" class="install-dialog" aria-labelledby="installTitle">
+    <div class="install-dialog-body">
+      <div class="install-dialog-head">
+        <h2 id="installTitle">📱 用手機掃碼，加到主畫面</h2>
+        <button type="button" id="installClose" class="install-close" aria-label="關閉安裝說明">×</button>
+      </div>
+      <div class="install-qr-wrap">
+        <img id="installQr" alt="開啟安啦會客室的 QR Code" width="200" height="200">
+        <p id="installQrFallback" class="install-qr-fallback" hidden>QR Code 暫時無法顯示。請在手機瀏覽器輸入電腦畫面上的網址。</p>
+      </div>
+      <p class="install-url-note">這台電腦目前開啟的網址：<code id="installUrl"></code><br>（若顯示 127.0.0.1 或 localhost，手機無法直接開啟，請以 QR Code 為準）</p>
+      <div class="install-steps">
+        <section>
+          <h3>iPhone／iPad（Safari）</h3>
+          <ol>
+            <li>用相機掃描 QR Code，以 Safari 開啟。</li>
+            <li>點下方的「分享」按鈕（方框加向上箭頭）。</li>
+            <li>選「加入主畫面」，再按「新增」。</li>
+          </ol>
+        </section>
+        <section>
+          <h3>Android（Chrome）</h3>
+          <ol>
+            <li>掃描 QR Code，以 Chrome 開啟。</li>
+            <li>點右上角「⋮」選單。</li>
+            <li>選「安裝應用程式」或「加到主畫面」。</li>
+          </ol>
+        </section>
+      </div>
+      <button type="button" id="installNowButton" class="btn-primary-action" hidden>直接安裝到這台裝置</button>
+      <p class="install-privacy">加到主畫面後，畫面上只會顯示「安啦會客室」圖示；對話內容不會存在手機的離線快取裡。</p>
+    </div>
+  </dialog>
+
   <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
-  <script src="/static/js/app.js?v=satir-20261016"></script>
+  <script src="/static/js/app.js?v=theme-20261022"></script>
   <script src="/static/js/referral.js?v=satir-20261016"></script>
+  <script src="/static/js/vocab_data.js?v=theme-20261022"></script>
+  <script src="/static/js/boss_key.js?v=theme-20261022"></script>
+  <script src="/static/js/pwa.js?v=theme-20261022"></script>
 </body>
 </html>

@@ -7,4 +7,6 @@ $python = ".\.venv\Scripts\python.exe"
 if (-not (Test-Path $python)) { $python = "python" }
 if (-not $env:WORKBENCH_PASSWORD) { Write-Host "提醒：未設定 WORKBENCH_PASSWORD，後台與 /explain 會停用。" }
 if (-not $env:GEMINI_API_KEY -and -not $env:OPENAI_API_KEY) { Write-Host "提醒：未設定模型金鑰，將使用本機備援回覆。" }
-& $python -c "from app import app; app.run(host='127.0.0.1', port=$Port, debug=False, use_reloader=False)"
+# 預設只給本機；要讓同一網路的手機連入，先設定 $env:HOST = "0.0.0.0"（正式使用請改 HTTPS）。
+$listen = if ($env:HOST) { $env:HOST } else { "127.0.0.1" }
+& $python -c "from app import app; app.run(host='$listen', port=$Port, debug=False, use_reloader=False)"

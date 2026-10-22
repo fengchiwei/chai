@@ -832,3 +832,12 @@ body.has-urgent-help { padding-top: var(--urgent-help-height, 125px); }
   .navbar:not(.student-navbar) .nav-links { flex-wrap: wrap; gap: .35rem; }
   .navbar:not(.student-navbar) .nav-item { padding: .3rem .55rem; font-size: .82rem; }
 }
+
+/* v2.3 HFE-06：確認危機（實線）與待消歧（虛線）分開呈現，原話以螢光筆標示 */
+.explain-turn.confirmed { border: 2px solid var(--risk-red); }
+.explain-turn.pending { border: 2px dashed var(--risk-yellow); }
+.explain-tag { display: inline-block; padding: .05rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 600; background: #f1f5f9; color: #334155; }
+.explain-tag.confirmed { background: var(--risk-red-bg); color: #b91c1c; }
+.explain-tag.pending { background: var(--risk-yellow-bg); color: #b45309; border: 1px dashed #f59e0b; }
+.explain-user mark { background: #fde68a; color: inherit; padding: 0 .1em; border-radius: 3px; }
+.explain-chip.theory { background: #eef2ff; border-color: #c7d2fe; color: #3730a3; font-family: ui-monospace, monospace; }

@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from engine.ai_agent import generate_counselor_one_page_summary
 from engine.triage import RISK_LEVEL_WEIGHTS
-from models.database import get_connection, get_case_by_id, save_case
+from models.database import append_audit, get_connection, get_case_by_id, save_case, seal, unseal
 
 CONTEXT_TTL = 24 * 60 * 60
 
@@ -16,7 +16,7 @@ def _read(conn, context_id, email_hash):
         "SELECT data_json FROM student_contexts WHERE context_id=? AND email_hash=? AND updated_at>=?",
         (context_id, email_hash, int(time.time()) - CONTEXT_TTL),
     ).fetchone()
-    return json.loads(row["data_json"]) if row else None
+    return json.loads(unseal(row["data_json"])) if row else None
 
 
 def _write(conn, context_id, email_hash, context):
@@ -24,7 +24,7 @@ def _write(conn, context_id, email_hash, context):
     conn.execute("DELETE FROM student_contexts WHERE updated_at<?", (now - CONTEXT_TTL,))
     conn.execute(
         "INSERT OR REPLACE INTO student_contexts VALUES (?, ?, ?, ?)",
-        (context_id, email_hash, json.dumps(context, ensure_ascii=False), now),
+        (context_id, email_hash, seal(json.dumps(context, ensure_ascii=False)), now),
     )
 
 
@@ -142,6 +142,9 @@ def record_student_consent(context_id, email_hash, revision, kind, preferred_nam
             }
             payload["summary"] = generate_counselor_one_page_summary(payload, draft["triage"])
             payload["summary"]["student_profile"] = profile
+            # Evidence-bound wellbeing notes travel only inside the snapshot the student agreed to share.
+            payload["summary"]["wellbeing_signals"] = (
+                (context.get("dialogue_state") or {}).get("wellbeing_signals") or {}).get("domains", {})
             payload["summary"]["student_consent"] = {
                 "kind": kind, "consented_at": now, "revision": revision,
                 "preferred_name": payload["student_alias"], "external_referral_sent": False,
@@ -149,11 +152,8 @@ def record_student_consent(context_id, email_hash, revision, kind, preferred_nam
             save_case(payload, connection=conn)
             context["consented_revision"] = revision
             _write(conn, context_id, email_hash, context)
-            conn.execute(
-                "INSERT INTO audit_logs (timestamp, actor, action, case_id, details) VALUES (?, ?, ?, ?, ?)",
-                (now, "student", "student_requested_referral" if kind == "referral" else "student_shared_summary",
-                 payload["case_id"], "學生明確同意分享當前摘要；尚未對外轉介"),
-            )
+            append_audit(conn, "student", "student_requested_referral" if kind == "referral" else "student_shared_summary",
+                         payload["case_id"], "學生明確同意分享當前摘要；尚未對外轉介", timestamp=now)
         return payload
     finally:
         conn.close()

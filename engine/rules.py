@@ -23,7 +23,7 @@ RED_PATTERNS = [
     # 高處/跳樓/跳橋 (現場正在危險邊緣)
     r"(頂樓|女兒牆|大橋|欄杆|陽台外).*?(坐在|站在|跨過|跳下去|風好大)",
     # 藥物過量 (正在吞服大量藥物)
-    r"(吞|吃|喝).*?(\d+|幾十|整包|大量|全部).*?(顆|瓶|包|丸)?.*?(安眠藥|藥|百憂解|可樂配)",
+    r"(吞|吃|喝).*?(\d+|幾十|整包|整瓶|大量|全部|很多|好多|一堆).*?(顆|瓶|包|丸)?.*?(安眠藥|藥|百憂解|可樂配)",
     r"安眠藥.*?全部.*?吞",
     # 嚴重銳器大出血
     r"(割腕|劃深|噴血|流好多血|血一直|地毯都是血|發冷發麻)",
@@ -45,6 +45,7 @@ ORANGE_PATTERNS = [
     r"(?:拿|用)(?:著)?(?:美工刀|刀).{0,12}(?:自己|手腕|手臂|皮膚|割|劃|划|傷害)|圓規戳|流血才能|感覺自己活著",
     r"(?:不想|不願|不想要)(?:再|繼續)?活(?:了|著|下去)|(?:不想|不願).{0,4}繼續活",
     r"(想死|好想消失|一睡不醒|結束一切|直接死掉)",
+    r"(?:想|要|打算|計畫)(?:去)?自殺|(?:有|出現)(?:了)?自殺(?:的)?(?:念頭|想法)|想結束(?:自己的)?生命",
     r"(活著好累|為什麼要生我|叫我去死|恨自己|為什麼不能一睡不醒)",
     r"(跳河|陽台跳|如果我死了)",
     r"(自殘|自傷|虐待自己)",
@@ -63,6 +64,20 @@ YELLOW_PATTERNS = [
     r"(胃痛|胸悶|心悸|發抖|頭痛)"
 ]
 
+# LIN-01 言語行為理論：「熱到想死」「累到快往生」是表達性（expressive）誇飾，不是行動宣告（commissive）。
+# 只遮蔽誇飾片語本身；同句其他警訊照常比對，誇飾另行回報為待消歧（黃色＋軟性確認），不會被直接忽略。
+# 「難過到想死」等情緒字不在清單內，仍照原規則處理。此調整仍需輔導／心理專業覆核。
+HYPERBOLE_PATTERN = re.compile(
+    r"(?:熱|冷|餓|累|睏|忙|吵|笑|無聊|煩|難|曬|悶|痛|撐|飽|臭|擠)(?:到|得)(?:快|要|都)?"
+    r"(?:想死|死掉|要死|死了|往生|升天|昇天|想撞牆|撞牆|去世|想去世)")
+
+
+def mask_hyperbole(text: str):
+    """Return (text with hyperbole spans blanked at the same positions, list of spans)."""
+    spans = [m.group(0) for m in HYPERBOLE_PATTERN.finditer(text or "")]
+    return HYPERBOLE_PATTERN.sub(lambda m: "　" * len(m.group(0)), text or ""), spans
+
+
 def analyze_crisis_rules(text: str) -> dict:
     if not text:
         return {
@@ -70,9 +85,11 @@ def analyze_crisis_rules(text: str) -> dict:
             "red_flags": [],
             "orange_flags": [],
             "yellow_flags": [],
+            "hyperbole_flags": [],
             "has_immediate_danger": False,
             "has_self_harm_signal": False
         }
+    text, hyperbole = mask_hyperbole(text)
 
     def current_clause(start: int, end: int) -> str:
         left = max((text.rfind(mark, 0, start) for mark in "。！？；，\n"), default=-1)
@@ -86,7 +103,9 @@ def analyze_crisis_rules(text: str) -> dict:
         if re.search(r"(?:沒有|不會|不打算|並未|從未).{0,4}(?:準備|備妥|拿|做|行動)", match.group(0)):
             return True
         # 第三人稱敘述先視為對他人的關心；當事人若也說明自己的行動，另行匹配。
-        if re.search(r"(朋友|同學|他|她|家人|老師).{0,5}(說|表示|提到|想|要|會)", clause) and not re.search(r"我(也|自己|現在|已經|準備)", clause):
+        if (re.search(r"(朋友|同學|他|她|家人|老師).{0,5}(說|表示|提到|想|要|會)", clause)
+                or re.search(r"(閨蜜|好友|朋友|同學|室友|網友|學長|學姊|學姐).{0,12}(傳|跟我說|告訴我)", clause)) \
+                and not re.search(r"我(也|自己|現在|已經|準備)", clause):
             return True
         if re.search(r"(沒有|並未|從未|不會|不打算|不是|不想|別|不要).{0,3}$", before):
             return True
@@ -126,6 +145,7 @@ def analyze_crisis_rules(text: str) -> dict:
         "red_flags": red_matches,
         "orange_flags": orange_matches,
         "yellow_flags": yellow_matches,
+        "hyperbole_flags": hyperbole,
         "has_immediate_danger": has_immediate_danger,
         "has_self_harm_signal": has_self_harm_signal
     }

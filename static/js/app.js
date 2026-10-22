@@ -10,6 +10,68 @@ let studentSchool = sessionStorage.getItem("anla_student_school") || "";
 let isSending = false;
 let studentOnboarded = false;
 
+// ==================== AI 回覆風格（記在這台裝置，隨每則訊息送出） ====================
+const REPLY_STYLES = ["warm", "lively", "rational", "listen_only"];
+const REPLY_STYLE_KEY = "anla_reply_style";
+const SAFETY_STYLE_NOTE = "🛟 目前先以安全為優先，暫時用穩定的語氣陪你。你選的風格會先幫你保留著。";
+let replyStyleChosen = false;
+let currentReplyStyle = (() => {
+  try {
+    const saved = localStorage.getItem(REPLY_STYLE_KEY);
+    if (REPLY_STYLES.includes(saved)) {
+      replyStyleChosen = true;
+      return saved;
+    }
+  } catch (e) { /* 無法讀取本機儲存時使用預設 */ }
+  return "warm";
+})();
+
+function renderReplyStyle() {
+  document.querySelectorAll("#replyStyleBar .style-capsule").forEach(button => {
+    button.setAttribute("aria-pressed", String(button.dataset.style === currentReplyStyle));
+  });
+}
+
+function setReplyStyle(style, remember = true) {
+  if (!REPLY_STYLES.includes(style)) return;
+  currentReplyStyle = style;
+  if (remember) {
+    replyStyleChosen = true;
+    try { localStorage.setItem(REPLY_STYLE_KEY, style); } catch (e) { /* 不記憶也能使用 */ }
+  }
+  renderReplyStyle();
+}
+
+function applySafetyStyleOverride(overridden) {
+  const bar = document.getElementById("replyStyleBar");
+  const note = document.getElementById("styleSafetyNote");
+  if (bar) {
+    bar.classList.toggle("is-overridden", overridden);
+    bar.querySelectorAll(".style-capsule").forEach(button => {
+      if (overridden) button.setAttribute("aria-describedby", "styleSafetyNote");
+      else button.removeAttribute("aria-describedby");
+    });
+  }
+  if (note) {
+    note.textContent = overridden ? SAFETY_STYLE_NOTE : "";
+    note.hidden = !overridden;
+  }
+}
+
+function applyReplyStyleResponse(data) {
+  if (!data) return;
+  // 伺服器回傳的是學生所選風格；只有在本機尚未記憶選擇時才採用，避免覆蓋學生的偏好。
+  if (REPLY_STYLES.includes(data.reply_style) && !replyStyleChosen) setReplyStyle(data.reply_style, false);
+  if (typeof data.style_overridden_by_safety === "boolean") applySafetyStyleOverride(data.style_overridden_by_safety);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderReplyStyle();
+  document.querySelectorAll("#replyStyleBar .style-capsule").forEach(button => {
+    button.addEventListener("click", () => setReplyStyle(button.dataset.style));
+  });
+});
+
 function applyCompanionRole(role) {
   const status = document.getElementById("companionRoleStatus");
   if (!status) return;
@@ -42,6 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (data.student_profile) applyStudentProfile(data.student_profile);
     else studentOnboarded = false;
     applyCompanionRole(data.companion_role);
+    applyReplyStyleResponse(data);
     window.AnlaNextSteps.update(data);
   }).catch(() => {}).finally(checkOnboardingStatus);
 });
@@ -160,6 +223,7 @@ async function sendMessage() {
       headers: { "Content-Type": "application/json", "X-CSRF-Token": window.ANLA_CSRF_TOKEN },
       body: JSON.stringify({
         message: text,
+        reply_style: currentReplyStyle,
         // The server retains bounded dialogue history; do not resend the entire conversation.
       })
     });
@@ -173,6 +237,7 @@ async function sendMessage() {
 
     let replyBubble = null;
     applyCompanionRole(data.companion_role);
+    applyReplyStyleResponse(data);
     if (data.reply) {
       // 純溫暖回覆，學生端不顯示任何燈號或評判結果 (燈號全數保留至後台由真人覆核)
       replyBubble = appendMessage("ai", data.reply);
@@ -188,7 +253,8 @@ async function sendMessage() {
     if (replyBubble) window.AnlaNextSteps.suggestInReply(replyBubble, data.support_offer);
   } catch (err) {
     removeTypingIndicator(typingId);
-    appendMessage("ai", `訊息送出時發生問題：${err.message || "連線中斷"}。請稍後再試；若現在有立即危險，請直接撥打 119 或找身邊的大人。`);
+    const offlineHint = navigator.onLine === false ? "目前沒有網路，可以先點上方提示打開離線呼吸練習與求助電話。" : "";
+    appendMessage("ai", `訊息送出時發生問題：${err.message || "連線中斷"}。請稍後再試；若現在有立即危險，請直接撥打 119 或找身邊的大人。${offlineHint}`);
   } finally {
     isSending = false;
   }
@@ -251,7 +317,7 @@ function showTypingIndicator() {
   typingDiv.className = "message ai";
   typingDiv.innerHTML = `
     <div class="avatar">☀️</div>
-    <div class="bubble" style="color: #64748b; font-style: italic;">
+    <div class="bubble typing-bubble">
       安啦正在認真傾聽中...💭
     </div>
   `;

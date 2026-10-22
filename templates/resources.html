@@ -1,12 +1,21 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" data-theme="warm">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FDFBF7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="安啦會客室">
   <title>南投在地心理健康資源地圖 - 少年仔、安啦會客室</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
   <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/themes.css?v=theme-20261022">
+  <script src="/static/js/theme.js?v=theme-20261022"></script>
 </head>
-<body>
+<body class="resources-page">
 
   <!-- 頂部導航 -->
   <nav class="navbar">
@@ -20,6 +29,16 @@
     <div class="nav-links">
       <a href="/" class="nav-item">💬 心情尬聊</a>
       <a href="/resources" class="nav-item active">📍 南投資源地圖</a>
+      <a href="/offline" class="nav-item">🫧 離線呼吸練習</a>
+      <label class="theme-picker">
+        <span class="visually-hidden">畫面主題</span>
+        <select id="themeSelect" aria-label="切換畫面主題">
+          <option value="warm">🌸 溫馨暖陽</option>
+          <option value="forest">🌲 南投山林</option>
+          <option value="midnight">🌙 靜謐星空</option>
+          <option value="paper">📒 極簡手札</option>
+        </select>
+      </label>
     </div>
   </nav>
 
@@ -36,7 +55,7 @@
     <!-- 篩選列 -->
     <div class="panel-card" style="margin-bottom: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
       <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; flex: 1;">
-        <select id="resTownship" onchange="filterResources()" style="padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <select id="resTownship" aria-label="篩選鄉鎮市" onchange="filterResources()" style="padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-color);">
           <option value="all">📍 全部南投鄉鎮市</option>
           <option value="南投市">南投市 (縣治/中區心衛)</option>
           <option value="草屯鎮">草屯鎮 (草屯療養院)</option>
@@ -54,7 +73,7 @@
           <option value="全國通用">📞 全國求助專線</option>
         </select>
 
-        <select id="resCategory" onchange="filterResources()" style="padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-color);">
+        <select id="resCategory" aria-label="篩選機構類別" onchange="filterResources()" style="padding: 0.5rem 0.8rem; border-radius: 8px; border: 1px solid var(--border-color);">
           <option value="all">🏢 所有機構類別</option>
           <option value="社區心衛中心">社區心理衛生中心 (三大區)</option>
           <option value="衛生所">鄉鎮市衛生所</option>
@@ -65,7 +84,7 @@
           <option value="校園輔導">校園輔導與學生輔諮中心</option>
         </select>
 
-        <input type="text" id="resKeyword" oninput="filterResources()" placeholder="搜尋機構名稱、服務關鍵字..." style="flex: 1; min-width: 180px; padding: 0.5rem 0.8rem; border: 1px solid var(--border-color); border-radius: 8px;">
+        <input type="text" id="resKeyword" aria-label="搜尋機構名稱或服務關鍵字" oninput="filterResources()" placeholder="搜尋機構名稱、服務關鍵字..." style="flex: 1; min-width: 180px; padding: 0.5rem 0.8rem; border: 1px solid var(--border-color); border-radius: 8px;">
       </div>
 
       <div style="font-size: 0.88rem; color: var(--text-secondary);" id="resourceCount">
@@ -80,7 +99,7 @@
 
   <footer class="footer">
     <p>南投縣 2026 年山城數位黑客松 ‧ 少年仔、安啦會客室在地資源庫</p>
-    <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.3rem;">
+    <p class="footer-fine">
       資料來源：南投縣政府「<a href="https://data.gov.tw/dataset/168126" target="_blank" rel="noopener noreferrer">南投縣心理諮商機構一覽表</a>」，
       依政府資料開放授權條款第 1 版使用；另保留原專案求助資源。部分電話另依機構官網核對，各筆附有來源。緊急求助請優先使用 119／1925。
     </p>
@@ -105,7 +124,7 @@
       const checkedUrl = String(item.phone_source_url || '');
       const checked = item.phone_checked_at && /^https:\/\//.test(checkedUrl)
         ? `<br><a href="${E(checkedUrl)}" target="_blank" rel="noopener noreferrer">電話核對來源</a>（${E(item.phone_checked_at)}）` : '';
-      return `<div style="font-size: 0.75rem; color: #64748b; margin-top: 0.75rem;">來源：${source}${checked}</div>`;
+      return `<div class="res-source">來源：${source}${checked}</div>`;
     }
 
     function resourcePhones(item) {
@@ -143,7 +162,7 @@
 
       if (items.length === 0) {
         container.innerHTML = `
-          <div style="grid-column: 1/-1; text-align: center; padding: 3rem; background: white; border-radius: 12px; color: var(--text-secondary);">
+          <div class="res-empty">
             查無符合條件的資源，請調整鄉鎮或關鍵字搜尋條件。
           </div>
         `;
@@ -156,12 +175,12 @@
         <div class="panel-card" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-              <span style="font-size: 0.75rem; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-weight: 600;">
+              <span class="res-township">
                 📍 ${E(item.township)}
               </span>
               <div style="display: flex; gap: 0.3rem;">
-                ${item.is_free ? '<span style="font-size: 0.72rem; background: #d1fae5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-weight: 600;">免費服務</span>' : ''}
-                ${item.has_online_counseling ? '<span style="font-size: 0.72rem; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">遠距視訊</span>' : ''}
+                ${item.is_free ? '<span class="res-flag res-flag-free">免費服務</span>' : ''}
+                ${item.has_online_counseling ? '<span class="res-flag res-flag-online">遠距視訊</span>' : ''}
               </div>
             </div>
 
@@ -169,7 +188,7 @@
               ${E(item.name)}
             </h3>
             
-            <div style="font-size: 0.82rem; color: #64748b; margin-bottom: 0.75rem;">
+            <div class="res-meta">
               <div>🏢 類別：${E(item.category)}</div>
               <div>🕒 時間：${E(item.service_hours || '請電話確認')}</div>
               <div>📌 地址：${E(item.address)}</div>
@@ -177,15 +196,15 @@
             </div>
 
             <div style="margin-bottom: 1rem;">
-              <div style="font-size: 0.78rem; font-weight: 600; color: #475569; margin-bottom: 0.3rem;">提供服務：</div>
+              <div class="res-services-title">提供服務：</div>
               <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
-                ${(Array.isArray(item.services) && item.services.length ? item.services : ['服務內容與費用請電話確認']).map(s => `<span style="font-size: 0.72rem; background: #f1f5f9; color: #475569; padding: 1px 6px; border-radius: 4px;">${E(s)}</span>`).join('')}
+                ${(Array.isArray(item.services) && item.services.length ? item.services : ['服務內容與費用請電話確認']).map(s => `<span class="res-service">${E(s)}</span>`).join('')}
               </div>
               ${resourceSource(item)}
             </div>
           </div>
 
-          <div style="margin-top: 1rem; border-top: 1px solid #f1f5f9; padding-top: 0.75rem;">
+          <div class="res-phones">
             ${resourcePhones(item)}
           </div>
         </div>
@@ -221,5 +240,6 @@
 
     document.addEventListener("DOMContentLoaded", loadResources);
   </script>
+  <script src="/static/js/pwa.js?v=theme-20261022"></script>
 </body>
 </html>

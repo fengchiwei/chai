@@ -1,0 +1,13 @@
+{
+  "appId": "tw.nantou.anlayouth",
+  "appName": "安啦會客室",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false,
+    "errorPath": "index.html"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FDFBF7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>離線安心逃生艙 - 少年仔、安啦會客室</title>
+  <style>
+    :root {
+      --bg: #FDFBF7; --surface: #FFFFFF; --text: #3A2E2A; --muted: #6B5A50; --border: #E8DCCF;
+      --accent: #E07A5F; --accent-strong: #A94A2A; --on-accent: #FFFFFF; --soft: #FBE6DE;
+      --danger: #991B1B; --danger-bg: #FEF2F2; --danger-border: #FCA5A5;
+      --ball-a: #EE9A7E; --ball-b: #C9603F; --focus: #A94A2A;
+      color-scheme: light;
+    }
+    html.dark {
+      --bg: #181C24; --surface: #212734; --text: #E6EAF2; --muted: #AAB4C5; --border: #3A4357;
+      --accent: #8AB4F8; --accent-strong: #8AB4F8; --on-accent: #0F1726; --soft: #26324A;
+      --danger: #FECACA; --danger-bg: #3B1A1F; --danger-border: #7F2D35;
+      --ball-a: #A8C7FA; --ball-b: #5E8EDB; --focus: #A8C7FA;
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", Arial, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.65;
+      padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1.5rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    }
+    a { color: inherit; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+    main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.25rem; }
+    header h1 { font-size: 1.35rem; }
+    header p { color: var(--muted); font-size: .92rem; }
+    .net { display: inline-block; margin-top: .4rem; padding: .15rem .6rem; border-radius: 999px; font-size: .8rem; font-weight: 700; border: 1px solid var(--border); background: var(--surface); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.1rem; }
+    h2 { font-size: 1.05rem; margin-bottom: .5rem; }
+    .breath { display: flex; flex-direction: column; align-items: center; gap: .8rem; text-align: center; }
+    .stage { width: 240px; height: 240px; display: flex; align-items: center; justify-content: center; }
+    .ball {
+      width: 220px; height: 220px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, var(--ball-a), var(--ball-b));
+      box-shadow: 0 10px 40px rgba(0,0,0,.12);
+      transform: scale(.45); transition-property: transform; transition-timing-function: ease-in-out;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ball-count { font-size: 2.4rem; font-weight: 800; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.35); }
+    .phase { font-size: 1.3rem; font-weight: 800; min-height: 2rem; }
+    .phase-hint { color: var(--muted); font-size: .9rem; min-height: 1.5rem; }
+    .btn { border: 0; border-radius: 12px; padding: .75rem 1.4rem; min-height: 48px; font: inherit; font-weight: 700; cursor: pointer; background: var(--accent-strong); color: var(--on-accent); }
+    .btn.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .rounds { font-size: .85rem; color: var(--muted); }
+    .phones { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: .6rem; }
+    .tel {
+      display: flex; flex-direction: column; gap: .1rem; text-decoration: none;
+      padding: .8rem .9rem; border-radius: 14px; min-height: 64px;
+      border: 1px solid var(--border); background: var(--surface);
+    }
+    .tel strong { font-size: 1.05rem; }
+    .tel span { font-size: .82rem; color: var(--muted); }
+    .tel.urgent { background: var(--danger-bg); border-color: var(--danger-border); }
+    .tel.urgent strong { color: var(--danger); }
+    .note { font-size: .85rem; color: var(--muted); }
+    details summary { cursor: pointer; font-weight: 700; padding: .3rem 0; }
+    details .phones { margin-top: .6rem; }
+    .back { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+    .back a.btn { text-decoration: none; display: inline-flex; align-items: center; }
+    .back a.btn[hidden] { display: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .ball { transition: none !important; }
+    }
+  </style>
+  <script>
+    // 與主頁相同的主題記憶：若選了「靜謐星空」就用深色，避免半夜突然亮起來。
+    (function () {
+      try {
+        if (localStorage.getItem("anla_theme") === "midnight") {
+          document.documentElement.classList.add("dark");
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#181C24");
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>🫧 離線安心逃生艙</h1>
+      <p>網路不通也沒關係，先跟著圓球慢慢呼吸；需要找人時，點下方電話就能直接撥號。</p>
+      <span class="net" id="netStatus" role="status">檢查網路中…</span>
+    </header>
+
+    <section class="card breath" aria-labelledby="breathTitle">
+      <h2 id="breathTitle">4-7-8 呼吸練習</h2>
+      <div class="stage" aria-hidden="true">
+        <div class="ball" id="ball"><span class="ball-count" id="ballCount"></span></div>
+      </div>
+      <div class="phase" id="phase" aria-live="polite">準備好就按「開始」</div>
+      <div class="phase-hint" id="phaseHint">用鼻子吸氣 4 秒、停住 7 秒、用嘴巴慢慢吐氣 8 秒。</div>
+      <div class="back">
+        <button type="button" class="btn" id="breathToggle">開始</button>
+      </div>
+      <div class="rounds" id="rounds">建議先做 4 輪；如果覺得頭暈，就回到平常的呼吸。</div>
+    </section>
+
+    <section class="card" aria-labelledby="urgentTitle">
+      <h2 id="urgentTitle">📞 需要人陪的時候</h2>
+      <p class="note" style="margin-bottom:.7rem;">如果已經受傷或正在發生危險，請立刻撥 119；有人威脅安全請撥 110。手機點一下就會開啟撥號畫面，由你自己決定是否撥出。</p>
+      <div class="phones">
+        <a class="tel urgent" href="tel:119"><strong>119 緊急救護</strong><span>受傷、身體危急，24 小時</span></a>
+        <a class="tel urgent" href="tel:110"><strong>110 報案</strong><span>有人威脅安全，24 小時</span></a>
+        <a class="tel" href="tel:1925"><strong>1925 安心專線</strong><span>衛福部，全年無休 24 小時</span></a>
+        <a class="tel" href="tel:1995"><strong>1995 生命線</strong><span>生命線協談專線，全年無休 24 小時</span></a>
+        <a class="tel" href="tel:1980"><strong>1980 張老師</strong><span>週一至週六 09:00–21:00，週日 09:00–17:00</span></a>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="nantouTitle">
+      <h2 id="nantouTitle">🏔️ 南投在地心理支持</h2>
+      <div class="phones">
+        <a class="tel" href="tel:0492202662"><strong>南投區社區心理衛生中心</strong><span>049-2202662</span></a>
+        <a class="tel" href="tel:0492911925"><strong>埔里區社區心理衛生中心</strong><span>049-2911925</span></a>
+        <a class="tel" href="tel:0492631925"><strong>竹山區社區心理衛生中心</strong><span>049-2631925</span></a>
+        <a class="tel" href="tel:0492222549"><strong>南投縣學生輔導諮商中心</strong><span>049-2222549 轉分機 317（週一至週五 08:00–17:00）</span></a>
+        <a class="tel" href="tel:0492222473"><strong>南投縣政府衛生局 心理健康科</strong><span>049-2222473（週一至週五 08:00–17:30）</span></a>
+        <a class="tel" href="tel:0492550800"><strong>衛生福利部草屯療養院</strong><span>049-2550800</span></a>
+      </div>
+      <details style="margin-top:.8rem;">
+        <summary>各鄉鎮市衛生所電話</summary>
+        <div class="phones">
+          <a class="tel" href="tel:0492223264"><strong>南投市衛生所</strong><span>049-2223264</span></a>
+          <a class="tel" href="tel:0492362023"><strong>草屯鎮衛生所</strong><span>049-2362023</span></a>
+          <a class="tel" href="tel:0492982157"><strong>埔里鎮衛生所</strong><span>049-2982157</span></a>
+          <a class="tel" href="tel:0492642026"><strong>竹山鎮衛生所</strong><span>049-2642026</span></a>
+          <a class="tel" href="tel:0492762015"><strong>集集鎮衛生所</strong><span>049-2762015</span></a>
+          <a class="tel" href="tel:0492732135"><strong>名間鄉衛生所</strong><span>049-2732135</span></a>
+          <a class="tel" href="tel:0492752002"><strong>鹿谷鄉衛生所</strong><span>049-2752002</span></a>
+          <a class="tel" href="tel:0492691404"><strong>中寮鄉衛生所</strong><span>049-2691404</span></a>
+          <a class="tel" href="tel:0492895513"><strong>魚池鄉衛生所</strong><span>049-2895513</span></a>
+          <a class="tel" href="tel:0492721009"><strong>國姓鄉衛生所</strong><span>049-2721009</span></a>
+          <a class="tel" href="tel:0492770079"><strong>水里鄉衛生所</strong><span>049-2770079</span></a>
+          <a class="tel" href="tel:0492791148"><strong>信義鄉衛生所</strong><span>049-2791148</span></a>
+          <a class="tel" href="tel:0492802341"><strong>仁愛鄉衛生所</strong><span>049-2802341</span></a>
+        </div>
+      </details>
+      <p class="note" style="margin-top:.7rem;">電話取自本系統整理的南投縣公開資源；服務時間與受理方式請以機構說明為準。本頁不會替你撥號或通知任何人。</p>
+    </section>
+
+    <section class="back">
+      <a class="btn" href="/" id="backOnline" hidden>網路恢復了，回到會客室</a>
+      <a class="btn secondary" href="/">重新連線試試</a>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+      var net = document.getElementById("netStatus");
+      var back = document.getElementById("backOnline");
+      function updateNet() {
+        var online = navigator.onLine !== false;
+        net.textContent = online ? "🟢 網路看起來恢復了" : "📶 目前離線中";
+        back.hidden = !online;
+      }
+      window.addEventListener("online", updateNet);
+      window.addEventListener("offline", updateNet);
+      updateNet();
+
+      var PHASES = [
+        { name: "吸氣", seconds: 4, scale: 1, hint: "用鼻子慢慢吸氣，讓圓球變大。" },
+        { name: "停住", seconds: 7, scale: 1, hint: "輕輕停住呼吸，肩膀放鬆。" },
+        { name: "吐氣", seconds: 8, scale: 0.45, hint: "用嘴巴慢慢吐氣，像吹涼一杯熱茶。" }
+      ];
+      var ball = document.getElementById("ball");
+      var count = document.getElementById("ballCount");
+      var phaseEl = document.getElementById("phase");
+      var hintEl = document.getElementById("phaseHint");
+      var roundsEl = document.getElementById("rounds");
+      var toggle = document.getElementById("breathToggle");
+      var running = false, timer = null, phaseIndex = 0, remaining = 0, rounds = 0;
+
+      function enterPhase(index) {
+        phaseIndex = index;
+        var phase = PHASES[index];
+        remaining = phase.seconds;
+        ball.style.transitionDuration = phase.seconds + "s";
+        ball.style.transform = "scale(" + phase.scale + ")";
+        phaseEl.textContent = phase.name + " " + phase.seconds + " 秒";
+        hintEl.textContent = phase.hint;
+        count.textContent = remaining;
+      }
+
+      function tick() {
+        remaining -= 1;
+        if (remaining > 0) {
+          count.textContent = remaining;
+          return;
+        }
+        if (phaseIndex === PHASES.length - 1) {
+          rounds += 1;
+          roundsEl.textContent = "已完成 " + rounds + " 輪" + (rounds >= 4 ? "，做得很好。可以停下來，或再多陪自己幾輪。" : "，建議先做 4 輪。");
+          enterPhase(0);
+        } else {
+          enterPhase(phaseIndex + 1);
+        }
+      }
+
+      function start() {
+        running = true;
+        toggle.textContent = "暫停";
+        enterPhase(0);
+        timer = setInterval(tick, 1000);
+      }
+
+      function stop() {
+        running = false;
+        clearInterval(timer);
+        timer = null;
+        toggle.textContent = "開始";
+        ball.style.transitionDuration = "1s";
+        ball.style.transform = "scale(0.45)";
+        count.textContent = "";
+        phaseEl.textContent = "準備好就按「開始」";
+        hintEl.textContent = "用鼻子吸氣 4 秒、停住 7 秒、用嘴巴慢慢吐氣 8 秒。";
+      }
+
+      toggle.addEventListener("click", function () { if (running) stop(); else start(); });
+    })();
+  </script>
+</body>
+</html>

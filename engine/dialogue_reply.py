@@ -1,7 +1,8 @@
 """Short local responses and final output checks. Local fallback is not a language model."""
 import re
 from difflib import SequenceMatcher
-from engine.dialogue_policy import PATTERNS
+from engine.dialogue_policy import CLARIFIED, PATTERNS
+from engine.prompt_guard import detect_injection
 from engine.dialogue_role import relationship_violations, role_acknowledgement, role_notice
 
 
@@ -16,10 +17,15 @@ def safety_reply(message, state):
     other = state.get("risk_subject") == "other"
     who = "對方" if other else "你"
     if action == "brief_safety_check":
+        if state.get("pending_disambiguation") and state.get("risk_evidence") in message:
+            # LIN-01: name the hyperbole as probably figurative, then check once, gently.
+            return (f"「{quote(state['risk_evidence'], 20)}」聽起來比較像很誇張的形容，我先輕輕確認一下就好："
+                    "你最近有沒有真的不想活了，或想傷害自己的念頭？")
         if state.get("risk_evidence") and state["risk_evidence"] not in message:
             return "我有聽到你這一輪的話，先不往深處問；剛才那句讓我還有點擔心。你現在有沒有不想活了，或傷害自己的念頭？"
         return f"你說「{quote(message)}」，我有認真聽。想先確認一下，{who}最近有沒有不想活了，或傷害自己的念頭？"
-    echo = f"你說「{quote(message, 40)}」。"
+    # Do not read override/injection wording back to the student; acknowledge without quoting it.
+    echo = "我有看到你這一輪的訊息。" if detect_injection(message) else f"你說「{quote(message, 40)}」。"
     if re.search(r"(?:打了|撥了|打通|接通|打給).{0,8}(?:119|110|1925)|(?:119|110|1925).{0,6}(?:打了|接通|打通)", message):
         return echo + "若電話已接通，先照接線人員的引導做，不用急著回這裡。需要急救請打 119，有人威脅安全可打 110；1925 也可以找人談。"
     if re.search(r"(?:媽媽|爸爸|家人|老師|朋友|大人).{0,8}(?:在旁邊|在身邊|陪著|陪我|過來了)", message):
@@ -33,7 +39,14 @@ def safety_reply(message, state):
     if action == "violence_safety":
         return (echo + "先和可能發生衝突的人保持距離，不要靠近武器或上前制止。若有人可能立刻受傷，請直接打 110；有人受傷需急救請打 119，同時找可信任大人加入。現在能到一個與衝突分開的安全地方嗎？")
     if other:
-        return ("你是在擔心對方，我不會把對方的念頭當成你的。先找可信任的大人一起確認對方安全，不用獨自承擔；若對方已經行動或可能立刻受傷，請直接打 119 或 110。1925 也可以協助你討論如何求助。現在有大人能聯繫或到對方身邊嗎？")
+        # SOC-05: concrete steps for a friend in danger, plus care for the student who is holding it.
+        urgent = ("對方可能已經吞藥或正在危險中，請現在就打 119，或馬上請身邊的大人幫忙打；"
+                  if state.get("immediate_danger") == "imminent" else "")
+        secret = ("對方要你保密，但生命安全比保密更重要，告訴大人不是背叛。"
+                  if re.search(r"不要(?:告訴|跟.{0,6}說)|保密|別說出去|不准說", message) else "")
+        return (urgent + "你是在擔心對方，我不會把對方的念頭當成你的。" + secret
+                + "先找可信任的大人一起確認對方安全，不用獨自承擔；若對方已經行動或可能立刻受傷，請直接打 119 或 110。"
+                + "遇到這種事會害怕很正常，1925 也可以陪你討論怎麼幫忙。現在有大人能聯繫或到對方身邊嗎？")
     privacy = "我不能承諾絕對保密，也沒有自動通知任何人。" if state.get("privacy_concern") else ""
     if state.get("risk_level") == "red":
         return (echo + "現在先請可信任的大人到身邊，若已受傷、服藥過量或正要行動，請立即打 119；有人威脅安全可打 110，不要等這裡回覆。"
@@ -53,7 +66,38 @@ def local_reply(message, state):
         return role_acknowledgement(state)
     if state["current_goal"] == "clarify_identity":
         return "我是 AI，可以用你描述的角色語氣陪你聊，但不是那位真人。你可以隨時修改或取消這個角色設定。"
-    return role_notice(state) + _local_reply(state.get("dialogue_content") or message, state)
+    attempts = detect_injection(message)
+    notice = ("網站的內部設定和提示詞不會提供喔。" if "reveal" in attempts
+              else "這些設定沒辦法從對話裡更改，我還是用原本的方式陪你。" if attempts else "")
+    return _styled(notice + role_notice(state) + _local_reply(state.get("dialogue_content") or message, state),
+                   state, message)
+
+
+def _styled(text, state, message):
+    """Apply the student's reply style to a local reply (safety replies never pass through here)."""
+    style = state.get("effective_style", "warm")
+    if style == "listen_only":
+        sentences = [s for s in re.findall(r"[^。！？!?\n]+[。！？!?]?", text) if not re.search(r"[？?]", s)]
+        return "".join(sentences[:2]) or "我在這裡，聽你說。"
+    if style == "lively" and positive_context(message, state):
+        return text.replace("聽到你有這樣的好心情，我也覺得很不錯。", "太讚了吧，聽得我也跟著開心起來！")
+    return text
+
+
+def _rational_plan(message):
+    """Rational style: 1. points 2. sticking point 3. one optional step, built from the student's own words."""
+    topic = _first(TOPIC_PATTERN, message) or "這件事"
+    facts = [f for f in (
+        _first(r"(?:只剩|剩下?)[一二三四五六七八九十兩\d]+(?:天|週|個禮拜)", message),
+        _first(r"(?:翻|熬|拖)到凌晨[一二三四五六\d]點(?:才睡著?)?|睡不好|睡不著|失眠", message),
+        _first(r"上課[^，。！？]{0,4}(?:恍神|分心|聽不懂)[^，。！？]{0,4}", message),
+        _first(r"(?:爸媽|家人|老師)[^，。！？]{0,6}(?:逼問|一直問|催|唸|比較)[^，。！？]{0,8}", message),
+    ) if f]
+    sleep = re.search(r"睡|凌晨|失眠", "".join(facts))
+    return ("1. 重點整理：" + topic + ("，" + "、".join(facts) if facts else "") + "。\n"
+            "2. 目前卡點：時間和體力都有限，外面又有壓力，很難一次顧到全部。\n"
+            "3. 下一步：先挑最要緊的一件事，排一個 25 分鐘的小段落開始"
+            + ("，睡前留一點時間不碰課本" if sleep else "") + "；要不要這樣試，由你決定。")
 
 
 def _first(pattern, text):
@@ -130,6 +174,9 @@ def _local_reply(message, state):
         return ("你在意誰會知道這些話，這點需要先說清楚。這個網站會暫存對話與整理，雲端 AI 啟用時也會收到對話文字；只有你同意分享的摘要才進工作臺，目前沒有自動通知學校。"
                 "我不能保證絕對保密，有立即危險時仍需要真人協助。")
     if state["safety_denied"]:
+        if re.search(CLARIFIED, message) or is_positive_only(message):
+            # The student clarified a figure of speech; return to the light conversation they were having.
+            return "好，了解，剛剛只是誇張的形容。" + (echo if is_positive_only(message) else "那就照你的節奏聊就好。")
         return ("我聽到你說沒有這些念頭，先照你的回答，不反覆盤問。" +
                 ("你說覺得自己沒用，那份自責還是值得被聽見；一件事的結果不能代表你整個人的價值。" if re.search(r"沒用|超廢|沒人要", message)
                  else "剛才那份不好受仍可以繼續說。"))
@@ -137,6 +184,8 @@ def _local_reply(message, state):
         return echo + "剛才是我沒有聽準，我先收回那個解讀，照你現在說的來。"
     if re.search(r"活著的意義|人生.*意義|生命.*意義", message):
         return echo + "活著的意義未必只有一個答案，也不一定要靠成績或成就來證明。現在還沒找到，也不用急著替自己下結論。"
+    if goal == "support_choice" and state.get("effective_style") == "rational":
+        return _rational_plan(message)
     if goal == "support_choice":
         # A concrete, reversible communication step after implicit help-seeking.
         context = message + " ｜ " + state.get("event_summary", "") + " ｜ " + state.get("expectation_summary", "")
@@ -210,7 +259,8 @@ DEGREE = r"(?:最近|還是|一直|真的|有點|有一點|很|好|超|非常|�
 TOPIC_PATTERN = (r"告白被打槍|告白被拒絕|告白|段考|期中考|期末考|會考|考試|成績|作業|功課|分組|社團|輔導室"
                  r"|同學|朋友|老師|爸媽|爸爸|媽媽|家人|家裡|分手|吵架|升學|科系|羽球|籃球|比賽|表演")
 # Psychological states a model may add on its own; flagged only when the student shared good news.
-INVENTED_DISTRESS = r"壓力|緊繃|喘息|不好受|難受|委屈|沉重|焦慮|不容易|辛苦|煩惱|擔心|累積|撐|逃離|放鬆一下"
+INVENTED_DISTRESS = r"壓力|緊繃|喘息|不好受|難受|委屈|沉重|焦慮|不容易|辛苦|煩惱|擔心|累積|撐|逃離|放鬆一下|承接|內在|負荷|課題"
+OVERPSYCHOLOGIZING = r"喘息空間|緊繃感|內在負荷|承接(?:情緒|你的情緒)|生命課題|內在小孩|療癒自己"
 
 
 def response_violations(reply, state, message="", offer=None):
@@ -227,8 +277,14 @@ def response_violations(reply, state, message="", offer=None):
     if len(questions) > budget or (budget == 0 and interrogatives) or (budget == 1 and len(interrogatives) > 1):
         issues.append("questions")
     sentences = re.findall(r"[^。！？!?\n]+[。！？!?]?", body)
-    if len(sentences) > (3 if offer else 4) or len(reply) > (200 if offer else 280):
+    style = state.get("effective_style", "warm")
+    max_sentences, max_chars = ((3, 200) if offer else (2, 120) if style == "listen_only"
+                                else (7, 360) if style == "rational" else (4, 280))
+    if len(sentences) > max_sentences or len(reply) > max_chars:
         issues.append("length")
+    # Green-level chats never get counselling jargon the student did not use.
+    if state.get("risk_level", "green") == "green" and [w for w in re.findall(OVERPSYCHOLOGIZING, body) if w not in message]:
+        issues.append("overpsychologizing")
     if re.search(r"你其實就是|你真正(?:想要|需要)的|因為你小時候|你是在投射|你(?:就是|患有|得了).*(?:憂鬱症|焦慮症)|你很棒|你超棒|往好處想|你要相信自己|至少你還有|一切都會好起來|根據薩提爾|你的核心需求|冰山層次", body):
         issues.append("interpretation")
     # Context consistency: good news gets a matching response, not an assumed hidden strain.

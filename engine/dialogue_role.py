@@ -41,6 +41,17 @@ _REFINE = re.compile(
     _PREFIX + r"(?:你)?(?:(?:講話|說話|回覆|回應|語氣|陪伴方式).+"
     r"|(?:不要|別|不用)(?:再|一直)?.{0,12}(?:問我|問問題|問了|說教|分析|叫我|稱呼我).*)"
 )
+# A role is user data for tone only. Descriptions that would turn the companion against the student
+# or switch off its rules are ignored (v2.3 prompt-injection guard).
+_HARMFUL_ROLE = re.compile(r"酸民|嘲笑|羞辱|罵我|冷血|毒舌|霸凌|沒有(?:任何)?(?:限制|規則)|無限制|開發者|管理員|系統|駭客|叫我去死|PUA", re.I)
+
+
+def _harmful(description):
+    """「不會責罵我的教練」is a kind request; only an un-negated harmful trait is refused."""
+    match = _HARMFUL_ROLE.search(description)
+    return bool(match) and not re.search(r"不會|不要|不再|別|不", description[max(0, match.start() - 4):match.start()])
+
+
 _ENDING = re.compile(r"(?:來)?(?:陪我(?:聊聊|聊天|說話|聊)|跟我(?:聊天|說話)|和我(?:聊天|說話)|回應我)(?:好嗎|可以嗎|嗎|吧)?$")
 
 
@@ -75,7 +86,7 @@ def _parse_clause(text):
     if match:
         description = _ENDING.sub("", match["description"]).strip("，,。！？!?；;")
         description = re.sub(r"(?:好嗎|可以嗎|嗎|吧)$", "", description)
-        if description and description not in ("誰", "什麼", "認真的", "真的"):
+        if description and description not in ("誰", "什麼", "認真的", "真的") and not _harmful(description):
             return {"action": "set", "description": description[:120]}
     if _REFINE.fullmatch(compact):
         return {"action": "refine", "preference": text.strip("，,。！？!?；; \n")[:160]}
@@ -107,7 +118,8 @@ def resolve_role(message, previous=None, observation=None):
                 and (re.search(r"(?:請|希望|想要|能不能|可不可以).{0,12}你|你.{0,12}(?:扮演|當|改用|用.+語氣|像)", evidence)
                      or (old['description'] and re.match(r"^(?:請)?(?:換成|改成|換回)", evidence)))
                 and not re.search(r"如果|假如|他說|她說|例如|舉例", evidence)):
-            if action == "set" and isinstance(description, str) and 1 <= len(description) <= 120 and description in evidence:
+            if (action == "set" and isinstance(description, str) and 1 <= len(description) <= 120 and description in evidence
+                    and not _harmful(description)):
                 actions.append({"action": "set", "description": description})
             elif action == "refine":
                 actions.append({"action": "refine", "preference": evidence[:160]})
@@ -145,7 +157,10 @@ def role_user_message(message, state):
 
 def role_notice(state):
     if state.get("role_changed") and not state.get("role_only") and not state.get("safety_check_required"):
-        return "我會依你描述的角色調整語氣；我仍是 AI。" if public_role(state)["custom"] else "好，我們換回一般陪伴的方式。"
+        profile = role_profile(state)
+        if profile["description"]:
+            return "我會依你描述的角色調整語氣；我仍是 AI。"
+        return "我會照你說的方式陪你。" if profile["preferences"] else "好，我們換回一般陪伴的方式。"
     return ""
 
 

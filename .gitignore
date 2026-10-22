@@ -6,3 +6,13 @@ __pycache__/
 *.db
 *.db-journal
 anla_v13a1_backups/
+
+# 資料庫加密金鑰檔（遺失會無法解密，切勿上傳）
+*.db.key
+
+# 桌面／行動封裝產物
+build/
+dist/
+mobile/node_modules/
+mobile/android/
+mobile/ios/

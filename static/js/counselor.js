@@ -84,6 +84,44 @@ async function openSummaryModal(caseId) {
 }
 function closeSummaryModal() { $("summaryModal").style.display = "none"; }
 
+// v2.3 HFE-06：判讀依據。確認危機（實線）與待消歧（虛線）分開；原話以螢光筆標示，供 3 秒內看懂。
+const DOMAIN_LABELS = {duration: "持續時間", sleep: "睡眠", daily_function: "生活／上學功能",
+  stress_relationships: "人際與壓力", safety: "安全線索", support_system: "支持系統"};
+function markEvidence(text, spans, E) {
+  const marks = new Array(text.length).fill(false);
+  spans.filter(Boolean).forEach(span => {
+    for (let at = text.indexOf(span); at !== -1; at = text.indexOf(span, at + 1))
+      for (let i = at; i < at + span.length; i++) marks[i] = true;
+  });
+  let html = "", open = false;
+  for (let i = 0; i < text.length; i++) {
+    if (marks[i] !== open) { html += marks[i] ? "<mark>" : "</mark>"; open = marks[i]; }
+    html += E(text[i]);
+  }
+  return html + (open ? "</mark>" : "");
+}
+function renderExplainable(c, E) {
+  const t = c.triage || {}, rule = t.rule_details || {}, safety = t.dialogue_safety || {};
+  const flags = ["red", "orange", "yellow"].flatMap(tier => (rule[tier + "_flags"] || []).map(f => [tier, f]));
+  const spans = flags.map(([, f]) => f).concat(rule.hyperbole_flags || [], (safety.risk_evidence || "").split("；"));
+  const confirmed = ["orange", "red"].includes(c.risk_level) && !t.pending_disambiguation;
+  const domains = (c.summary || {}).wellbeing_signals || {};
+  const cards = Object.entries(DOMAIN_LABELS).map(([key, label]) => {
+    const d = domains[key] || {status: "unknown"};
+    return `<div class="explain-domain ${d.status === "unknown" ? "unknown" : "known"}"><b>${E(label)}</b>：${
+      d.status === "unknown" ? "未提及（不代表正常）" : E(d.status) + (d.evidence ? `<br>「${E(d.evidence)}」` : "")}</div>`;
+  }).join("");
+  return `<div class="explain-turn ${confirmed ? "confirmed" : t.pending_disambiguation ? "pending" : ""}" style="margin:.75rem 0">
+    <b>判讀依據（可解釋）</b>
+    ${confirmed ? '<span class="explain-tag confirmed">確認危機</span>' : ""}
+    ${t.pending_disambiguation ? '<span class="explain-tag pending">待消歧</span>' : ""}
+    <p class="explain-user" style="white-space:pre-wrap">${markEvidence(c.dialogue_snippet || "", spans, E) || "無對話節錄"}</p>
+    <p>${flags.map(([tier, f]) => `<span class="explain-chip tier-${E(tier)}">${E(f)}</span>`).join("") || "無規則字詞"}
+      ${(t.theoretical_basis || []).map(code => `<span class="explain-chip theory">${E(code)}</span>`).join("")}</p>
+    <div class="explain-domains">${cards}</div>
+  </div>`;
+}
+
 function renderOnePageSummary(c) {
   const sum = c.summary || {};
   const rule = c.triage?.rule_details || {};
@@ -108,6 +146,7 @@ function renderOnePageSummary(c) {
       <p><b>支持系統：</b>${E(c.support_system || "尚未確認")}</p>
       <p><b>BSRS-5：</b>${done ? E(bsrsScore(c.bsrs5)) + " / 20；" : ""}${fields}</p>
       <p><b>風險訊號：</b>${E((sum.self_harm_signals || []).join("；") || "沒有足夠資料；仍需真人了解")}</p>
+      ${renderExplainable(c, E)}
       <p><b>即時安全：</b>${E(sum.current_safety || "尚未確認")}</p>
       <p><b>系統建議：</b>${E(sum.action_recommendation || "由真人覆核")}</p>
       <p style="color:#9a3412">系統判讀可能出錯，僅供受訓人員覆核。任何通報、撥號或轉介都須另行執行；本網站沒有自動聯絡功能。</p>

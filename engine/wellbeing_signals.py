@@ -16,9 +16,17 @@ DOMAINS = (
 UNKNOWN = "unknown"
 
 _DURATION = re.compile(r"(?:已經|持續|大概|差不多|最近|這)?\s*(?:\d+|[一二兩三四五六七八九十半]+)\s*(?:個)?(?:天|週|周|禮拜|星期|月|年)")
-_SLEEP = re.compile(r"睡不好|睡不著|失眠|睡眠不好|睡眠不足|睡眠受影響|夜裡(?:常|一直)?醒|半夜(?:常|一直)?醒|睡得(?:很)?(?:好|還好|不錯)|睡眠(?:正常|還好)")
-_DAILY = re.compile(r"上課.{0,8}(?:分心|沒精神|無法專心|不能專心)|(?:沒辦法|無法|不敢|不想)(?:去)?(?:上學|上課|出門)|拒學|缺課|常請假|生活.{0,8}(?:受影響|被影響)|(?:無法|很難|沒辦法).{0,6}專心|(?:還能|仍能|可以).{0,8}(?:上學|上課|生活)|吃不下")
-_STRESS = re.compile(r"考試|段考|成績|課業|功課|升學|選科系|設計|爸媽|爸爸|媽媽|家人|家裡|父母|老師|同學|朋友|交往|感情|分手|被排擠|吵架|壓力|困擾")
+_SLEEP = re.compile(r"睡不好|睡不著|失眠|睡眠不好|睡眠不足|睡眠受影響|夜裡(?:常|一直)?醒|半夜(?:常|一直)?醒"
+                    r"|(?:翻|拖|熬|撐)到(?:凌晨|半夜|天亮)|凌晨[一二兩三四五六\d]點(?:才|還)?(?:睡|睡著)|整晚(?:沒睡|睡不著)"
+                    r"|睡得(?:很)?(?:好|還好|不錯)|睡眠(?:正常|還好)")
+_DAILY = re.compile(r"上課.{0,8}(?:分心|沒精神|無法專心|不能專心|恍神|聽不懂|打瞌睡)|(?:沒辦法|無法|不敢|不想)(?:去)?(?:上學|上課|出門)|拒學|缺課|常請假|生活.{0,8}(?:受影響|被影響)|(?:無法|很難|沒辦法).{0,6}專心|(?:還能|仍能|可以).{0,8}(?:上學|上課|生活)|吃不下")
+# Inherent stressors count on their own; people (family, teachers, friends) only count
+# together with a strain cue, so「爸爸帶我去打羽球」is not a relationship-stress note.
+_STRESSOR = r"考試|段考|模擬考|會考|成績|排名|課業|功課|升學|選科系|分手|被排擠|霸凌|吵架|壓力|困擾"
+_PEOPLE = r"爸媽|爸爸|媽媽|家人|家裡|父母|老師|同學|朋友|交往|感情|設計"
+_STRAIN = (r"吵|罵|逼|誤會|不理|討厭|笑我|欺負|排擠|不聽|嫌|怪我|冷戰|放鴿子|生氣|兇|累贅|不要我|沒人要|"
+           r"反對|不讓|擔心|害怕|怕|不敢|難過|失望|煩|不懂我|不支持|理想化|沒前途|穩的")
+_STRESS = re.compile(_STRESSOR + r"|(?:" + _PEOPLE + r").{0,20}(?:" + _STRAIN + r")|(?:" + _STRAIN + r").{0,12}(?:" + _PEOPLE + r")")
 _SUPPORT = re.compile(r"(?:沒有人|沒人|找不到人).{0,12}(?:聽|聊|說|幫|支持|相信)|(?:不敢|不願|沒辦法).{0,14}(?:告訴|跟.{0,6}說|找.{0,6}(?:聊|談|幫忙))|(?:有人|(?<!沒)有|可以找|願意找).{0,12}(?:朋友|老師|家人|爸爸|媽媽|輔導|同學).{0,10}(?:聊|談|說|幫|支持|傾訴)|(?:老師|朋友|同學|家人).{0,10}(?:可以聊|能幫|願意聽|會支持)")
 _NEG_SLEEP = re.compile(r"(?:沒有|不會|並未|從未|不是|不再|已經不).{0,4}(?:睡不好|睡不著|失眠)")
 _OK_SLEEP = re.compile(r"睡得(?:很)?(?:好|還好|不錯)|睡眠(?:正常|還好)|(?:睡不好|睡不著|失眠).{0,5}(?:改善|好多了)")
@@ -37,6 +45,16 @@ def _clause(text: str, pattern: re.Pattern[str]) -> str:
                 right = min(len(part), match.end() + 10)
                 left = max(0, right - 160)
             return part[left:right].strip()
+    return ""
+
+
+def _verbatim(evidence, text: str) -> str:
+    """Rule evidence may join several flags with 「；」; keep the first part quoted verbatim."""
+    if not isinstance(evidence, str):
+        return ""
+    for part in [evidence, *evidence.split("；")]:
+        if part and part in text:
+            return part[:160]
     return ""
 
 
@@ -94,8 +112,7 @@ def update_wellbeing_signals(previous, message: str, dialogue_state: dict) -> di
     # they are NOT a second detector, and do not automatically consider silence safe.
     risk_level = dialogue_state.get("risk_level", "green")
     if risk_level in ("orange", "red") or dialogue_state.get("human_escalation_required"):
-        evidence = dialogue_state.get("risk_evidence", "")
-        evidence = evidence[:160] if isinstance(evidence, str) and evidence in text else ""
+        evidence = _verbatim(dialogue_state.get("risk_evidence", ""), text)
         old = domains["safety"]
         # Retain the last explicit signal when this turn adds no new evidence, keeping the
         # turn it was quoted from so the evidence stays traceable to the original message.
@@ -103,8 +120,7 @@ def update_wellbeing_signals(previous, message: str, dialogue_state: dict) -> di
             evidence, turn = old["evidence"], old["turn"]
         domains["safety"] = _note("requires_human_review", evidence, turn, "existing_safety_state")
     elif dialogue_state.get("pending_safety_check") or dialogue_state.get("safety_check_required"):
-        evidence = dialogue_state.get("risk_evidence", "")
-        evidence = evidence[:160] if isinstance(evidence, str) and evidence in text else ""
+        evidence = _verbatim(dialogue_state.get("risk_evidence", ""), text)
         domains["safety"] = _note("clarification_needed", evidence, turn, "existing_safety_state")
     elif dialogue_state.get("safety_denied"):
         # A denial is a self-report, NOT evidence of safety.

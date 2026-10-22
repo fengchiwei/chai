@@ -18,8 +18,8 @@ class SafetyBoundaryRegressions(unittest.TestCase):
     def test_negation_does_not_cross_comma(self):
         self.case("我沒有說謊，朋友說他想死", "orange")
 
-    @unittest.skip("待輔導專業覆核：『熱到想死』應採何種警示與確認流程；不在本次調降")
     def test_hyperbole_review_only(self):
+        """v2.3 LIN-01: yellow + one soft check (not silence, not red). Still needs counsellor review."""
         self.case("同學說他熱到想死", "yellow")
 
     def test_sports_not_abuse(self):

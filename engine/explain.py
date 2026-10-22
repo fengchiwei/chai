@@ -13,9 +13,9 @@ from engine.dialogue_reply import local_reply
 from engine.triage import RISK_LEVEL_WEIGHTS, RISK_METADATA, perform_triage
 from engine.wellbeing_signals import DOMAINS, UNKNOWN, VERSION as WELLBEING_VERSION, update_wellbeing_signals
 
-VERSION = "v1.3-B-explain-1"
+VERSION = "v1.3-B-explain-2"
 SCENARIO_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "explain_scenarios.json")
-MAX_TURNS = 12
+MAX_TURNS = 20
 
 DOMAIN_LABELS = {
     "duration": "持續時間", "sleep": "睡眠", "daily_function": "生活／上學功能",
@@ -28,6 +28,12 @@ STATUS_LABELS = {
     "support_mentioned": "提到可求助對象", "difficulty_seeking_support": "自述難以求助",
     "requires_human_review": "需真人覆核", "clarification_needed": "待安全確認",
     "self_reported_denial": "自述否認（不等於已確認安全）",
+}
+THEORY_LABELS = {
+    "PSY-01": "C-SSRS 嚴重度", "PSY-02": "IPTS 累贅感／歸屬受挫", "PSY-03": "IMV 困頓感",
+    "PSY-04": "NSSI 自傷功能", "LIN-01": "言語行為／否定範疇", "SIG-02": "非對稱損失（啟發式）",
+    "ENG-03": "瑞士起司／高水位棘輪", "DYN-04": "數位表型（啟發式）", "SOC-05": "同儕危機守門",
+    "HFE-06": "防警報疲勞／可解釋",
 }
 GOAL_LABELS = {
     "clarify_event": "了解事件", "explore_feeling": "探索感受", "explore_perception": "探索想法",
@@ -57,14 +63,23 @@ def _rule_sources(rules):
             for flag in rules.get(tier + "_flags", [])]
 
 
-def replay(turns):
+def _highlights(message, rules, safety, wellbeing, turn):
+    """Verbatim spans of this turn that drove a decision, for the evidence highlighter."""
+    spans = [f for tier in ("red", "orange", "yellow") for f in rules.get(tier + "_flags", [])]
+    spans += rules.get("hyperbole_flags", [])
+    spans.append(safety.get("risk_evidence") or "")
+    spans += [n.get("evidence", "") for n in (wellbeing or {}).get("domains", {}).values() if n.get("turn") == turn]
+    return [s for s in dict.fromkeys(spans) if s and s in message]
+
+
+def replay(turns, reply_style=None):
     """Replay user turns exactly like the chat route, minus the model and the database."""
     state, wellbeing, highest = {}, None, "green"
     records = []
     for index, message in enumerate(turns, 1):
         triage = perform_triage(message, previous_level=highest)
         rules = triage["rule_details"]
-        triage, dialogue_state = prepare_dialogue(message, triage, state, use_model=False)
+        triage, dialogue_state = prepare_dialogue(message, triage, state, use_model=False, reply_style=reply_style)
         wellbeing = update_wellbeing_signals(wellbeing, message, dialogue_state)
         dialogue_state["wellbeing_signals"] = wellbeing
         reply = local_reply(message, dialogue_state)
@@ -80,6 +95,11 @@ def replay(turns):
                 "risk_signal", "risk_type", "risk_subject", "risk_evidence",
                 "immediate_danger", "safety_denied", "pending_safety_check")},
             "reasons": triage.get("reasons", []),
+            "theoretical_basis": triage.get("theoretical_basis", []),
+            "pending_disambiguation": bool(dialogue_state.get("pending_disambiguation")),
+            "confirmed": triage["level"] in ("orange", "red") and not dialogue_state.get("pending_disambiguation"),
+            "highlights": _highlights(message, rules, dialogue_state, wellbeing, dialogue_state.get("turn_count", index)),
+            "style_overridden_by_safety": bool(dialogue_state.get("style_overridden_by_safety")),
             "current_goal": dialogue_state["current_goal"],
             "goal_label": GOAL_LABELS.get(dialogue_state["current_goal"], dialogue_state["current_goal"]),
             "reply": reply,
@@ -90,7 +110,7 @@ def replay(turns):
 
 def explain(scenario):
     turns = scenario["turns"]
-    records, wellbeing, highest = replay(turns)
+    records, wellbeing, highest = replay(turns, scenario.get("reply_style"))
     domains = []
     for key in DOMAINS:
         note = (wellbeing or {}).get("domains", {}).get(key, {"status": UNKNOWN, "evidence": "", "turn": 0})
@@ -117,6 +137,8 @@ def explain(scenario):
         "domains": domains,
         "known_count": sum(d["known"] for d in domains),
         "turns": records,
+        "reply_style": scenario.get("reply_style", "warm"),
+        "theory_labels": THEORY_LABELS,
         "reply_source": "本機規則回覆（展示重播，未呼叫雲端模型）",
         "notice": "虛構案例重播；不寫入資料庫、不建立個案、不通知任何人。線索與燈號供真人覆核，不是診斷或量表分數。",
     }

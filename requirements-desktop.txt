@@ -1,0 +1,5 @@
+# 桌面版封裝專用（伺服器部署不需要）。用法：
+#   pip install -r requirements.txt -r requirements-desktop.txt
+# pywebview：Windows 走 Edge WebView2（會一併安裝 pythonnet），macOS 走 Cocoa WebKit（pyobjc）。
+pywebview==6.2.1; sys_platform == "win32" or sys_platform == "darwin"
+pyinstaller==6.22.3
