@@ -31,7 +31,6 @@ if (-not $env:LLM_PROVIDER) {
     if ($key) {
         $env:GEMINI_API_KEY = $key
         $env:LLM_PROVIDER = "gemini"
-        if (-not $env:GEMINI_MODEL) { $env:GEMINI_MODEL = "gemini-2.5-flash" }
     } else {
         $env:LLM_PROVIDER = "builtin"
     }
@@ -42,7 +41,7 @@ $url = "http://127.0.0.1:$Port/"
 Write-Host ""
 Write-Host "學生頁：$url"
 Write-Host ("後台：  ${url}login" + $(if ($env:WORKBENCH_PASSWORD) { "" } else { "（未設密碼，已停用）" }))
-Write-Host ("模型：  " + $(if ($env:LLM_PROVIDER -eq "builtin") { "本機備援回覆" } else { "$env:LLM_PROVIDER ($env:GEMINI_MODEL)" }))
+Write-Host ("模型：  " + $(if ($env:LLM_PROVIDER -eq "builtin") { "本機備援回覆" } else { "$env:LLM_PROVIDER（" + $(if ($env:GEMINI_MODEL) { "指定 $env:GEMINI_MODEL" } else { "自動選最佳可用模型，詳見後台" }) + "）" }))
 Write-Host "停止伺服器：按 Ctrl+C 或關閉這個視窗" -ForegroundColor Yellow
 Write-Host ""
 

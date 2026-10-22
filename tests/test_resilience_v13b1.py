@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 import requests
 
 from config import Config
-from engine import dialogue_ai
+from engine import dialogue_ai, model_router
 from engine.dialogue_ai import generate_youth_response, prepare_dialogue
 from engine.triage import perform_triage
 
@@ -40,6 +40,7 @@ class ResilienceTests(unittest.TestCase):
         self.clock = FakeClock()
         for p in (patch.object(Config, "LLM_PROVIDER", "gemini"), patch.object(Config, "GEMINI_API_KEY", "test-key"),
                   patch.object(dialogue_ai, "_clock", self.clock),
+                  patch.object(model_router, "_clock", self.clock),  # per-model pauses use the same clock
                   patch.object(Config, "LLM_CALL_MODE", "two_stage")):  # single-call budget: test_single_call_v23
             self.enterContext(p)
 

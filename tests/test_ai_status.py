@@ -16,6 +16,8 @@ def status_response(code, text=""):
 class ModelStatusTests(unittest.TestCase):
     def setUp(self):
         dialogue_ai.reset_model_health()
+        # These tests are about the probe; model discovery has its own tests (test_model_router).
+        self.enterContext(patch.object(Config, "MODEL_AUTO_SELECT", False))
 
     def tearDown(self):
         dialogue_ai.reset_model_health()
@@ -74,7 +76,8 @@ class StatusRouteTests(unittest.TestCase):
     def test_status_route_is_public_and_secret_free(self):
         from app import app
         dialogue_ai.reset_model_health()
-        with patch.object(Config, "LLM_PROVIDER", "gemini"), patch.object(Config, "GEMINI_API_KEY", "secret-key-xyz"), \
+        with patch.object(Config, "MODEL_AUTO_SELECT", False), \
+             patch.object(Config, "LLM_PROVIDER", "gemini"), patch.object(Config, "GEMINI_API_KEY", "secret-key-xyz"), \
              patch("engine.dialogue_ai.requests.get", return_value=status_response(200)):
             response = app.test_client().get("/api/status?probe=1")
         dialogue_ai.reset_model_health()

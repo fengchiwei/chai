@@ -17,7 +17,72 @@ function bsrsScore(bsrs) {
     .reduce((sum, key) => sum + bsrs[key], 0);
 }
 
+// ---------- AI 模型面板（僅後台）：金鑰可用的模型、排名、健康狀態與目前使用中的模型 ----------
+const MODEL_STATE = { ok: "可用", untested: "尚未使用", paused: "暫停中" };
+const MODEL_ERROR = {
+  rate_limited: "額度或流量用完", model_not_found: "模型不存在或已停用", rejected: "不接受這個請求",
+  unavailable: "服務過載", timeout: "回應逾時", empty: "沒有回應內容", bad_response: "回應格式錯誤",
+  auth_error: "金鑰無效或沒有權限", api_error: "網路連線失敗", cooldown: "所有模型都暫停中",
+};
+const CONNECTION_STATE = { ok: "正常", degraded: "暫時無法使用", unknown: "尚未測試（學生傳訊或開頁後更新）", not_configured: "未設定" };
+const CALL_MODE = { single: "一次呼叫（分析＋回覆）", two_stage: "兩段呼叫（先分析再回覆）" };
+
+async function loadModels(refresh = false) {
+  const body = $("modelPanelBody");
+  if (!body) return;
+  body.textContent = refresh ? "重新偵測中…（只讀取模型清單，不耗用 token）" : "讀取中…";
+  try {
+    const res = await fetch("/api/config/llm", refresh
+      ? { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-Token": window.ANLA_CSRF_TOKEN },
+          body: JSON.stringify({ action: "refresh" }) }
+      : { cache: "no-store" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "讀取失敗");
+    renderModels(data);
+  } catch (error) {
+    body.textContent = `模型資訊讀取失敗：${error.message}`;
+  }
+}
+
+function renderModels(data) {
+  const E = escapeHtml;
+  const body = $("modelPanelBody");
+  if (!data.configured) {
+    body.innerHTML = "目前沒有設定雲端 AI 金鑰，學生端使用本機規則回覆。設定 <code>GEMINI_API_KEY</code> 或 <code>OPENAI_API_KEY</code> 後重新啟動即可。";
+    return;
+  }
+  const r = data.router || { models: [] };
+  const rows = r.models.map(m => {
+    const error = E(MODEL_ERROR[m.last_error] || m.last_error || "");
+    const state = m.state === "paused" ? `暫停中（${error}，約 ${m.paused_for} 秒後恢復）`
+      : m.state === "retry" ? `可再試（上次：${error}）`
+      : E(MODEL_STATE[m.state] || m.state);
+    return `<tr${m.active ? ' style="background:#ecfdf5;font-weight:600"' : ""}>
+      <td>${m.rank}</td><td><code>${E(m.model)}</code>${m.active ? " ✅ 使用中" : ""}${m.pinned ? "（管理者指定）" : ""}</td>
+      <td>${state}</td><td>${m.latency == null ? "—" : E(m.latency) + " 秒"}</td><td>${m.ok} / ${m.fail}</td></tr>`;
+  }).join("");
+  const status = data.status || {};
+  const paused = r.models.filter(m => m.state === "paused").length;
+  const wasOpen = body.querySelector("details")?.open;  // keep the table open across refreshes
+  // One summary line stays visible; the full table is folded so the case list stays near the top.
+  body.innerHTML = `
+    <p>目前使用：<b><code>${E(r.active || "（無）")}</code></b>　｜　可用 ${r.models.length - paused} 個、暫停 ${paused} 個
+      　｜　連線：${E(CONNECTION_STATE[status.state] || status.state || "")}${status.reason ? "（" + E(MODEL_ERROR[status.reason] || status.reason) + "）" : ""}</p>
+    ${r.discovery_error ? `<p style="color:#b91c1c">模型清單讀取失敗：${E(r.discovery_error)}（先使用預設模型）</p>` : ""}
+    <details${wasOpen ? " open" : ""}><summary style="cursor:pointer">查看全部模型與排名規則</summary>
+    <p>服務商：${E(data.provider)}　｜　自動選擇：${data.auto_select ? "開啟" : "關閉（使用設定的模型）"}
+      　｜　呼叫方式：${E(CALL_MODE[data.call_mode] || data.call_mode)}</p>
+    ${r.discovered ? `<p>已讀取金鑰可用的模型清單（${E(r.discovered_ago)} 秒前）；故障時會自動依序改用下一個。</p>`
+                   : "<p>尚未讀取模型清單，先使用預設模型；學生頁開啟或按「重新偵測」時會讀取。</p>"}
+    <div style="overflow-x:auto"><table class="cases-table">
+      <thead><tr><th>排名</th><th>模型</th><th>狀態</th><th>平均回覆</th><th>成功／失敗</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="5">沒有可用的對話模型</td></tr>'}</tbody></table></div>
+    <p>排名規則：${E(r.ranking_rule || "")}</p></details>`;
+}
+
 window.addEventListener("DOMContentLoaded", () => {
+  loadModels();
+  $("refreshModels")?.addEventListener("click", () => loadModels(true));
   loadCases();
   $("casesTableBody").addEventListener("click", event => {
     const button = event.target.closest("button[data-case-id]");

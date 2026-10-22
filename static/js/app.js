@@ -523,11 +523,10 @@ function speakMessage(elementOrText) {
 // 安全提醒與求助資訊由本機規則產生，不受 AI 狀態影響；這裡只顯示「回覆是否來自雲端 AI」。
 const AI_REASON_TEXT = {
   timeout: "回應逾時", rate_limited: "額度或流量已用完", auth_error: "API 金鑰無效", api_error: "服務發生錯誤",
-  cooldown: "暫停重試中", global_budget: "使用量達上限", model_not_found: "模型名稱設定錯誤",
+  cooldown: "暫停重試中", global_budget: "使用量達上限", model_not_found: "可用的模型都暫停中",
   bad_response: "回應格式錯誤", format_error: "回應格式錯誤", budget_exceeded: "回應太慢",
-  incomplete: "內容被服務擋下", empty: "沒有回應內容",
+  incomplete: "內容被服務擋下", empty: "沒有回應內容", unavailable: "服務暫時過載", rejected: "服務不接受這個請求",
 };
-const AI_PROVIDER_NAME = { gemini: "Gemini", openai: "OpenAI" };
 
 function setAiStatus(state, label, detail) {
   const el = document.getElementById("aiStatus");
@@ -540,17 +539,16 @@ function setAiStatus(state, label, detail) {
 
 function renderAiStatus(ai) {
   if (!ai) return;
-  const name = AI_PROVIDER_NAME[ai.provider] || "AI";
   if (ai.state === "not_configured") {
     setAiStatus("off", "本機回覆模式（未設定 AI）", "沒有設定雲端 AI 金鑰，回覆由本機規則產生。");
   } else if (ai.state === "ok") {
-    setAiStatus("ok", `AI 連線正常（${name}）`, ai.model ? `模型：${ai.model}` : "");
+    setAiStatus("ok", "AI 連線正常", "雲端 AI 可以正常回覆。");
   } else if (ai.state === "degraded") {
     const reason = AI_REASON_TEXT[ai.reason] || "暫時無法使用";
     const retry = ai.retry_in ? `，約 ${ai.retry_in} 秒後自動重試` : "";
     setAiStatus("warn", `AI 暫時無法使用：${reason}`, `這段時間改用本機回覆${retry}；安全提醒與求助資訊不受影響。`);
   } else {
-    setAiStatus("checking", `已設定 ${name}，尚未連線`, "傳出第一則訊息後會更新。");
+    setAiStatus("checking", "已設定雲端 AI，尚未連線", "傳出第一則訊息後會更新。");
   }
 }
 
@@ -574,10 +572,9 @@ async function checkAiStatus() {
 }
 
 function updateAiStatusFromReply(data) {
-  const used = data.model_used || "";
   const reason = data.fallback_reason;
-  if (/Gemini|OpenAI/.test(used)) {
-    setAiStatus("ok", `AI 連線正常（${/OpenAI/.test(used) ? "OpenAI" : "Gemini"}）`, used);
+  if (data.reply_source === "ai") {
+    setAiStatus("ok", "AI 連線正常", "這一則由雲端 AI 回覆。");
   } else if (reason === "rule_check") {
     setAiStatus("ok", "AI 連線正常", "這一則改用本機回覆，因為 AI 的回覆沒有通過安全檢查。");
   } else if (reason === "builtin" || reason === "no_key") {

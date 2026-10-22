@@ -28,6 +28,8 @@ class Config:
     LLM_CONNECT_TIMEOUT = float(os.environ.get("LLM_CONNECT_TIMEOUT", "3"))
     # 全站每分鐘最多送出幾次雲端模型請求；超過就改用本機回覆（控制費用，不擋學生）。
     LLM_CALLS_PER_MINUTE = int(os.environ.get("LLM_CALLS_PER_MINUTE", "120"))
+    # 自動讀取金鑰可用的模型清單、挑排名最前者，故障時自動換下一個（只在後台顯示）。
+    MODEL_AUTO_SELECT = os.environ.get("MODEL_AUTO_SELECT", "true").lower() == "true"
     # single：一次結構化呼叫同時取得線索與回覆（計畫書 Step 3）；two_stage：先分析、再回覆。
     LLM_CALL_MODE = os.environ.get("LLM_CALL_MODE", "single").lower()
     # 分析＋回覆兩次模型呼叫合計的上限秒數；超過就改用本機備援，不讓學生久等。

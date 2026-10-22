@@ -25,7 +25,8 @@ from engine.ai_agent import (
     generate_youth_response,
     prepare_dialogue,
 )
-from engine.dialogue_ai import model_status
+from engine import model_router
+from engine.dialogue_ai import _provider, model_status
 from engine.dialogue_policy import POLICY_VERSION, REPLY_STYLES, build_state, remember_turn
 from engine.dialogue_role import public_role
 from engine.explain import VERSION as EXPLAIN_VERSION, explain, load_scenarios
@@ -348,8 +349,17 @@ def api_install_qr():
 
 @app.route("/api/status")
 def api_status():
-    """Public AI-connection status for the student page: provider/model and a coarse state, no secrets."""
-    return jsonify({"server": "ok", "ai": model_status(probe=request.args.get("probe") == "1")})
+    """Public AI-connection status for the student page: a coarse state only. Provider and model names
+    stay in the staff-only /api/config/llm (students never choose or see models)."""
+    ai = model_status(probe=request.args.get("probe") == "1")
+    return jsonify({"server": "ok", "ai": {k: ai[k] for k in ("configured", "state", "reason", "retry_in") if k in ai}})
+
+
+def reply_source(model_used):
+    """Coarse origin of a reply for the student page, without provider or model names."""
+    if model_used.startswith(("Google Gemini", "OpenAI")):
+        return "ai"
+    return "safety" if model_used in ("安全回覆", "安全確認") else "rules" if model_used == "對話規則回覆" else "local"
 
 
 @app.route("/health")
@@ -491,7 +501,9 @@ def process_chat_turn(message):
     session["support_offer_state"] = offer_state
     return jsonify({
         "reply": reply["reply"],
-        "model_used": reply["model_used"],
+        # Model names are backend-only; the student page only needs to know where the reply came from.
+        "model_used": "雲端 AI" if reply_source(reply["model_used"]) == "ai" else reply["model_used"],
+        "reply_source": reply_source(reply["model_used"]),
         # Why the local fallback answered (timeout, rate_limited, cooldown, rule_check…); no content.
         "fallback_reason": reply.get("fallback_reason"),
         "companion_role": public_role(dialogue_state),
@@ -609,12 +621,30 @@ def api_referral_consent():
 @app.route("/api/config/llm", methods=["GET", "POST"])
 @staff_only
 def api_config_llm():
+    """Staff-only model panel: which models the key can use, their ranking, health and the active one.
+    POST {"action": "refresh"} re-reads the provider's model list (metadata only, no tokens)."""
+    provider = _provider()
+    configured = provider in ("gemini", "openai") and bool(
+        Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY)
     if request.method == "POST":
-        return jsonify({"error": "請在啟動前用環境變數設定模型和 API 金鑰"}), 405
+        error = require_csrf()
+        if error:
+            return error
+        if (request.get_json(silent=True) or {}).get("action") != "refresh":
+            return jsonify({"error": "金鑰與服務商請在啟動前用環境變數設定；這裡只能重新偵測模型"}), 400
+        if configured:
+            model_router.discover(provider, force=True)
+            log_audit("已登入工作臺人員", "refresh_models", "", provider)
+    elif configured and Config.MODEL_AUTO_SELECT:
+        model_router.discover(provider)  # cached for 30 minutes
     return jsonify({
-        "provider": Config.LLM_PROVIDER,
-        "model": Config.GEMINI_MODEL if Config.LLM_PROVIDER == "gemini" else Config.OPENAI_MODEL,
+        "provider": provider if configured else "builtin",
+        "configured": configured,
+        "auto_select": Config.MODEL_AUTO_SELECT,
+        "status": model_status(),
+        "router": model_router.snapshot(provider) if configured else None,
         "temperature": Config.LLM_TEMPERATURE,
+        "call_mode": Config.LLM_CALL_MODE,
         "has_openai_key": bool(Config.OPENAI_API_KEY),
         "has_gemini_key": bool(Config.GEMINI_API_KEY),
     })
