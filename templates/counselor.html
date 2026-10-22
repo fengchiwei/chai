@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>示範工作臺 - 少年仔、安啦會客室</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body style="background: #f1f5f9;">
+
+  <!-- 頂部導航 -->
+  <nav class="navbar" style="border-bottom: 2px solid #cbd5e1;">
+    <a href="/counselor" class="nav-brand">
+      <div class="nav-logo" style="background: #eff6ff;">🧑‍⚕️</div>
+      <div class="brand-text">
+        <h1 style="color: #1e3a8a;">安啦會客室 ‧ 授權示範工作臺</h1>
+        <span class="brand-tag" style="background: #dbeafe; color: #1d4ed8;">原型展示，未連接學校或公部門通報</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-item">💬 返回學生端</a>
+      <a href="/resources" class="nav-item">📍 南投資源地圖</a>
+      <a href="/counselor" class="nav-item active counselor-btn">🧑‍⚕️ 工作臺總覽</a>
+      <a href="/demo" class="nav-item demo-btn">⚡ 評審展示區</a>
+      <a href="/explain" class="nav-item">🔍 可解釋重播</a>
+      <form method="post" action="/logout" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="nav-item" style="border:0;cursor:pointer">登出</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="container" style="max-width: 1350px;">
+    
+    <!-- 頂部 KPI 數據卡 -->
+    <div class="stat-cards-row">
+      <div class="stat-card" style="border-left: 5px solid #ef4444;">
+        <span style="font-size: 0.85rem; color: #b91c1c; font-weight: 700;">🚨 紅色 ‧ 立即危機 (最高急迫)</span>
+        <div class="stat-number" id="statRed" style="color: #ef4444;">0</div>
+        <span style="font-size: 0.78rem; color: #64748b;">需由真人立即檢視；系統不會代為聯繫</span>
+      </div>
+      <div class="stat-card" style="border-left: 5px solid #f97316;">
+        <span style="font-size: 0.85rem; color: #c2410c; font-weight: 700;">⚠️ 橙色 ‧ 優先覆核</span>
+        <div class="stat-number" id="statOrange" style="color: #f97316;">0</div>
+        <span style="font-size: 0.78rem; color: #64748b;">自傷想法或明顯生活功能受損</span>
+      </div>
+      <div class="stat-card" style="border-left: 5px solid #f59e0b;">
+        <span style="font-size: 0.85rem; color: #b45309; font-weight: 700;">📋 黃色 ‧ 建議求助</span>
+        <div class="stat-number" id="statYellow" style="color: #f59e0b;">0</div>
+        <span style="font-size: 0.78rem; color: #64748b;">持續困擾，待真人了解</span>
+      </div>
+      <div class="stat-card" style="border-left: 5px solid #10b981;">
+        <span style="font-size: 0.85rem; color: #047857; font-weight: 700;">🌱 綠色 ‧ 一般支持</span>
+        <div class="stat-number" id="statGreen" style="color: #10b981;">0</div>
+        <span style="font-size: 0.78rem; color: #64748b;">AI 陪伴與自我照顧建議中</span>
+      </div>
+    </div>
+
+    <!-- 篩選列 -->
+    <div class="panel-card" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+      <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
+        <label style="font-size: 0.88rem; font-weight: 600;">分流層級：</label>
+        <select id="filterRisk" onchange="loadCases()" style="padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.88rem;">
+          <option value="all">全部層級</option>
+          <option value="red">🚨 紅色 立即危機</option>
+          <option value="orange">⚠️ 橙色 優先覆核</option>
+          <option value="yellow">📋 黃色 建議求助</option>
+          <option value="green">🌱 綠色 一般支持</option>
+        </select>
+
+        <label style="font-size: 0.88rem; font-weight: 600; margin-left: 0.5rem;">鄉鎮市：</label>
+        <select id="filterTownship" onchange="loadCases()" style="padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.88rem;">
+          <option value="all">全南投縣 13 鄉鎮</option>
+          <option value="南投市">南投市</option>
+          <option value="草屯鎮">草屯鎮</option>
+          <option value="埔里鎮">埔里鎮</option>
+          <option value="竹山鎮">竹山鎮</option>
+          <option value="集集鎮">集集鎮</option>
+          <option value="名間鄉">名間鄉</option>
+          <option value="鹿谷鄉">鹿谷鄉</option>
+          <option value="中寮鄉">中寮鄉</option>
+          <option value="魚池鄉">魚池鄉</option>
+          <option value="國姓鄉">國姓鄉</option>
+          <option value="水里鄉">水里鄉</option>
+          <option value="信義鄉">信義鄉 (原鄉)</option>
+          <option value="仁愛鄉">仁愛鄉 (原鄉)</option>
+        </select>
+
+        <label style="font-size: 0.88rem; font-weight: 600; margin-left: 0.5rem;">處理狀態：</label>
+        <select id="filterStatus" onchange="loadCases()" style="padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.88rem;">
+          <option value="all">全部狀態</option>
+          <option value="pending">待覆核</option>
+          <option value="student_requested_referral">學生同意轉介</option>
+          <option value="student_shared_summary">學生同意分享摘要</option>
+          <option value="reviewing">審查中</option>
+          <option value="contacted">已聯絡輔導</option>
+          <option value="referred">已轉介心衛中心/醫療</option>
+          <option value="completed">已結案/穩定</option>
+        </select>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem;">
+        <button onclick="loadCases()" style="padding: 0.45rem 0.9rem; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem; cursor: pointer;">
+          🔄 重新整理
+        </button>
+      </div>
+    </div>
+
+    <!-- 個案清單資料表 -->
+    <div style="background: white; border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);">
+      <table class="cases-table">
+        <thead>
+          <tr>
+            <th>個案 ID</th>
+            <th>學生代號</th>
+            <th>填寫的電子郵件（未驗證）</th>
+            <th>鄉鎮市</th>
+            <th>風險層級</th>
+            <th>主要困擾</th>
+            <th>量表前5題/自殺附加題</th>
+            <th>處理狀態</th>
+            <th>更新時間</th>
+            <th style="text-align: center;">操作</th>
+          </tr>
+        </thead>
+        <tbody id="casesTableBody">
+          <!-- 動態載入 -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- 一頁式個案摘要 Modal (One-Page Counselor Summary Modal) -->
+  <div class="modal-overlay" id="summaryModal">
+    <div class="modal-content" style="max-width: 820px; padding: 2.25rem;">
+      <button class="modal-close" onclick="closeSummaryModal()">×</button>
+      
+      <div id="summaryModalContent">
+        <!-- 動態渲染一頁式個案摘要 -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>安啦會客室 ‧ 授權原型工作臺（示範用途）</p>
+    <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.3rem;">
+      南投 2026 山城黑客松「少年仔、安啦會客室」 ‧ 未接入學校值班、報案或自動通知
+    </p>
+  </footer>
+
+  <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
+  <script src="/static/js/counselor.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# 本機環境與執行產物（不得上傳）
+.venv/
+__pycache__/
+*.pyc
+.env
+*.db
+*.db-journal
+anla_v13a1_backups/

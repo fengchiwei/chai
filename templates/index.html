@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>少年仔、安啦會客室 - 南投青少年心聲傾訴與心理守護</title>
+  <link rel="stylesheet" href="/static/css/style.css?v=satir-20261016">
+</head>
+<body class="student-page">
+
+  <!-- 頂部導航列 -->
+  <nav class="navbar student-navbar">
+    <a href="/" class="nav-brand">
+      <div class="nav-logo">🌱</div>
+      <div class="brand-text">
+        <h1>少年仔、安啦會客室</h1>
+        <span class="brand-tag">南投山城黑客松 ‧ AI 來尬聊</span>
+      </div>
+    </a>
+    <div class="student-header-tools">
+      <div class="nav-links" aria-label="需要時再用的求助入口">
+        <button type="button" class="nav-item header-tool" onclick="startConversationalCheckin()">聊聊近況</button>
+        <button type="button" id="headerDraftButton" class="nav-item header-tool" onclick="quickSend('請幫我寫給輔導老師的字條')">寫求助字條</button>
+        <button type="button" id="headerReferralButton" class="nav-item header-tool" onclick="window.AnlaNextSteps.openReferral()" hidden>查看轉介選項</button>
+        <a href="/resources" target="_blank" rel="noopener" class="nav-item">看南投資源</a>
+      </div>
+      <div class="student-header-meta">
+        <button type="button" id="studentIdentityBadge" class="student-profile-button" onclick="openOnboardingModal(true)" title="修改暱稱或選填聯絡資料">
+          <span id="badgeAlias">先用暱稱聊聊</span> · <span id="badgeEmail">學校／信箱選填</span>
+        </button>
+        <button id="ttsToggleBtn" class="voice-toggle-btn" onclick="toggleAutoSpeech()" title="切換是否自動語音朗讀回覆">🔇 語音朗讀：已關閉</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主內容區 -->
+  <div class="container">
+    
+    <div class="student-grid">
+      
+      <!-- 左側：AI 陪伴對話框 (純溫暖傾聽、不顯示任何燈號與評判) -->
+      <div class="chat-card">
+        <div class="chat-header">
+          <div class="chat-status-indicator">
+            <span style="font-size: 1rem;">🌱</span>
+            <span id="statusText" style="font-weight: 600; color: #334155;">安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要</span>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span id="modelIndicator" class="model-badge">
+              🤖 AI 對話
+            </span>
+            <span style="font-size: 0.8rem; background: #eef2ff; color: #4338ca; padding: 2px 8px; border-radius: 6px;">
+              南投專屬
+            </span>
+          </div>
+        </div>
+
+        <div class="companion-role-note">
+          <span id="companionRoleStatus" role="status" aria-live="polite">陪伴方式由你描述</span>
+          <p>可以直接說「請當一位耐心的學長陪我聊」，也能描述自己的角色、調整語氣，或說「恢復原本的方式」。這裡始終是 AI 陪伴。</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="message ai">
+            <div class="avatar">☀️</div>
+            <div class="bubble">
+              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋<br>
+              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，<br>
+              在這裡你可以放鬆把心事說出來，<b>按下方麥克風 🎙️ 也可以直接用說的喔！</b><br>
+              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。
+              <div style="margin-top: 0.5rem; text-align: right;">
+                <button class="btn-play-voice" onclick="speakMessage(this)">🔊 朗讀這段話</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 融入對話的檢核與心情探索標籤 -->
+        <div class="quick-tags">
+          <span class="quick-tag" onclick="quickSend('最近每天都睡不好，躺在床上一直翻來覆去，白天好累...')">🛌 聊聊這週的睡眠情況</span>
+          <span class="quick-tag" onclick="quickSend('這陣子胸口常常覺得很緊繃，莫名其妙就很想發脾氣，好煩躁...')">🌪️ 聊聊最近緊繃煩躁的感覺</span>
+          <span class="quick-tag" onclick="quickSend('最近心情好低落，做什麼事都提不起勁，覺得很空虛...')">🌧️ 聊聊心裡說不出的低落</span>
+          <span class="quick-tag" onclick="quickSend('常常覺得自己很沒用、比不上身邊的同學，好迷惘好自卑...')">🫂 聊聊覺得比不上別人的自卑</span>
+          <span class="quick-tag" style="background: #ecfdf5; border-color: #6ee7b7; color: #047857; font-weight: 700;" onclick="startConversationalCheckin()">🔋 安啦，陪我聊聊身心電力</span>
+        </div>
+
+        <!-- 語音辨識錄音中提示條 -->
+        <div id="recordingBanner" class="recording-banner" style="display: none;">
+          <div class="recording-dot"></div>
+          <span>正在傾聽您的聲音...（說完後再次點擊麥克風即可發送）</span>
+          <button onclick="stopVoiceRecognition()" style="background: none; border: none; color: #dc2626; font-size: 0.8rem; cursor: pointer; text-decoration: underline;">取消</button>
+        </div>
+
+        <!-- 輸入欄位 (含語音輸入麥克風) -->
+        <div class="chat-input-bar">
+          <!-- 語音輸入按鈕 -->
+          <button id="micBtn" class="btn-mic" onclick="toggleVoiceRecognition()" title="按一下用說的 (語音轉文字)">
+            🎙️
+          </button>
+          
+          <input type="text" id="userInput" placeholder="輸入文字或點擊左側 🎙️ 說說你的心情...（按 Enter 發送）" onkeypress="if(event.key === 'Enter') sendMessage()">
+          
+          <button class="btn-send" onclick="sendMessage()">發送 ✈️</button>
+        </div>
+
+      </div>
+
+      <!-- 右側：功能引導與南投緊急專線卡片 -->
+      <div class="sidebar-panel">
+        
+        <!-- 身心電力自然盤點卡 -->
+        <div class="panel-card" style="border-top: 4px solid var(--primary);">
+          <h3>🔋 身心電力自然檢核</h3>
+          <p style="font-size: 0.85rem; color: #475569; line-height: 1.6;">
+            可以從最近的睡眠、壓力和心情聊起。自然對話不等於正式量表，後台會顯示「未施測」。
+          </p>
+          <button class="btn-primary-action" onclick="startConversationalCheckin()" style="margin-top: 0.5rem;">
+            開始身心電力對話盤點 💬
+          </button>
+        </div>
+
+        <!-- 雙向語音對答支援卡 -->
+        <div class="panel-card">
+          <h3>🎙️ 雙向語音對答支援</h3>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+            專為打字不便或疲憊無力的青少年設計：
+          </p>
+          <ul style="font-size: 0.83rem; color: #475569; margin-left: 1.2rem; line-height: 1.6;">
+            <li><b>🎙️ 語音辨識</b>：點擊麥克風直接傾訴心事。</li>
+            <li><b>🔊 溫柔朗讀</b>：陪伴語音溫和朗讀，閉上眼也能聽。</li>
+            <li><b>⚡ 零門檻</b>：瀏覽器原生免安裝，手機電腦通用。</li>
+          </ul>
+        </div>
+
+        <!-- 隱私與安全承諾卡 -->
+        <div class="panel-card">
+          <h3>🛡️ 安全與隱私承諾</h3>
+          <ul style="font-size: 0.85rem; color: var(--text-secondary); margin-left: 1.2rem; line-height: 1.7;">
+            <li><b>對話無燈號標籤</b>：學生端不呈現任何疾病評分與風險燈號。</li>
+            <li><b>授權工作臺</b>：你明確同意後，授權人員才能在工作臺查看你分享的摘要；目前尚未接入正式學校值班機制。</li>
+            <li><b>先用暱稱聊聊</b>：學校與信箱都可留白，需要分享摘要時再自行補充；填寫不會自動寄信或通報。</li>
+          </ul>
+        </div>
+
+        <!-- 在地求助專線 -->
+        <div class="emergency-strip">
+          <h4>🚨 需要幫忙時的聯絡方式</h4>
+          <p style="font-size: 0.8rem; color: #7f1d1d; margin-bottom: 0.5rem;">如果你現在處於極度痛苦或危急情況，請隨時直撥：</p>
+          <div class="hotline-buttons">
+            <a href="tel:1925" class="btn-hotline">📞 1925 安心專線</a>
+            <a href="tel:1995" class="btn-hotline">📞 1995 生命線</a>
+            <a href="tel:1980" class="btn-hotline">📞 1980 張老師</a>
+            <a href="tel:119" class="btn-hotline">🚨 119 緊急救護</a>
+            <a href="tel:110" class="btn-hotline">📞 110 報案</a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 急救電話獨立於對話／同意表單，任何操作都不會遮住它們。 -->
+  <section id="urgentHelpPanel" class="urgent-help" role="region" aria-label="立即求助" {% if not show_urgent_help %}hidden{% endif %}>
+    <div class="urgent-primary">
+      <strong>現在請先找人陪你，直接求助</strong>
+      <div class="urgent-phones">
+        <a href="tel:119" id="urgent119" class="btn-hotline">119 緊急救護</a>
+        <a href="tel:110" class="btn-hotline">110 報案</a>
+        <a href="tel:1925" class="btn-hotline">1925 安心專線</a>
+      </div>
+    </div>
+    <div class="urgent-details">
+      <p>如果已經受傷或正在發生危險，請立即撥 119；有人威脅安全可撥 110。手機點電話可撥號，電腦請使用電話撥打。</p>
+      <p>你可以繼續說，也請找可信任的大人到身邊。這個網站不會自動通知學校或替你接通任何中心，請不要等待摘要被查看。</p>
+      <p><a href="tel:1995">1995 生命線</a></p>
+      <button type="button" id="urgentReferralButton" class="choice-chip" onclick="window.AnlaNextSteps.openReferral()" hidden>查看摘要與轉介選項</button>
+      <div id="urgentChoices"></div>
+      <button type="button" id="keepTalkingButton">繼續對話，保留求助電話</button>
+    </div>
+  </section>
+
+  <!-- 先閱讀資料說明即可聊天；聯絡資料可稍後補充，危機電話不受影響。 -->
+  <div class="modal-overlay" id="onboardingModal" style="display: none;">
+    <div class="modal-content" style="max-width: 520px; padding: 2.25rem;">
+      <button type="button" id="onboardingClose" class="modal-close" aria-label="關閉資料設定" onclick="document.getElementById('onboardingModal').style.display='none'" hidden>×</button>
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.3rem;">🌱</div>
+        <h2 style="font-size: 1.4rem; color: var(--primary-dark);">歡迎來到「少年仔、安啦會客室」</h2>
+        <p style="font-size: 0.86rem; color: var(--text-secondary); margin-top: 0.35rem; line-height: 1.6;">
+          少年仔你好，先用暱稱聊聊就好。學校、信箱都可以留白；沒關係，慢慢說。
+        </p>
+      </div>
+
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 0.9rem; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.88rem; font-weight: 700; color: #166534; margin-bottom: 0.25rem;">
+          🛡️ 資料使用說明
+        </div>
+        <div style="font-size: 0.82rem; color: #14532d; line-height: 1.5;">
+          本原型會在伺服器暫存最近的對話片段、你說過的事件與感受等整理，以及你選填的資料，供你查看待分享摘要；暫存於最後使用後 24 小時失效，後續使用時清理。只有你明確同意分享後，摘要才會存入受密碼保護的真人工作臺。若使用雲端 AI，對話文字會傳給該模型服務，請避免在對話中寫出姓名、電話或地址。學校與信箱可以不填；填寫不代表身分已驗證，也不會自動通知學校。目前沒有正式值班服務，若有立即危險，請直接使用下方電話求助。
+        </div>
+      </div>
+
+      <form id="onboardingForm" onsubmit="submitOnboarding(event)">
+        <label style="display:block;margin-bottom:.8rem;font-size:.82rem;line-height:1.5;">
+          <input id="onboardingConsent" type="checkbox" required> 我已閱讀上方資料使用說明，了解本網站不會自動聯絡學校或撥打電話。
+        </label>
+
+        <p style="font-size:.82rem;margin-bottom:1rem;">需要立即協助：<a href="tel:119">119 救護</a>／<a href="tel:110">110 報案</a>／<a href="tel:1925">1925 安心專線</a></p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">
+              如何稱呼您 (暱稱/代號)：
+            </label>
+            <input type="text" id="onboardingAlias" value="匿名同學" maxlength="30" placeholder="留白也可以，不用真實姓名" style="width: 100%; padding: 0.55rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; font-weight: 600; color: #334155; display: block; margin-bottom: 0.35rem;">
+              所在南投鄉鎮市：
+            </label>
+            <select id="onboardingTownship" style="width: 100%; padding: 0.55rem; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.88rem;">
+              <option value="南投市">南投市</option>
+              <option value="草屯鎮">草屯鎮</option>
+              <option value="埔里鎮">埔里鎮</option>
+              <option value="竹山鎮">竹山鎮</option>
+              <option value="集集鎮">集集鎮</option>
+              <option value="名間鄉">名間鄉</option>
+              <option value="鹿谷鄉">鹿谷鄉</option>
+              <option value="中寮鄉">中寮鄉</option>
+              <option value="魚池鄉">魚池鄉</option>
+              <option value="國姓鄉">國姓鄉</option>
+              <option value="水里鄉">水里鄉</option>
+              <option value="信義鄉">信義鄉 (原鄉)</option>
+              <option value="仁愛鄉">仁愛鄉 (原鄉)</option>
+            </select>
+          </div>
+        </div>
+
+        <details id="onboardingContactFields" class="optional-contact-fields">
+          <summary>學校／聯絡信箱（選填，也可以之後再補）</summary>
+          <p>想請人看摘要時，可補上學校或方便聯絡的信箱。沒有填也能繼續聊與查看專線；未留聯絡方式時，工作臺無法據此主動聯絡你。</p>
+          <label for="onboardingSchool">學校（選填）</label>
+          <input id="onboardingSchool" type="text" maxlength="100" autocomplete="organization">
+          <label for="onboardingEmail">聯絡電子郵件（選填，不限學校信箱）</label>
+          <input type="email" id="onboardingEmail" maxlength="254" placeholder="可以留白" autocomplete="email">
+        </details>
+
+        <button id="onboardingSubmit" type="submit" class="btn-primary-action" style="padding: 0.75rem; font-size: 1rem;">
+          先聊聊
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 頁尾 -->
+  <footer class="footer">
+    <div class="footer-links">
+      <a href="/">少年仔、安啦會客室</a>
+      <a href="/resources">南投心理地圖</a>
+    </div>
+    <p>南投縣 2026 年山城數位黑客松暨第四屆麥克松科技競賽 參賽作品 ‧ 團隊名稱：AI 來尬聊</p>
+    <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.3rem;">
+      指導老師：林家平 ‧ 隊長：蔡睿恩 ‧ 隊員：何小侓、洪聖傑、李欣亮 ‧ 同德高中 / 台中女中 / 台中一中 跨校聯隊
+    </p>
+  </footer>
+
+  <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
+  <script src="/static/js/app.js?v=satir-20261016"></script>
+  <script src="/static/js/referral.js?v=satir-20261016"></script>
+</body>
+</html>

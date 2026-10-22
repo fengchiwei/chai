@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>可解釋重播 - 少年仔、安啦會客室</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body style="background: #f1f5f9;">
+
+  <nav class="navbar" style="border-bottom: 2px solid #cbd5e1;">
+    <a href="/explain" class="nav-brand">
+      <div class="nav-logo" style="background: #eff6ff;">🔍</div>
+      <div class="brand-text">
+        <h1 style="color: #1e3a8a;">v1.3-B 可解釋儀表板</h1>
+        <span class="brand-tag" style="background: #dbeafe; color: #1d4ed8;">只重播虛構對話，不讀取或寫入真實資料</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/counselor" class="nav-item counselor-btn">🧑‍⚕️ 工作臺總覽</a>
+      <a href="/demo" class="nav-item demo-btn">⚡ 評審展示區</a>
+      <a href="/explain" class="nav-item active">🔍 可解釋重播</a>
+      <form method="post" action="/logout" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="nav-item" style="border:0;cursor:pointer">登出</button>
+      </form>
+    </div>
+  </nav>
+
+  <div class="container" style="max-width: 1350px;">
+    <p class="explain-notice">
+      每一則線索都必須能對回學生原話；燈號只會因規則或已確認的歷史警訊提高，不會被後續短回覆降低。
+      重播使用本機規則回覆，<strong>沒有呼叫雲端模型、沒有建立個案、沒有通知任何人</strong>。這不是診斷、量表分數或臨床驗證。
+    </p>
+
+    <div class="explain-layout">
+      <aside class="panel-card explain-list">
+        <h3>虛構情境</h3>
+        <div id="scenarioList" role="list"></div>
+      </aside>
+
+      <main class="explain-main" id="explainMain">
+        <div class="panel-card explain-empty">請從左側選擇一個虛構情境。</div>
+      </main>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>v1.3-B 可解釋重播 ‧ 僅供授權人員與評審檢視規則來源</p>
+  </footer>
+
+  <script src="/static/js/explain.js"></script>
+</body>
+</html>

@@ -1,0 +1,587 @@
+"""少年仔、安啦會客室：本機展示用 Flask 應用。"""
+
+import hmac
+import json
+import os
+import re
+import secrets
+import threading
+from functools import wraps
+
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+
+from config import Config
+from engine.ai_agent import (
+    generate_counselor_one_page_summary,
+    generate_help_seeking_draft,
+    generate_youth_response,
+    prepare_dialogue,
+)
+from engine.dialogue_policy import POLICY_VERSION, build_state, remember_turn
+from engine.dialogue_role import public_role
+from engine.explain import VERSION as EXPLAIN_VERSION, explain, load_scenarios
+from engine.wellbeing_signals import update_wellbeing_signals
+from engine.triage import RISK_LEVEL_WEIGHTS, perform_triage
+from engine.support import choose_support_offer
+from engine.referral import (
+    consent_kind, get_student_context, record_student_consent,
+    set_student_profile, stage_student_summary,
+    save_dialogue_state,
+)
+from models.database import (
+    get_all_cases,
+    get_case_by_id,
+    init_db,
+    update_case_status,
+)
+
+app = Flask(__name__)
+_dialogue_locks = [threading.RLock() for _ in range(64)]
+app.config.from_object(Config)
+init_db()
+
+BASE_DIR = os.path.dirname(__file__)
+with open(os.path.join(BASE_DIR, "data", "nantou_resources.json"), encoding="utf-8") as f:
+    NANTOU_RESOURCES = json.load(f)
+with open(os.path.join(BASE_DIR, "data", "mock_cases.json"), encoding="utf-8") as f:
+    MOCK_CASES = json.load(f)
+EXPLAIN_SCENARIOS = load_scenarios()
+
+EMAIL_PATTERN = re.compile(r"^[^\s@]{1,64}@[^\s@]{1,253}$")
+TOWNSHIPS = {
+    "南投市", "草屯鎮", "埔里鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉",
+    "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉", "信義鄉", "仁愛鄉",
+}
+
+
+def csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_urlsafe(24)
+    return session["csrf_token"]
+
+
+def csrf_valid():
+    token = request.headers.get("X-CSRF-Token") or request.form.get("csrf_token", "")
+    return bool(token) and hmac.compare_digest(token, session.get("csrf_token", ""))
+
+
+def require_csrf():
+    if not csrf_valid():
+        return jsonify({"error": "安全驗證已過期，請重新整理頁面"}), 403
+    return None
+
+
+def staff_only(view):
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not session.get("staff"):
+            if request.path.startswith("/api/"):
+                return jsonify({"error": "請先登入授權工作臺"}), 401
+            return redirect(url_for("login"))
+        return view(*args, **kwargs)
+    return wrapper
+
+
+def student_identity():
+    # 身分只沿用伺服器 session；信箱是選填資料，不是登入憑證。
+    if current_student_context() is None:
+        return None
+    return session.get("student_context_id")
+
+
+def current_student_context():
+    if not session.get("student_onboarded"):
+        return None
+    return get_student_context(session.get("student_context_id"), session.get("student_email_hash"))
+
+
+def referral_resources(township):
+    """鄉鎮用於就近資訊排序，不代表已派案或保證該單位受理。"""
+    selected = [r for r in NANTOU_RESOURCES if
+                r["id"] in ("stu_center", "crisis_1925") or
+                township in r.get("suggested_townships", [])]
+    return [{"name": r["name"], "phone": r["phone"],
+             "phone_href": "tel:" + re.sub(r"[^0-9+]", "", r["phone"].split("#")[0]),
+             "source_url": r.get("source_url", "")}
+            for r in selected]
+
+
+def student_next_steps(context):
+    if not context:
+        return None
+    level = context["draft"].get("risk_level", "green")
+    offered_level = session.get("referral_offer_level", "green")
+    prompt_referral = level in ("orange", "red") and RISK_LEVEL_WEIGHTS[level] > RISK_LEVEL_WEIGHTS.get(offered_level, 0)
+    if prompt_referral:
+        session["referral_offer_level"] = level
+    choices = {
+        "green": [("continue", "繼續聊"), ("school", "了解學校輔導室"), ("resources", "看南投資源")],
+        "yellow": [("draft", "幫我寫給輔導老師的字條"), ("resources", "看資源"), ("continue", "先繼續聊")],
+        "orange": [("consent", "A 我願意轉介"), ("decline", "B 先不要轉介、只要專線")],
+        "red": [("consent", "願意留稱呼請人看摘要"), ("call", "我先打電話")],
+    }
+    profile = context["profile"]
+    preview = None
+    if consent_kind(context):
+        preview = (
+            f"學校：{profile.get('student_school') or '尚未填寫'}\n"
+            f"信箱：{profile['student_email'] + '（未驗證）' if profile['student_email'] else '未提供'}\n鄉鎮：{profile['township']}\n"
+            f"目前對話節錄：\n{context['draft'].get('dialogue_snippet') or '尚無對話文字'}"
+        )
+    return {
+        "choices": [{"action": action, "label": label} for action, label in choices[level]],
+        "revision": context["revision"], "consent_kind": consent_kind(context),
+        "prompt_referral": prompt_referral,
+        "preferred_name": profile["student_alias"], "summary_preview": preview,
+        "contact": {"student_email": profile["student_email"], "student_school": profile.get("student_school", "")},
+        "township": profile["township"], "resources": referral_resources(profile["township"]),
+        "recorded": context.get("consented_revision") == context["revision"],
+    }
+
+
+@app.after_request
+def sensitive_cache_policy(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    if request.path.startswith("/api/") or request.path in ("/", "/counselor", "/login", "/demo", "/explain"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
+@app.route("/")
+def index():
+    context = current_student_context()
+    urgent = session.get("highest_risk") == "red" or (context or {}).get("draft", {}).get("risk_level") == "red"
+    return render_template("index.html", csrf_token=csrf_token(), show_urgent_help=urgent)
+
+
+@app.route("/resources")
+def resources():
+    context = current_student_context()
+    township = context["profile"]["township"] if context else "all"
+    return render_template("resources.html", initial_township=township)
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if not Config.WORKBENCH_PASSWORD:
+        return render_template("login.html", disabled=True, csrf_token=csrf_token()), 503
+    if request.method == "POST":
+        error = require_csrf()
+        if error:
+            return error
+        password = request.form.get("password", "")
+        if hmac.compare_digest(password, Config.WORKBENCH_PASSWORD):
+            # 同一瀏覽器的學生頁可能仍在對話；保留當前對話的安全警訊與 CSRF。
+            session["staff"] = True
+            return redirect(url_for("counselor"))
+        return render_template("login.html", disabled=False, error="密碼錯誤", csrf_token=csrf_token()), 401
+    return render_template("login.html", disabled=False, csrf_token=csrf_token())
+
+
+@app.route("/logout", methods=["POST"])
+@staff_only
+def logout():
+    error = require_csrf()
+    if error:
+        return error
+    session.pop("staff", None)
+    return redirect(url_for("login"))
+
+
+@app.route("/counselor")
+@staff_only
+def counselor():
+    return render_template("counselor.html", csrf_token=csrf_token())
+
+
+@app.route("/demo")
+@staff_only
+def demo():
+    return render_template("demo.html")
+
+
+@app.route("/explain")
+@staff_only
+def explain_dashboard():
+    return render_template("explain.html", csrf_token=csrf_token())
+
+
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok", "service": "少年仔、安啦會客室 Demo", "dialogue_policy": POLICY_VERSION})
+
+
+@app.route("/api/onboarding", methods=["POST"])
+def api_onboarding():
+    error = require_csrf()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return jsonify({"error": "登錄資料格式不正確"}), 400
+    email = data.get("student_email", "")
+    if not isinstance(email, str) or (email.strip() and not EMAIL_PATTERN.fullmatch(email.strip())):
+        return jsonify({"error": "電子郵件可留白；若要填寫，請使用有效的信箱格式"}), 400
+    if data.get("privacy_acknowledged") is not True:
+        return jsonify({"error": "請先閱讀並確認資料使用說明"}), 400
+    alias = data.get("student_alias", "")
+    alias = alias.strip()[:30] if isinstance(alias, str) else ""
+    township = data.get("township", "南投市")
+    school = data.get("student_school", "")
+    if not isinstance(school, str) or len(school) > 100:
+        return jsonify({"error": "學校名稱需為 100 字以內的文字"}), 400
+    # 保留舊欄位名稱以相容既有暫存；新對話使用隨機識別，不能把所有空信箱視為同一人。
+    if not session.get("student_email_hash"):
+        session["student_email_hash"] = secrets.token_hex(32)
+    email_hash = session["student_email_hash"]
+    session["student_onboarded"] = True
+    session["student_email_hash"] = email_hash
+    session["student_alias"] = alias or "匿名同學"
+    session["student_township"] = township if isinstance(township, str) and township in TOWNSHIPS else "南投市"
+    # 補填或清除聯絡資料不會另開對話，也不會清除已出現的危機與資源邀請紀錄。
+    if not session.get("student_context_id"):
+        session["student_context_id"] = secrets.token_urlsafe(32)
+    context = set_student_profile(session["student_context_id"], email_hash, {
+        "student_email": email.strip().lower(), "student_alias": session["student_alias"],
+        "student_school": school.strip(), "township": session["student_township"],
+    })
+    if not context["draft"] and session.get("highest_risk", "green") != "green":
+        # 暫存到期後重新確認同一身分，也不清除原先已出現的求助訊號。
+        triage = perform_triage(text="", previous_level=session["highest_risk"])
+        context = stage_student_summary(session["student_context_id"], email_hash, triage, {})
+    return jsonify({"success": True, "email_verified": False, "notification_connected": False,
+                    "student_profile": context["profile"], "next_steps": student_next_steps(context),
+                    "show_urgent_help": session.get("highest_risk") == "red" or context["draft"].get("risk_level") == "red"})
+
+
+@app.route("/api/chat/state")
+def api_chat_state():
+    """重新整理學生頁時持續呈現必要的求助連結，不回傳後台燈號。"""
+    context = current_student_context()
+    return jsonify({
+        "show_urgent_help": session.get("highest_risk") == "red" or (context or {}).get("draft", {}).get("risk_level") == "red",
+        "student_profile": context["profile"] if context else None,
+        "companion_role": public_role((context or {}).get("dialogue_state")),
+        "next_steps": student_next_steps(context),
+    })
+
+
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    error = require_csrf()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return jsonify({"error": "資料格式不正確"}), 400
+    if student_identity() is None:
+        return jsonify({"error": "請先閱讀資料使用說明；暱稱、學校與信箱皆可留白"}), 403
+    message = data.get("message")
+    if not isinstance(message, str) or not message.strip() or len(message) > 2000:
+        return jsonify({"error": "訊息需為 1 至 2000 字"}), 400
+    message = message.strip()
+    # Browser-provided history/state is not authoritative. The expiring server context owns memory.
+    lock = _dialogue_locks[sum(session["student_context_id"].encode("utf-8")) % len(_dialogue_locks)]
+    with lock:
+        return process_chat_turn(message)
+
+
+def process_chat_turn(message):
+    context = current_student_context()
+    if context is None:
+        return jsonify({"error": "請重新確認登錄資料"}), 403
+    previous_level = max(
+        (session.get("highest_risk", "green"), context["draft"].get("risk_level", "green")),
+        key=RISK_LEVEL_WEIGHTS.get,
+    )
+    triage = perform_triage(text=message, previous_level=previous_level)
+    previous_state = context.get("dialogue_state", {})
+    history = previous_state.get("history", [])
+    triage, dialogue_state = prepare_dialogue(message, triage, previous_state, history)
+    context = stage_student_summary(session["student_context_id"], session["student_email_hash"], triage, {}, message)
+    saved_triage = context["draft"]["triage"]
+    if RISK_LEVEL_WEIGHTS[saved_triage["level"]] > RISK_LEVEL_WEIGHTS[triage["level"]]:
+        triage = saved_triage
+        dialogue_state = build_state(message, triage, previous_state, history=history)
+    # v1.3-A: record evidence-bound wellbeing notes without affecting triage or the reply.
+    dialogue_state["wellbeing_signals"] = update_wellbeing_signals(
+        previous_state.get("wellbeing_signals"), message, dialogue_state)
+    level = triage["level"]
+    session["highest_risk"] = level
+    if level in ("orange", "red") and re.search(r"^(?:我)?(?:現在|還是|改成)?(?:願意|想要?|要)轉介", message):
+        session.pop("referral_offer_level", None)
+    offer, offer_state = choose_support_offer(message, level, session.get("support_offer_state"), dialogue_state)
+    reply = generate_youth_response(message, triage, history, support_offer=offer, dialogue_state=dialogue_state)
+    try:
+        context = save_dialogue_state(session["student_context_id"], session["student_email_hash"],
+            remember_turn(dialogue_state, message, reply["reply"]), previous_state.get("turn_count", 0))
+    except ValueError as exc:
+        return jsonify({"error": str(exc), "show_urgent_help": session.get("highest_risk") == "red"}), 409
+    session["support_offer_state"] = offer_state
+    return jsonify({
+        "reply": reply["reply"],
+        "model_used": reply["model_used"],
+        "companion_role": public_role(dialogue_state),
+        "support_offer": offer,
+        "show_urgent_help": level == "red",
+        "show_support_help": level in ("orange", "red"),
+        "notification_connected": False,
+        "next_steps": student_next_steps(context),
+    })
+
+
+@app.route("/api/assessment", methods=["POST"])
+def api_assessment():
+    error = require_csrf()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    if not isinstance(data, dict):
+        return jsonify({"error": "資料格式不正確"}), 400
+    if student_identity() is None:
+        return jsonify({"error": "請先閱讀資料使用說明；不需要填寫學校電子郵件"}), 403
+    try:
+        triage = perform_triage(
+            text=str(data.get("dialogue_snippet", ""))[:2000],
+            bsrs5_answers=data.get("bsrs5"),
+            duration=str(data.get("duration", ""))[:100],
+            life_impact=str(data.get("life_impact", ""))[:300],
+            support_system=str(data.get("support_system", ""))[:300],
+            previous_level=session.get("highest_risk", "green"),
+        )
+        if not triage["bsrs_details"]["completed"]:
+            raise ValueError("請完整填寫六題後再提交正式量表")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    context = current_student_context()
+    if context is None:
+        return jsonify({"error": "請重新確認登錄資料"}), 403
+    context = stage_student_summary(
+        session["student_context_id"], session["student_email_hash"], triage,
+        {
+            "category": str(data.get("category", "身心狀況檢核"))[:100],
+            "duration": str(data.get("duration", "尚未提及"))[:100],
+            "life_impact": str(data.get("life_impact", "尚未提及"))[:300],
+            "support_system": str(data.get("support_system", "尚未提及"))[:300],
+            "bsrs5": data["bsrs5"],
+        },
+        message=str(data.get("dialogue_snippet", ""))[:1200] or None,
+    )
+    level = context["draft"]["risk_level"]
+    session["highest_risk"] = level
+    return jsonify({
+        "message": "已完成自填檢核；你同意分享後，摘要才會進入真人工作臺。",
+        "help_draft": generate_help_seeking_draft(context["draft"]),
+        "show_urgent_help": level == "red", "notification_connected": False,
+        "next_steps": student_next_steps(context),
+    })
+
+
+@app.route("/api/referral/consent", methods=["POST"])
+def api_referral_consent():
+    error = require_csrf()
+    if error:
+        return error
+    context = current_student_context()
+    if context is None:
+        return jsonify({"error": "請先確認登錄資料"}), 403
+    data = request.get_json(silent=True)
+    allowed = {"consent", "preferred_name", "revision", "consent_kind"}
+    if not isinstance(data, dict) or set(data) - allowed or type(data.get("consent")) is not bool:
+        return jsonify({"error": "請提供同意布林值；身分與鄉鎮由本次登錄帶入"}), 400
+    name = data.get("preferred_name", "")
+    if not isinstance(name, str) or len(name) > 30 or any(ord(c) < 32 for c in name):
+        return jsonify({"error": "稱呼請填 30 字以內的單行文字，也可以留白"}), 400
+    resources = referral_resources(context["profile"]["township"])
+    if data["consent"] is False:
+        return jsonify({"recorded": False, "resources": resources,
+                        "message": "這次沒有新增分享摘要，你可以先打電話，也可以繼續說。",
+                        "notification_connected": False, "external_referral_sent": False})
+    if type(data.get("revision")) is not int or data.get("consent_kind") not in ("summary", "referral"):
+        return jsonify({"error": "請先查看目前的下一步選擇與摘要"}), 400
+    try:
+        case = record_student_consent(
+            session["student_context_id"], session["student_email_hash"],
+            data["revision"], data["consent_kind"], name.strip(),
+        )
+    except ValueError as exc:
+        latest = current_student_context()
+        return jsonify({"error": str(exc), "next_steps": student_next_steps(latest),
+                        "show_urgent_help": (latest or {}).get("draft", {}).get("risk_level") == "red"}), 409
+    session["case_id"] = case["case_id"]
+    is_referral = case["summary"]["student_consent"]["kind"] == "referral"
+    response = {
+        "recorded": True, "case_id": case["case_id"], "resources": resources,
+        "message": "你同意分享的摘要已存入本網站的真人工作臺，等待授權人員查看。"
+                   "目前沒有自動通知學校，也沒有接通或送交南投輔導中心；需要立即協助請直接打電話。",
+        "notification_connected": False, "external_referral_sent": False,
+    }
+    if is_referral:
+        profile = case["summary"]["student_profile"]
+        response["referral_form"] = (
+            "少年仔、安啦會客室｜學生同意轉介單（尚未對外送出）\n"
+            f"紀錄編號：{case['case_id']}\n希望被稱呼：{case['student_alias']}\n"
+            f"學校：{profile.get('student_school') or '尚未填寫'}\n"
+            f"信箱：{case['student_email'] + '（未驗證）' if case['student_email'] else '未提供'}\n鄉鎮：{case['township']}\n"
+            f"同意時間：{case['summary']['student_consent']['consented_at']}\n"
+            f"學生原話節錄：\n{case.get('dialogue_snippet') or '尚無對話文字'}\n\n"
+            "公開聯絡電話：\n" + "\n".join(f"{r['name']}：{r['phone']}" for r in resources)
+            + "\n本單只保存在本網站工作臺；實際聯絡、受理與轉介需由真人另行辦理。"
+        )
+    return jsonify(response)
+
+
+@app.route("/api/config/llm", methods=["GET", "POST"])
+@staff_only
+def api_config_llm():
+    if request.method == "POST":
+        return jsonify({"error": "請在啟動前用環境變數設定模型和 API 金鑰"}), 405
+    return jsonify({
+        "provider": Config.LLM_PROVIDER,
+        "model": Config.GEMINI_MODEL if Config.LLM_PROVIDER == "gemini" else Config.OPENAI_MODEL,
+        "temperature": Config.LLM_TEMPERATURE,
+        "has_openai_key": bool(Config.OPENAI_API_KEY),
+        "has_gemini_key": bool(Config.GEMINI_API_KEY),
+    })
+
+
+@app.route("/api/cases")
+@staff_only
+def api_get_cases():
+    cases = get_all_cases(
+        request.args.get("risk"), request.args.get("township"), request.args.get("status")
+    )
+    return jsonify({"cases": cases, "count": len(cases)})
+
+
+@app.route("/api/cases/<case_id>")
+@staff_only
+def api_get_case(case_id):
+    case = get_case_by_id(case_id)
+    return jsonify({"case": case}) if case else (jsonify({"error": "找不到個案"}), 404)
+
+
+@app.route("/api/cases/<case_id>/status", methods=["POST"])
+@staff_only
+def api_update_case_status(case_id):
+    error = require_csrf()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    status = data.get("status")
+    notes = data.get("notes", "")
+    decision = data.get("decision_action", "")
+    if not isinstance(notes, str) or not isinstance(decision, str) or len(notes) > 1000:
+        return jsonify({"error": "備註格式不正確或過長"}), 400
+    if status in ("contacted", "referred") and (not data.get("contact_confirmed") or not notes.strip()):
+        return jsonify({"error": "請真人在系統外完成聯繫或轉介，並記錄處理方式與時間"}), 400
+    if not update_case_status(case_id, status, notes, decision[:200], actor="已登入工作臺人員"):
+        return jsonify({"error": "個案不存在或狀態不正確"}), 400
+    return jsonify({"success": True})
+
+
+@app.route("/api/stats")
+@staff_only
+def api_stats():
+    cases = get_all_cases()
+    return jsonify({
+        "total": len(cases),
+        **{level: sum(c["risk_level"] == level for c in cases) for level in RISK_LEVEL_WEIGHTS},
+        "pending": sum(c["status"] in ("pending", "student_requested_referral", "student_shared_summary") for c in cases),
+        "in_progress": sum(c["status"] in ("reviewing", "contacted") for c in cases),
+        "completed": sum(c["status"] in ("referred", "completed") for c in cases),
+        "townships_covered": len({c["township"] for c in cases}),
+    })
+
+
+@app.route("/api/mock-cases")
+@staff_only
+def api_get_mock_cases():
+    return jsonify({"mock_cases": MOCK_CASES, "count": len(MOCK_CASES)})
+
+
+@app.route("/api/demo/evaluate/<case_id>")
+@staff_only
+def api_demo_evaluate(case_id):
+    """只讀的示範評估；絕不把模擬案例灌進真實工作臺。"""
+    item = next((case for case in MOCK_CASES if case.get("case_id") == case_id), None)
+    if item is None:
+        return jsonify({"error": "找不到模擬案例"}), 404
+    triage = perform_triage(
+        text=item.get("dialogue_snippet", ""),
+        bsrs5_answers=item.get("bsrs5"),
+        duration=item.get("duration", ""),
+        life_impact=item.get("life_impact", ""),
+        support_system=item.get("support_system", ""),
+    )
+    return jsonify({
+        "case_id": case_id,
+        "expected_level": item.get("risk_level"),
+        "actual_level": triage["level"],
+        "explainability": triage["explainability"],
+        "summary": generate_counselor_one_page_summary(item, triage),
+    })
+
+
+@app.route("/api/explain/scenarios")
+@staff_only
+def api_explain_scenarios():
+    """v1.3-B：只列出虛構重播情境，不讀取任何真實對話。"""
+    return jsonify({"version": EXPLAIN_VERSION, "scenarios": [
+        {"id": s["id"], "title": s.get("title", s["id"]), "purpose": s.get("purpose", ""),
+         "turn_count": len(s["turns"]), "expected_highest": s.get("expected_highest")}
+        for s in EXPLAIN_SCENARIOS]})
+
+
+@app.route("/api/explain/<scenario_id>")
+@staff_only
+def api_explain_scenario(scenario_id):
+    """離線重播虛構對話；不呼叫模型、不寫入資料庫、不建立個案。"""
+    scenario = next((s for s in EXPLAIN_SCENARIOS if s["id"] == scenario_id), None)
+    if scenario is None:
+        return jsonify({"error": "找不到虛構情境"}), 404
+    return jsonify(explain(scenario))
+
+
+@app.route("/api/resources")
+def api_get_resources():
+    township = request.args.get("township", "all")
+    category = request.args.get("category", "all")
+    keyword = request.args.get("keyword", "").strip().lower()
+    matches = [
+        resource for resource in NANTOU_RESOURCES
+        if (township == "all" or resource["township"] == township
+            or "全國" in resource["township"]
+            or (township in TOWNSHIPS and resource["id"] == "stu_center")
+            or township in resource.get("suggested_townships", []))
+        and (category == "all" or category in resource["category"])
+        and (not keyword or keyword in resource["name"].lower()
+             or keyword in resource["township"].lower()
+             or any(keyword in service.lower() for service in resource["services"]))
+    ]
+    return jsonify({"resources": matches, "total": len(matches)})
+
+
+@app.route("/api/generate-draft", methods=["POST"])
+def api_generate_draft():
+    error = require_csrf()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    context = current_student_context()
+    if context is None:
+        return jsonify({"error": "請先確認登錄資料"}), 403
+    if not isinstance(data, dict):
+        return jsonify({"error": "資料格式不正確"}), 400
+    target = data.get("target", "輔導老師")
+    if target not in ("輔導老師", "班導師", "家長"):
+        return jsonify({"error": "求助對象不正確"}), 400
+    draft = context["draft"]
+    case_info = {**draft, "category": draft.get("dialogue_snippet", "")[-300:] or "最近的困擾"}
+    return jsonify({"target": target, "draft": generate_help_seeking_draft(case_info, target),
+                    "next_steps": student_next_steps(context),
+                    "show_urgent_help": context["draft"].get("risk_level") == "red"})
+
+
+if __name__ == "__main__":
+    app.run(host=Config.HOST, port=5000, debug=Config.DEBUG)

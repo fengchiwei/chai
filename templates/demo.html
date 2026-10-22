@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>黑客松現場展示與評審測試中心 - 少年仔、安啦會客室</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- 頂部導航 -->
+  <nav class="navbar" style="border-bottom: 2px solid #f472b6;">
+    <a href="/demo" class="nav-brand">
+      <div class="nav-logo" style="background: #fdf2f8;">⚡</div>
+      <div class="brand-text">
+        <h1 style="color: #9d174d;">黑客松現場展示與評審測試驗證中心</h1>
+        <span class="brand-tag" style="background: #fce7f3; color: #be185d;">30 組標準測試矩陣 ‧ 核心模組全面檢核</span>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-item">💬 學生端會客室</a>
+      <a href="/counselor" class="nav-item counselor-btn">🧑‍⚕️ 真人工作臺</a>
+      <a href="/resources" class="nav-item">📍 南投資源地圖</a>
+      <a href="/demo" class="nav-item active demo-btn">⚡ 評審展示區</a>
+      <a href="/explain" class="nav-item">🔍 可解釋重播</a>
+    </div>
+  </nav>
+
+  <div class="container" style="max-width: 1300px;">
+    
+    <!-- 競賽亮點檢核卡 -->
+    <div style="background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; padding: 1.75rem; border-radius: 16px; margin-bottom: 1.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span style="background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600;">
+            🏆 2026 南投山城黑客松 ‧ 團隊：AI 來尬聊
+          </span>
+          <h2 style="font-size: 1.6rem; margin-top: 0.5rem; font-weight: 800;">模擬情境檢查（結果以實際執行為準）</h2>
+          <p style="font-size: 0.95rem; opacity: 0.9; margin-top: 0.25rem;">
+            展示對話、分流、量表處理與摘要頁；測試結果不是臨床驗證，也不會自動通報。
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem;">
+          <button onclick="runAllVerificationTests()" class="btn-primary-action" style="background: #ffffff; color: #4338ca; font-weight: 700; padding: 0.75rem 1.25rem;">
+            ▶️ 一鍵執行 30 組案例全自動分流驗證
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 驗證成果 KPI 卡片 -->
+    <div class="stat-cards-row">
+      <div class="stat-card">
+        <span style="font-size: 0.85rem; color: #64748b;">🎯 模擬案例驗證總數</span>
+        <div class="stat-number" style="color: var(--primary);">30 組</div>
+        <span style="font-size: 0.78rem; color: #10b981; font-weight: 600;">按上方按鈕檢查是否符合預期</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size: 0.85rem; color: #64748b;">📍 南投在地心理資源庫</span>
+        <div class="stat-number" style="color: #0284c7;">26 筆</div>
+        <span style="font-size: 0.78rem; color: #0284c7; font-weight: 600;">涵蓋南投 13 鄉鎮市</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size: 0.85rem; color: #64748b;">⚡ 分流規則引擎平均耗時</span>
+        <div class="stat-number" style="color: #10b981;">以測試結果為準</div>
+        <span style="font-size: 0.78rem; color: #64748b;">依本機執行時間而異</span>
+      </div>
+      <div class="stat-card">
+        <span style="font-size: 0.85rem; color: #64748b;">🛡️ 橙紅案例真人摘要率</span>
+        <div class="stat-number" style="color: #ef4444;">需覆核</div>
+        <span style="font-size: 0.78rem; color: #10b981; font-weight: 600;">示範案例與真實紀錄分開存放</span>
+      </div>
+    </div>
+
+    <!-- 快速載入典型情境展示卡 -->
+    <div class="panel-card" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+        🎬 評審展示專屬 ‧ 典型情境一鍵注入測試
+      </h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem;">
+        
+        <div style="border: 1px solid #fde68a; background: #fffbeb; padding: 1rem; border-radius: 12px;">
+          <span class="badge-level badge-yellow">黃色 ‧ 建議求助</span>
+          <h4 style="margin: 0.4rem 0;">女主角「小晴」原型案例</h4>
+          <p style="font-size: 0.82rem; color: #78350f;">南投高中生，因考試同儕想拒學但怕輔導室標籤。AI 同理後生成給導師求助字條與南投資源推薦。</p>
+          <button onclick="injectTestCase('CASE-Y01')" style="margin-top: 0.6rem; width: 100%; padding: 0.4rem; background: #d97706; color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
+            檢查模擬分流結果 ➡️
+          </button>
+        </div>
+
+        <div style="border: 1px solid #fed7aa; background: #fff7ed; padding: 1rem; border-radius: 12px;">
+          <span class="badge-level badge-orange">橙色 ‧ 優先覆核</span>
+          <h4 style="margin: 0.4rem 0;">自傷意念「薇薇」案例</h4>
+          <p style="font-size: 0.82rem; color: #9a3412;">拿美工刀劃手、BSRS-5 第 6 題得 3 分。系統立刻阻斷一般回答，僅在模擬區顯示分流結果。</p>
+          <button onclick="injectTestCase('CASE-O01')" style="margin-top: 0.6rem; width: 100%; padding: 0.4rem; background: #ea580c; color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
+            檢查模擬分流結果 ➡️
+          </button>
+        </div>
+
+        <div style="border: 1px solid #fecaca; background: #fef2f2; padding: 1rem; border-radius: 12px;">
+          <span class="badge-level badge-red">紅色 ‧ 立即危機</span>
+          <h4 style="margin: 0.4rem 0;">工具備妥正在進行「俊傑」案例</h4>
+          <p style="font-size: 0.82rem; color: #991b1b;">木炭噴槍已備妥、膠帶已貼門縫。觸發最高危險阻斷，出示 119/110 直撥，不會自動撥號或通知。</p>
+          <button onclick="injectTestCase('CASE-R01')" style="margin-top: 0.6rem; width: 100%; padding: 0.4rem; background: #dc2626; color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
+            檢查模擬分流結果 ➡️
+          </button>
+        </div>
+
+        <div style="border: 1px solid #a7f3d0; background: #ecfdf5; padding: 1rem; border-radius: 12px;">
+          <span class="badge-level badge-green">綠色 ‧ 一般支持</span>
+          <h4 style="margin: 0.4rem 0;">段考焦慮「阿翰」案例</h4>
+          <p style="font-size: 0.82rem; color: #065f46;">短期考試壓力、無自傷想法，AI 傾聽並提供番茄鐘讀書規劃與腹式呼吸放鬆法。</p>
+          <button onclick="injectTestCase('CASE-G01')" style="margin-top: 0.6rem; width: 100%; padding: 0.4rem; background: #059669; color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">
+            檢查模擬分流結果 ➡️
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 30 組案例檢驗詳細清單 -->
+    <div style="background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.15rem;">📋 30 組模擬情境測試案例矩陣</h3>
+        <div style="display: flex; gap: 0.5rem;" id="filterButtons">
+          <button class="quick-tag" onclick="filterMockTable('all')">全部 (30)</button>
+          <button class="quick-tag" onclick="filterMockTable('green')">綠色 (8)</button>
+          <button class="quick-tag" onclick="filterMockTable('yellow')">黃色 (8)</button>
+          <button class="quick-tag" onclick="filterMockTable('orange')">橙色 (8)</button>
+          <button class="quick-tag" onclick="filterMockTable('red')">紅色 (6)</button>
+        </div>
+      </div>
+
+      <table class="cases-table">
+        <thead>
+          <tr>
+            <th>編號</th>
+            <th>模擬人物與鄉鎮</th>
+            <th>情境類型</th>
+            <th>BSRS-5 得分</th>
+            <th>預期分流</th>
+            <th>引擎即時驗證</th>
+            <th>測試操作</th>
+          </tr>
+        </thead>
+        <tbody id="mockTableBody">
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="demoDetailModal">
+    <div class="modal-content" style="max-width: 760px;">
+      <button class="modal-close" onclick="closeDemoModal()">×</button>
+      <div id="demoDetailContent"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>南投縣 2026 年山城數位黑客松暨第四屆麥克松科技競賽 評審驗證專區</p>
+    <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 0.3rem;">
+      專案團隊：AI 來尬聊 ‧ 計畫名稱：少年仔、安啦會客室
+    </p>
+  </footer>
+
+  <script src="/static/js/demo.js"></script>
+</body>
+</html>
