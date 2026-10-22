@@ -64,7 +64,7 @@ async function injectTestCase(caseId) {
       <p>判讀理由（供覆核）：${E(result.explainability)}</p>
       <p>理論依據：${(result.theoretical_basis || []).map(code => `<span class="explain-chip theory">${E(code)}</span>`).join("") || "無"}
         ${result.pending_disambiguation ? '<span class="explain-tag pending">待消歧</span>' : ""}</p>
-      <p><a href="/explain">開啟可解釋重播（逐輪原話證據）➡️</a></p>
+      <p><a href="/explain">開啟燈號判讀說明（逐句看系統為什麼這樣判斷）➡️</a></p>
       <p>文字節錄：${E(c.dialogue_snippet)}</p>
       <p>沒有建立正式個案，也沒有聯繫任何人。</p>`;
     document.getElementById("demoDetailModal").style.display = "flex";

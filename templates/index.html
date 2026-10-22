@@ -74,9 +74,11 @@
           </div>
 
           <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span id="modelIndicator" class="model-badge">
-              🤖 AI 對話
-            </span>
+            <button type="button" id="aiStatus" class="ai-status" data-state="checking"
+                    title="點一下重新檢查 AI 連線" aria-live="polite">
+              <span class="ai-status-dot" aria-hidden="true"></span>
+              <span id="aiStatusText">檢查 AI 連線中…</span>
+            </button>
             <span class="chat-region-badge">
               南投專屬
             </span>

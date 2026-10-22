@@ -112,7 +112,7 @@ function renderExplainable(c, E) {
       d.status === "unknown" ? "未提及（不代表正常）" : E(d.status) + (d.evidence ? `<br>「${E(d.evidence)}」` : "")}</div>`;
   }).join("");
   return `<div class="explain-turn ${confirmed ? "confirmed" : t.pending_disambiguation ? "pending" : ""}" style="margin:.75rem 0">
-    <b>判讀依據（可解釋）</b>
+    <b>判讀依據：系統為什麼亮這個燈</b>
     ${confirmed ? '<span class="explain-tag confirmed">確認危機</span>' : ""}
     ${t.pending_disambiguation ? '<span class="explain-tag pending">待消歧</span>' : ""}
     <p class="explain-user" style="white-space:pre-wrap">${markEvidence(c.dialogue_snippet || "", spans, E) || "無對話節錄"}</p>

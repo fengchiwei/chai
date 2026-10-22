@@ -24,6 +24,7 @@ from engine.ai_agent import (
     generate_youth_response,
     prepare_dialogue,
 )
+from engine.dialogue_ai import model_status
 from engine.dialogue_policy import POLICY_VERSION, REPLY_STYLES, build_state, remember_turn
 from engine.dialogue_role import public_role
 from engine.explain import VERSION as EXPLAIN_VERSION, explain, load_scenarios
@@ -322,6 +323,12 @@ def api_install_qr():
     buffer = io.BytesIO()
     segno.make(install_url(), error="m").save(buffer, kind="svg", scale=6, border=2, dark="#1e293b", light="#ffffff")
     return app.response_class(buffer.getvalue(), mimetype="image/svg+xml")
+
+
+@app.route("/api/status")
+def api_status():
+    """Public AI-connection status for the student page: provider/model and a coarse state, no secrets."""
+    return jsonify({"server": "ok", "ai": model_status(probe=request.args.get("probe") == "1")})
 
 
 @app.route("/health")

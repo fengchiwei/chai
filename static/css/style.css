@@ -780,7 +780,7 @@ body.has-urgent-help { padding-top: var(--urgent-help-height, 125px); }
 .companion-role-note > span { color: #315d48; font-weight: 600; }
 .companion-role-note > p { margin: .2rem 0 0; color: #52645b; }
 
-/* v1.3-B 可解釋重播 */
+/* 燈號判讀說明頁（/explain） */
 .explain-notice { margin: 0 0 1rem; padding: .75rem 1rem; border: 1px solid #cbd5e1; border-radius: 12px; background: #fff; color: #334155; font-size: .88rem; line-height: 1.7; }
 .explain-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 1.25rem; align-items: start; }
 .explain-list { position: sticky; top: 1rem; }

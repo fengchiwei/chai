@@ -431,3 +431,17 @@ html.is-standalone #installButton { display: none; }
 .res-phones { margin-top: 1rem; border-top: 1px solid var(--t-border, #f1f5f9); padding-top: .75rem; display: flex; flex-direction: column; gap: .4rem; }
 .res-empty { grid-column: 1 / -1; text-align: center; padding: 3rem; background: var(--t-surface, #fff); border-radius: 12px; color: var(--t-muted, #64748b); }
 .resources-page .nav-links { flex-wrap: wrap; }
+
+/* ---------- AI 連線狀態燈 ---------- */
+.ai-status { display: inline-flex; align-items: center; gap: .4rem; font: inherit; font-size: .75rem; padding: 3px 10px;
+  border-radius: 999px; border: 1px solid var(--t-border, #e2e8f0); background: var(--t-surface, #ffffff);
+  color: var(--t-text, #1e293b); cursor: pointer; min-height: 28px; }
+.ai-status:hover { border-color: var(--t-accent, #4f46e5); }
+.ai-status:focus-visible { outline: 3px solid var(--t-focus, #4f46e5); outline-offset: 2px; }
+.ai-status-dot { width: 9px; height: 9px; border-radius: 50%; background: #94a3b8; flex: none; }
+.ai-status[data-state="ok"] .ai-status-dot { background: #16a34a; }
+.ai-status[data-state="warn"] .ai-status-dot { background: #f59e0b; }
+.ai-status[data-state="down"] .ai-status-dot { background: #dc2626; }
+.ai-status[data-state="checking"] .ai-status-dot { animation: ai-status-pulse 1.2s ease-in-out infinite; }
+@keyframes ai-status-pulse { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .ai-status[data-state="checking"] .ai-status-dot { animation: none; } }

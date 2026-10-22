@@ -130,13 +130,17 @@ MIN_REPLY_SECONDS = 3       # do not start a reply call that cannot finish withi
 
 _clock = time.monotonic
 _health_lock = threading.Lock()
-_health = {"failures": 0, "open_until": 0.0}
+# `seq` orders events exactly; the Windows monotonic clock is too coarse (~16 ms) to tell them apart.
+_health = {"failures": 0, "open_until": 0.0, "last_status": None, "last_at": 0.0, "seq": 0, "last_seq": 0}
+_probe_cache = {"at": -1e9, "result": None, "seq": 0}
+PROBE_TTL = 60  # seconds; the public status endpoint never probes more often than this
 
 
 def reset_model_health():
     with _health_lock:
-        _health.update(failures=0, open_until=0.0)
+        _health.update(failures=0, open_until=0.0, last_status=None, last_at=0.0, seq=0, last_seq=0)
         _recent_calls.clear()
+        _probe_cache.update(at=-1e9, result=None, seq=0)
 
 
 _recent_calls = []
@@ -161,6 +165,8 @@ def _cooling_down():
 def _record_outcome(status, retry_after=None):
     """Shared provider health: one quota error or outage briefly pauses cloud calls for every student."""
     with _health_lock:
+        _health["seq"] += 1
+        _health.update(last_status=status, last_at=_clock(), last_seq=_health["seq"])
         if status == "ok":
             _health["failures"] = 0
         elif status == "rate_limited":
@@ -171,6 +177,89 @@ def _record_outcome(status, retry_after=None):
             _health["failures"] += 1
             if _health["failures"] >= FAILURE_THRESHOLD:
                 _health.update(failures=0, open_until=_clock() + TRANSPORT_COOLDOWN)
+
+
+def _bad_key(response):
+    """Gemini reports an invalid key as HTTP 400 with reason API_KEY_INVALID rather than 401/403."""
+    if getattr(response, "status_code", None) != 400:
+        return False
+    try:
+        return "API_KEY_INVALID" in response.text or "API key not valid" in response.text
+    except (AttributeError, TypeError):
+        return False
+
+
+def _model_name(provider):
+    return (Config.GEMINI_MODEL or "gemini-2.5-flash") if provider == "gemini" else (Config.OPENAI_MODEL or "gpt-4o")
+
+
+def probe_model():
+    """Cheap reachability/key check: read the model's metadata, generating nothing (no token cost).
+
+    Returns "ok", "auth_error", "model_not_found", "rate_limited", "timeout" or "api_error"."""
+    provider = _provider()
+    try:
+        if provider == "gemini":
+            response = requests.get(
+                f"https://generativelanguage.googleapis.com/v1beta/models/{_model_name(provider)}",
+                headers={"x-goog-api-key": Config.GEMINI_API_KEY}, proxies=DIRECT_CONNECTION,
+                timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 8))
+        else:
+            response = requests.get(f"{Config.OPENAI_BASE_URL.rstrip('/')}/models/{_model_name(provider)}",
+                                    headers={"Authorization": f"Bearer {Config.OPENAI_API_KEY}"},
+                                    timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 8))
+    except (requests.Timeout, TimeoutError):
+        return "timeout"
+    except Exception as exc:
+        logging.warning("模型連線檢查失敗：%s", type(exc).__name__)
+        return "api_error"
+    code = response.status_code
+    return ("ok" if code == 200 else "auth_error" if code in (401, 403) or _bad_key(response)
+            else "model_not_found" if code == 404
+            else "rate_limited" if code == 429 else "api_error")
+
+
+def model_status(probe=False):
+    """What the student page shows about the AI connection. Never includes keys or conversation data.
+
+    state: not_configured | ok | degraded | unknown. `probe=True` runs probe_model() at most once per PROBE_TTL."""
+    provider = _provider()
+    configured = provider in ("gemini", "openai") and bool(
+        Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY)
+    info = {"provider": provider if configured else "builtin", "model": _model_name(provider) if configured else None,
+            "configured": configured}
+    if not configured:
+        return {**info, "state": "not_configured", "reason": None}
+    with _health_lock:
+        cooling = max(0.0, _health["open_until"] - _clock())
+        last_status = _health["last_status"]
+    if probe and not cooling:
+        with _health_lock:
+            fresh = _clock() - _probe_cache["at"] < PROBE_TTL
+            cached = _probe_cache["result"]
+            if not fresh:
+                _health["seq"] += 1
+                _probe_cache.update(at=_clock(), seq=_health["seq"])  # claim the slot before the slow request
+        result = cached if fresh else probe_model()
+        if not fresh:
+            with _health_lock:
+                _probe_cache["result"] = result
+            if result in ("auth_error", "rate_limited"):
+                _record_outcome(result)  # a bad key or exhausted quota pauses chat calls too
+        with _health_lock:
+            chat_newer = _health["last_status"] is not None and _health["last_seq"] > _probe_cache["seq"]
+            cooling = max(0.0, _health["open_until"] - _clock())
+        # Whichever is newer wins: a real chat failure after a cached "ok" probe must still show.
+        last_status = _health["last_status"] if chat_newer else (result or last_status)
+    if cooling:
+        # Keep the underlying cause when it is actionable (a wrong key, an exhausted quota).
+        reason = last_status if last_status in ("auth_error", "rate_limited") else "cooldown"
+        return {**info, "state": "degraded", "reason": reason, "retry_in": round(cooling)}
+    if last_status is None:
+        return {**info, "state": "unknown", "reason": None}
+    if last_status == "ok":
+        return {**info, "state": "ok", "reason": None}
+    return {**info, "state": "degraded", "reason": last_status}
 
 
 def _retry_after(response):
@@ -269,7 +358,7 @@ def _request_model(provider, prompt, message, history, analysis, timeout, struct
         logging.warning("對話模型 %s HTTP %s", provider, response.status_code)
         if response.status_code == 429:
             return _retry_after(response), "rate_limited"
-        return None, "auth_error" if response.status_code in (401, 403) else "api_error"
+        return None, "auth_error" if response.status_code in (401, 403) or _bad_key(response) else "api_error"
     try:
         data = response.json()
         if provider == "gemini":

@@ -243,11 +243,7 @@ async function sendMessage() {
       replyBubble = appendMessage("ai", data.reply);
       conversationHistory.push({ role: "assistant", text: data.reply });
 
-      // 更新模型提示標籤
-      if (data.model_used) {
-        const ind = document.getElementById("modelIndicator");
-        if (ind) ind.innerText = `🤖 ${data.model_used}`;
-      }
+      updateAiStatusFromReply(data);
     }
     window.AnlaNextSteps.update(data);
     if (replyBubble) window.AnlaNextSteps.suggestInReply(replyBubble, data.support_offer);
@@ -522,3 +518,72 @@ function speakMessage(elementOrText) {
 
   window.speechSynthesis.speak(utterance);
 }
+
+// ---------- AI 連線狀態燈：讓使用者看得出雲端 AI 是否正常運作 ----------
+// 安全提醒與求助資訊由本機規則產生，不受 AI 狀態影響；這裡只顯示「回覆是否來自雲端 AI」。
+const AI_REASON_TEXT = {
+  timeout: "回應逾時", rate_limited: "額度或流量已用完", auth_error: "API 金鑰無效", api_error: "服務發生錯誤",
+  cooldown: "暫停重試中", global_budget: "使用量達上限", model_not_found: "模型名稱設定錯誤",
+  bad_response: "回應格式錯誤", format_error: "回應格式錯誤", budget_exceeded: "回應太慢",
+  incomplete: "內容被服務擋下", empty: "沒有回應內容",
+};
+const AI_PROVIDER_NAME = { gemini: "Gemini", openai: "OpenAI" };
+
+function setAiStatus(state, label, detail) {
+  const el = document.getElementById("aiStatus");
+  const text = document.getElementById("aiStatusText");
+  if (!el || !text) return;
+  el.dataset.state = state;
+  text.textContent = label;
+  el.title = (detail ? detail + "\n" : "") + "點一下重新檢查";
+}
+
+function renderAiStatus(ai) {
+  if (!ai) return;
+  const name = AI_PROVIDER_NAME[ai.provider] || "AI";
+  if (ai.state === "not_configured") {
+    setAiStatus("off", "本機回覆模式（未設定 AI）", "沒有設定雲端 AI 金鑰，回覆由本機規則產生。");
+  } else if (ai.state === "ok") {
+    setAiStatus("ok", `AI 連線正常（${name}）`, ai.model ? `模型：${ai.model}` : "");
+  } else if (ai.state === "degraded") {
+    const reason = AI_REASON_TEXT[ai.reason] || "暫時無法使用";
+    const retry = ai.retry_in ? `，約 ${ai.retry_in} 秒後自動重試` : "";
+    setAiStatus("warn", `AI 暫時無法使用：${reason}`, `這段時間改用本機回覆${retry}；安全提醒與求助資訊不受影響。`);
+  } else {
+    setAiStatus("checking", `已設定 ${name}，尚未連線`, "傳出第一則訊息後會更新。");
+  }
+}
+
+async function checkAiStatus() {
+  setAiStatus("checking", "檢查 AI 連線中…", "");
+  try {
+    const res = await fetch("/api/status?probe=1", { cache: "no-store" });
+    if (!res.ok) throw new Error(String(res.status));
+    renderAiStatus((await res.json()).ai);
+  } catch (_) {
+    setAiStatus("down", "伺服器沒有回應", "可能是網路中斷或伺服器沒有啟動；需要協助可直接撥 1925 或 119。");
+  }
+}
+
+function updateAiStatusFromReply(data) {
+  const used = data.model_used || "";
+  const reason = data.fallback_reason;
+  if (/Gemini|OpenAI/.test(used)) {
+    setAiStatus("ok", `AI 連線正常（${/OpenAI/.test(used) ? "OpenAI" : "Gemini"}）`, used);
+  } else if (reason === "rule_check") {
+    setAiStatus("ok", "AI 連線正常", "這一則改用本機回覆，因為 AI 的回覆沒有通過安全檢查。");
+  } else if (reason === "builtin" || reason === "no_key") {
+    setAiStatus("off", "本機回覆模式（未設定 AI）", "沒有設定雲端 AI 金鑰，回覆由本機規則產生。");
+  } else if (reason && AI_REASON_TEXT[reason]) {
+    setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT[reason]}`, "這一則改用本機回覆；安全提醒與求助資訊不受影響。");
+  }
+  // 安全回覆、規則回覆這一輪沒有呼叫 AI，維持原本的狀態。
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("aiStatus");
+  if (!el) return;
+  el.addEventListener("click", checkAiStatus);
+  checkAiStatus();
+  setInterval(checkAiStatus, 5 * 60 * 1000);
+});

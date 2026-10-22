@@ -27,7 +27,7 @@
 | **ENG-03** | 瑞士起司模型（多層獨立防禦）+ Fail-safe | Reason (1990, 2000); Perneger (2005) | 規則 → 身心先驗 → LLM 語義提示 → 伺服器高水位棘輪；本地安全模板 |
 | **DYN-04** | 臨界慢化（CSD）+ 數位表型 | Scheffer et al. (2009); van de Leemput et al. (2014); Wichers et al. (2016); Helmich et al. (2024); Onnela & Rauch (2016); Kleiman et al. (2017); Tubbs et al. (2020); Rudd et al. (2006) | 對話狀態追蹤：負向情緒連續輪數、深夜時段、驟然道別 |
 | **SOC-05** | 生態系統理論 + 自殺傳染／群聚 | Bronfenbrenner (1979); Gould et al. (2003); Hawton et al. (2020) | 第三人稱危機分流；`secondary_trauma_risk` |
-| **HFE-06** | 警報疲勞 + 可解釋臨床決策支援 | Cash (2009); Ancker et al. (2017); Amann et al. (2020); Ghassemi et al. (2021) | `/explain` 儀表板、`engine/explain.py` |
+| **HFE-06** | 警報疲勞 + 可解釋臨床決策支援 | Cash (2009); Ancker et al. (2017); Amann et al. (2020); Ghassemi et al. (2021) | `/explain` 燈號判讀說明頁、`engine/explain.py` |
 
 跨理論背景文獻（AI 與自殺防治）：Bernert et al. (2020)；McBain et al. (2025)。
 

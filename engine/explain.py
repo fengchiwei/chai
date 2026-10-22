@@ -33,7 +33,7 @@ THEORY_LABELS = {
     "PSY-01": "C-SSRS 嚴重度", "PSY-02": "IPTS 累贅感／歸屬受挫", "PSY-03": "IMV 困頓感",
     "PSY-04": "NSSI 自傷功能", "LIN-01": "言語行為／否定範疇", "SIG-02": "非對稱損失（啟發式）",
     "ENG-03": "瑞士起司／高水位棘輪", "DYN-04": "數位表型（啟發式）", "SOC-05": "同儕危機守門",
-    "HFE-06": "防警報疲勞／可解釋",
+    "HFE-06": "防警報疲勞／判讀說明",
 }
 GOAL_LABELS = {
     "clarify_event": "了解事件", "explore_feeling": "探索感受", "explore_perception": "探索想法",

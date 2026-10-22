@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v1.3-B 可解釋重播：只用虛構情境；不呼叫模型、不寫入資料庫。"""
+"""燈號判讀說明頁（/explain，原 v1.3-B 可解釋重播）：只用虛構情境；不呼叫模型、不寫入資料庫。"""
 import sqlite3
 import tempfile
 from contextlib import closing

@@ -1,5 +1,5 @@
 {
-  "note": "全部為虛構對話，僅供可解釋儀表板重播與 tests/eval_95_gate.py；不得替換成真實青少年資料。",
+  "note": "全部為虛構對話，僅供燈號判讀說明頁（/explain）與 tests/eval_95_gate.py；不得替換成真實青少年資料。",
   "scenarios": [
     {
       "id": "EX-01",

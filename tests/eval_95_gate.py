@@ -190,7 +190,7 @@ def score_evidence(r, deductions):
     if ok:
         score += 0.5
     else:
-        deductions.append(("evidence", 0.5, "v1.3-B 可解釋 API 或螢光筆標示不正確"))
+        deductions.append(("evidence", 0.5, "燈號判讀說明 API 或原話標記不正確"))
     return max(score, 0.0)
 
 
