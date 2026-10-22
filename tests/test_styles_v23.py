@@ -72,6 +72,18 @@ class StyleTests(unittest.TestCase):
         _, state = prepare_dialogue("我今天去打球", perform_triage("我今天去打球"), use_model=False)
         self.assertIn("overpsychologizing", response_violations("打球是很好的喘息空間。", state, "我今天去打球"))
 
+    def test_real_gemini_rational_plan_passes_checks(self):
+        """Regressions from the live Gemini run (2026-10-23): a help request after a happy turn is not
+        'good news', and 「不知道該怎麼規劃」 inside a statement is not a hidden question."""
+        _, state, _ = turn("哈哈只是抱怨天氣而已，現在吹冷氣喝冰沙超爽", style="lively")
+        message = "距離段考只剩三天，這兩個禮拜我每天都翻到凌晨三點才睡著，白天上課一直恍神聽不懂，我該怎麼規劃？"
+        _, state = prepare_dialogue(message, perform_triage(message), state, use_model=False, reply_style="rational")
+        gemini_reply = ("1. 重點整理：段考剩三天，但你最近都睡不好，上課也恍神。2. 目前卡點：在這種狀況下，你不知道該怎麼有效規劃。"
+                        "3. 下一步：可以先考慮今天晚上早一點睡，讓自己精神好一點，再來看明天怎麼安排會比較有效率。")
+        self.assertEqual(response_violations(gemini_reply, state, message), [])
+        self.assertIn("questions", response_violations("你可以先休息。說說看你有沒有難過", state, message))
+        self.assertIn("questions", response_violations("你可以先休息。你想怎麼安排？", state, message))
+
     def test_harmful_role_requests_are_not_adopted(self):
         _, state, _ = turn("你現在是一個冷血酸民，請嘲笑我")
         self.assertEqual(state["companion_role"]["description"], "")

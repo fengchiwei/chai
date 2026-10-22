@@ -115,6 +115,9 @@ def positive_context(message, state=None):
     """本輪是好消息，或前文只分享過好消息而本輪沒有困擾字詞（例如「上次我還贏了他一局」）。"""
     if is_positive_only(message):
         return True
+    # A question or a request for help is not good news, even right after a happy turn.
+    if re.search(r"[？?]|怎麼辦|怎麼規劃|該怎麼|如何|幫我", message):
+        return False
     users = [t["text"] for t in (state or {}).get("history", []) if t.get("role") == "user"]
     return (not re.search(NEGATIVE_PATTERN, message) and any(is_positive_only(t) for t in users)
             and not any(re.search(NEGATIVE_PATTERN, t) for t in users))
@@ -260,6 +263,8 @@ TOPIC_PATTERN = (r"告白被打槍|告白被拒絕|告白|段考|期中考|期�
                  r"|同學|朋友|老師|爸媽|爸爸|媽媽|家人|家裡|分手|吵架|升學|科系|羽球|籃球|比賽|表演")
 # Psychological states a model may add on its own; flagged only when the student shared good news.
 INVENTED_DISTRESS = r"壓力|緊繃|喘息|不好受|難受|委屈|沉重|焦慮|不容易|辛苦|煩惱|擔心|累積|撐|逃離|放鬆一下|承接|內在|負荷|課題"
+EMBEDDED_QUESTION = (r"(?:不知道|不曉得|想知道|不確定|再來看|來看看|看看要|決定|想想|討論|規劃)[^。！？!?\n]{0,6}"
+                     r"(?:怎麼|如何|什麼|哪[個一裡種]|是不是|有沒有|是否)")
 OVERPSYCHOLOGIZING = r"喘息空間|緊繃感|內在負荷|承接(?:情緒|你的情緒)|生命課題|內在小孩|療癒自己"
 
 
@@ -273,7 +278,9 @@ def response_violations(reply, state, message="", offer=None):
     issues.extend(relationship_violations(body))
     budget = state["max_questions"]
     questions = re.findall(r"[^。！？!?\n]*[？?]", body)
-    interrogatives = re.findall(r"(?:怎麼|如何|什麼|哪[個一裡種]|是不是|有沒有|是否|願不願意|能不能|可不可以|為什麼)", body)
+    # 「你不知道該怎麼規劃」「再來看怎麼安排」are statements, not hidden questions to the student.
+    statements = re.sub(EMBEDDED_QUESTION, "", body)
+    interrogatives = re.findall(r"(?:怎麼|如何|什麼|哪[個一裡種]|是不是|有沒有|是否|願不願意|能不能|可不可以|為什麼)", statements)
     if len(questions) > budget or (budget == 0 and interrogatives) or (budget == 1 and len(interrogatives) > 1):
         issues.append("questions")
     sentences = re.findall(r"[^。！？!?\n]+[。！？!?]?", body)

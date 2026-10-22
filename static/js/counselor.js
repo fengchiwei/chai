@@ -87,6 +87,11 @@ function closeSummaryModal() { $("summaryModal").style.display = "none"; }
 // v2.3 HFE-06：判讀依據。確認危機（實線）與待消歧（虛線）分開；原話以螢光筆標示，供 3 秒內看懂。
 const DOMAIN_LABELS = {duration: "持續時間", sleep: "睡眠", daily_function: "生活／上學功能",
   stress_relationships: "人際與壓力", safety: "安全線索", support_system: "支持系統"};
+// Same wording as the 燈號判讀說明 page (engine/explain.py STATUS_LABELS).
+const STATUS_LABELS = {time_mentioned: "提到時間", reported_difficulty: "自述困難", reported_ok_or_improving: "自述尚可或改善",
+  reported_impact: "自述受影響", reported_maintained: "自述仍能維持", topic_mentioned: "提到相關主題",
+  support_mentioned: "提到可求助對象", difficulty_seeking_support: "自述難以求助", requires_human_review: "需真人覆核",
+  clarification_needed: "待安全確認", self_reported_denial: "自述否認（不等於已確認安全）"};
 function markEvidence(text, spans, E) {
   const marks = new Array(text.length).fill(false);
   spans.filter(Boolean).forEach(span => {
@@ -109,7 +114,8 @@ function renderExplainable(c, E) {
   const cards = Object.entries(DOMAIN_LABELS).map(([key, label]) => {
     const d = domains[key] || {status: "unknown"};
     return `<div class="explain-domain ${d.status === "unknown" ? "unknown" : "known"}"><b>${E(label)}</b>：${
-      d.status === "unknown" ? "未提及（不代表正常）" : E(d.status) + (d.evidence ? `<br>「${E(d.evidence)}」` : "")}</div>`;
+      d.status === "unknown" ? "未提及（不代表正常）" : E(STATUS_LABELS[d.status] || d.status)
+        + (d.evidence ? `<br>「${E(d.evidence)}」` : "")}</div>`;
   }).join("");
   return `<div class="explain-turn ${confirmed ? "confirmed" : t.pending_disambiguation ? "pending" : ""}" style="margin:.75rem 0">
     <b>判讀依據：系統為什麼亮這個燈</b>

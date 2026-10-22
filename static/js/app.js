@@ -582,6 +582,12 @@ function updateAiStatusFromReply(data) {
     setAiStatus("ok", "AI 連線正常", "這一則改用本機回覆，因為 AI 的回覆沒有通過安全檢查。");
   } else if (reason === "builtin" || reason === "no_key") {
     setAiStatus("off", "本機回覆模式（未設定 AI）", "沒有設定雲端 AI 金鑰，回覆由本機規則產生。");
+  } else if (reason === "cooldown") {
+    // Calls are paused; ask the server for the underlying cause (e.g. quota used up) instead of "paused".
+    fetch("/api/status", { cache: "no-store" })
+      .then(res => (res.ok ? res.json() : null))
+      .then(body => body && renderAiStatus(body.ai))
+      .catch(() => setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT.cooldown}`, ""));
   } else if (reason && AI_REASON_TEXT[reason]) {
     setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT[reason]}`, "這一則改用本機回覆；安全提醒與求助資訊不受影響。");
   }

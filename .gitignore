@@ -16,3 +16,6 @@ dist/
 mobile/node_modules/
 mobile/android/
 mobile/ios/
+
+# 功能示範影片（檔案大，不上傳）
+demo_videos/
