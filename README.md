@@ -10,6 +10,7 @@
 
 ```
 anla-youth-v1.3-A.1/
+├─ start.bat              雙擊一鍵啟動（呼叫 scripts/start.ps1）
 ├─ app.py                 Flask 路由（學生頁、工作臺、/demo、/explain、API）
 ├─ config.py              環境變數設定（模型、金鑰、後台密碼、資料庫路徑）
 ├─ requirements.txt
@@ -26,7 +27,7 @@ anla-youth-v1.3-A.1/
 ├─ data/                  南投資源、30 組模擬案例、可解釋重播虛構情境
 ├─ templates/, static/    頁面、CSS、JavaScript
 ├─ tests/                 unittest 回歸測試（不連網）
-├─ scripts/               run_local.ps1、run_tests.ps1
+├─ scripts/               start.ps1、run_local.ps1、run_tests.ps1
 └─ docs/                  交接文件、變更紀錄、archive/ 舊版提示詞快照
 ```
 
@@ -40,6 +41,17 @@ anla-youth-v1.3-A.1/
 - `/demo`：30 組模擬案例只讀檢驗，與真實個案資料表分開。
 - `/explain`（v1.3-B）：以虛構對話重播完整規則流程，逐輪列出原話證據、六類線索已知／未知、規則來源、歷史最高燈號與對應行動。**不呼叫模型、不寫入資料庫、不建立個案。**
 - 情境一致性（v1.3-A.2）：學生分享開心或期待的事時，回覆跟著那份好心情；模型若自行加上「壓力、緊繃、喘息」等學生沒說的狀態，會被規則檢查擋下改用本機回覆。
+
+## 快速啟動（雙擊）
+
+在專案資料夾雙擊 **`start.bat`**：
+
+1. 第一次使用會自動建立 `.venv` 並安裝套件（需已安裝 Python 3.10 以上）。
+2. 詢問後台密碼（輸入時不顯示；直接按 Enter 跳過則後台停用）。
+3. 詢問 Gemini API 金鑰（直接按 Enter 使用本機備援回覆）。
+4. 伺服器啟動後自動開啟瀏覽器 <http://127.0.0.1:5000/>。關閉視窗或按 `Ctrl+C` 即停止。
+
+密碼與金鑰只存在該視窗的記憶體，不寫入任何檔案；每次啟動都要重新輸入。改埠號可在命令列執行 `start.bat -Port 5002`。
 
 ## Windows PowerShell 逐步啟動
 
