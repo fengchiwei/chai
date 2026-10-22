@@ -268,6 +268,19 @@ EMBEDDED_QUESTION = (r"(?:不知道|不曉得|想知道|不確定|再來看|來�
 OVERPSYCHOLOGIZING = r"喘息空間|緊繃感|內在負荷|承接(?:情緒|你的情緒)|生命課題|內在小孩|療癒自己"
 
 
+RATIONAL_LINES = re.compile(r"1[.．、]\s*重點整理[:：].+?2[.．、]\s*目前卡點[:：].+?3[.．、]\s*下一步[:：]\s*\S", re.S)
+
+
+def drop_trailing_questions(reply):
+    """Models often append one more question after an otherwise good reply ("…你覺得呢？").
+    Remove only question sentences at the very end; None if nothing would remain."""
+    sentences = re.findall(r"[^。！？!?\n]+[。！？!?]?\n?", reply)
+    while sentences and re.search(r"[？?]", sentences[-1]):
+        sentences.pop()
+    kept = "".join(sentences).strip()
+    return kept if kept and kept != reply.strip() else None
+
+
 def response_violations(reply, state, message="", offer=None):
     """Conservative mechanical checks, not a claim of complete semantic validation."""
     issues = []
@@ -306,12 +319,16 @@ def response_violations(reply, state, message="", offer=None):
     # If the student has asked for practical help and policy permits it, a pure empathy
     # paraphrase is not enough; use the concrete local fallback instead.
     if state.get("current_goal") == "support_choice" and state.get("advice_request"):
-        if not re.search(r"可以先|可以試|可以說|可以寫|可以問|先試|先從|試著|試試|例如|比方說|像這樣|先找|先選|先挑|先把|先說|可以考慮|要不要先", body):
+        if not re.search(r"可以先|可以試|可以說|可以寫|可以問|先試|先從|試著|試試|例如|比方說|像這樣|先找|先選|先挑|先把|先說|可以考慮|要不要先", body) \
+                and not (style == "rational" and RATIONAL_LINES.search(body)):  # its line 3 is the step
             issues.append("missing_next_step")
     if "continue_drilling" in state["forbidden_actions"] and re.search(r"真正的渴望|背後的原因|這代表什麼|為什麼會|最深處", body):
         issues.append("drilling")
     if re.search(r"你(?:有|想|提到|說).{0,8}(?:自傷|自殺|傷害自己|想死)", body) and not state["safety_check_required"] and not re.search(r"自傷|自殺|傷害自己|想死", message):
         issues.append("invented_risk")
+    # Rational style promises three labelled lines when the student asks for a plan.
+    if style == "rational" and state.get("current_goal") == "support_choice" and not RATIONAL_LINES.search(body):
+        issues.append("rational_structure")
     previous = state.get("last_reply", "")
     if previous and (reply == previous or (len(reply) > 35 and SequenceMatcher(None, reply, previous).ratio() > .92)):
         issues.append("repeat")

@@ -13,7 +13,7 @@ import requests
 from config import Config
 from engine.dialogue_policy import (STAGES, build_state, history_clean, observe_safety,
                                     raise_triage, remember_turn)
-from engine.dialogue_reply import local_reply, response_violations, safety_reply
+from engine.dialogue_reply import drop_trailing_questions, local_reply, response_violations, safety_reply
 from engine.dialogue_role import ROLE_RULES, role_notice, role_user_message
 from engine import model_router
 from engine.privacy_scrubber import scrub_pii
@@ -88,7 +88,11 @@ STYLE_INSTRUCTIONS = {
     "rational": ("【回覆風格：沉穩理性】冷靜、條理分明、不煽情。學生想規劃或解決事情時，直接用三行回覆"
                  "（本風格可以使用編號，優先於前面「不列點」的規定）：「1. 重點整理：…」「2. 目前卡點：…」"
                  "「3. 下一步：…」，每行一句；第三行給一個學生自己可以決定要不要做的具體小步驟。"
-                 "不要反問、不要用問句結尾，也不要加上學生沒說過的情緒。只是聊天時用兩三句簡潔回應。"),
+                 "不要反問、不要用問句結尾，也不要加上學生沒說過的情緒。只是聊天時用兩三句簡潔回應。\n"
+                 "格式範例（內容要依學生原話改寫，不要照抄）：學生說「下週要考三科，我不知道該怎麼排讀書時間」→\n"
+                 "1. 重點整理：下週要考三科，你想先把讀書時間排出來。\n"
+                 "2. 目前卡點：三科範圍都還很多，不確定要從哪一科開始。\n"
+                 "3. 下一步：今晚先列出三科各剩哪些範圍，把最沒把握的那一科排在明天第一段；要不要這樣做由你決定。"),
     "listen_only": "【回覆風格：純粹樹洞】只用 1～2 個短句溫暖陪伴；完全不問問題、不用問號、不給建議或方法。",
     "safety": "【安全優先】目前以安全為優先，暫停學生選的風格，用溫和、堅定、具體關心安全的語氣。",
 }
@@ -146,6 +150,7 @@ def reset_model_health():
         _health.update(failures=0, open_until=0.0, last_status=None, last_at=0.0, seq=0, last_seq=0)
         _recent_calls.clear()
         _probe_cache.update(at=-1e9, result=None, seq=0)
+    _no_thinking_config.clear()
     model_router.reset()
 
 
@@ -346,6 +351,22 @@ def _call_model(prompt, message, history=None, analysis=False, timeout=None, str
     return (result, status) if status == "ok" else (None, status)
 
 
+_no_thinking_config = set()  # models that answered HTTP 400 to a thinkingConfig
+
+
+def _thinking_config(model):
+    """Short companion replies do not need long reasoning; thinking is most of a Gemini reply's wait.
+    2.5 Flash can turn it off, 2.5 Pro only down to 128 tokens, Gemini 3+ takes a level instead."""
+    if Config.GEMINI_THINKING != "low" or model in _no_thinking_config:
+        return None
+    if model.startswith("gemini-2.5-pro"):
+        return {"thinkingBudget": 128}
+    if model.startswith("gemini-2.5-flash"):
+        return {"thinkingBudget": 0}
+    version = re.match(r"gemini-(\d+)", model)
+    return {"thinkingLevel": "low"} if version and int(version.group(1)) >= 3 else None
+
+
 def _request_model(provider, model, prompt, message, history, analysis, timeout, structured=False):
     """One HTTP call: (reply, "ok"), (retry_after, "rate_limited") or (None, failure status)."""
     try:
@@ -356,20 +377,27 @@ def _request_model(provider, model, prompt, message, history, analysis, timeout,
                           "maxOutputTokens": 1600 if analysis or structured else 1000}
             if structured:
                 generation["responseMimeType"] = "application/json"
-            if model.startswith("gemini-2.5-flash"):
-                generation["thinkingConfig"] = {"thinkingBudget": 0}
+            thinking = _thinking_config(model)
+            if thinking:
+                generation["thinkingConfig"] = thinking
             payload = {"systemInstruction": {"parts": [{"text": prompt}]}, "contents": contents,
                        "generationConfig": generation}
             # Windows can route requests.post through an unsuitable environment proxy.
             # None-valued proxies override env/registry proxies, i.e. a direct connection
             # (same effect as the verified trust_env=False smoke test, but still mockable).
-            response = requests.post(
+            send = lambda: requests.post(
                 f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
                 headers={"x-goog-api-key": Config.GEMINI_API_KEY},
                 json=payload,
                 timeout=timeout,
                 proxies=DIRECT_CONNECTION,
             )
+            response = send()
+            if thinking and response.status_code == 400 and "thinking" in str(response.text or "").lower():
+                # This model does not accept the setting: send once more without it, and never again.
+                _no_thinking_config.add(model)
+                generation.pop("thinkingConfig")
+                response = send()
             label = f"Google Gemini ({model})"
         else:
             messages = [{"role": "system", "content": prompt}] + [{"role": t["role"], "content": t["text"]} for t in history]
@@ -572,6 +600,10 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
     if model:
         model["reply"] = role_notice(state) + model["reply"]
         issues = response_violations(model["reply"], state, message, offer) + output_issues(model["reply"], SYSTEM_PROMPT)
+        trimmed = drop_trailing_questions(model["reply"]) if issues == ["questions"] else None
+        if trimmed and not (response_violations(trimmed, state, message, offer) + output_issues(trimmed, SYSTEM_PROMPT)):
+            # Keep the model's reply minus the extra question rather than discarding the whole turn.
+            model["reply"], issues = trimmed, []
         if not issues:
             return include_support_offer(model, offer)
         logging.info("對話回覆未通過規則檢查：%s", ",".join(issues))

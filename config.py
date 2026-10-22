@@ -30,6 +30,8 @@ class Config:
     LLM_CALLS_PER_MINUTE = int(os.environ.get("LLM_CALLS_PER_MINUTE", "120"))
     # 自動讀取金鑰可用的模型清單、挑排名最前者，故障時自動換下一個（只在後台顯示）。
     MODEL_AUTO_SELECT = os.environ.get("MODEL_AUTO_SELECT", "true").lower() == "true"
+    # low：陪伴短句不需要長時間推理，把 Gemini 的「思考」降到最低以縮短等待；default：用模型原本的設定。
+    GEMINI_THINKING = os.environ.get("GEMINI_THINKING", "low").lower()
     # single：一次結構化呼叫同時取得線索與回覆（計畫書 Step 3）；two_stage：先分析、再回覆。
     LLM_CALL_MODE = os.environ.get("LLM_CALL_MODE", "single").lower()
     # 分析＋回覆兩次模型呼叫合計的上限秒數；超過就改用本機備援，不讓學生久等。

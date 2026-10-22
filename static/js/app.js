@@ -305,6 +305,15 @@ function appendMessage(sender, text) {
   return bubble;
 }
 
+// 雲端 AI 有時要 15 秒以上；文字隨等待時間更新，讓學生知道不是當掉了。
+const TYPING_STAGES = [
+  [0, "安啦正在認真傾聽中...💭"],
+  [6000, "正在想怎麼回你比較好...💭"],
+  [15000, "快好了，再等我一下下...⏳"],
+  [25000, "網路有點慢，還在努力中；真的很急的話，可以先撥頁面上的求助電話。"],
+];
+const typingTimers = {};
+
 function showTypingIndicator() {
   const chatMessages = document.getElementById("chatMessages");
   const typingDiv = document.createElement("div");
@@ -313,16 +322,18 @@ function showTypingIndicator() {
   typingDiv.className = "message ai";
   typingDiv.innerHTML = `
     <div class="avatar">☀️</div>
-    <div class="bubble typing-bubble">
-      安啦正在認真傾聽中...💭
-    </div>
+    <div class="bubble typing-bubble" role="status" aria-live="polite"></div>
   `;
+  const bubble = typingDiv.querySelector(".typing-bubble");
+  typingTimers[id] = TYPING_STAGES.map(([delay, text]) => setTimeout(() => { bubble.textContent = text; }, delay));
   chatMessages.appendChild(typingDiv);
   chatMessages.scrollTop = chatMessages.scrollHeight;
   return id;
 }
 
 function removeTypingIndicator(id) {
+  (typingTimers[id] || []).forEach(clearTimeout);
+  delete typingTimers[id];
   const el = document.getElementById(id);
   if (el) el.remove();
 }

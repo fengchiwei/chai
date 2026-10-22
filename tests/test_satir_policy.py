@@ -2,6 +2,7 @@
 import json
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -212,12 +213,21 @@ class PolicyScenarios(unittest.TestCase):
         self.assertEqual(result['model_used'], '本機備援回覆')
 
 
+class Daytime(datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return datetime(2026, 10, 23, 14, 0, tzinfo=tz)
+
+
 class ServerMemoryScenarios(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.db = patch.object(database, 'DB_PATH', str(Path(self.tmp.name) / 'test.db'))
         self.provider = patch.object(Config, 'LLM_PROVIDER', 'builtin')
         self.db.start(); self.provider.start()
+        # The chat route passes the real send hour (DYN-04 late-night rule, 01–05); pin it to daytime
+        # so these scenarios do not change meaning when the suite runs at night.
+        self.enterContext(patch('app.datetime', Daytime))
         database.init_db()
         self.client, self.headers = self.new_client()
 

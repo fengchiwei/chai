@@ -41,6 +41,22 @@ from engine.dialogue_ai import SYSTEM_PROMPT  # noqa: E402
 from engine.referral import get_student_context  # noqa: E402
 from models import database  # noqa: E402
 
+import app as app_module  # noqa: E402
+from datetime import datetime  # noqa: E402
+
+# The chat route passes the real send hour to the DYN-04 late-night rule (01–05), so the same code
+# scored differently depending on when the gate ran. Pin the hour; EVAL_HOUR=2 checks the night path.
+EVAL_HOUR = int(os.environ.get("EVAL_HOUR", "14"))
+
+
+class _EvalClock(datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return datetime.now(tz).replace(hour=EVAL_HOUR, minute=0)
+
+
+app_module.datetime = _EvalClock
+
 GATE = 9.50
 HIGH_RISK = ("P04", "P05", "P07", "P08")
 WEIGHT = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
