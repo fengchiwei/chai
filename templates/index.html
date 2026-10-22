@@ -20,13 +20,13 @@
 
   <!-- 頂部導航列 -->
   <nav class="navbar student-navbar">
-    <div class="nav-brand" id="brandTitle">
+    <a href="/" class="nav-brand" id="brandTitle">
       <div class="nav-logo" aria-hidden="true">🌱</div>
       <div class="brand-text">
         <h1>少年仔、安啦會客室</h1>
         <span class="brand-tag">南投山城黑客松 ‧ AI 來尬聊</span>
       </div>
-    </div>
+    </a>
     <div class="student-header-tools">
       <div class="nav-links" aria-label="需要時再用的求助入口">
         <button type="button" class="nav-item header-tool" onclick="startConversationalCheckin()">聊聊近況</button>
@@ -49,7 +49,6 @@
           </select>
         </label>
         <button type="button" id="installButton" class="header-chip" aria-haspopup="dialog" aria-controls="installDialog">📱 手機掃碼安裝</button>
-        <button type="button" id="bossKeyButton" class="header-chip boss-key-btn" aria-label="快速切換到英文單字卡畫面（也可以按 Esc）">📚 單字卡</button>
       </div>
     </div>
   </nav>
@@ -345,8 +344,6 @@
   <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
   <script src="/static/js/app.js?v=theme-20261022"></script>
   <script src="/static/js/referral.js?v=satir-20261016"></script>
-  <script src="/static/js/vocab_data.js?v=theme-20261022"></script>
-  <script src="/static/js/boss_key.js?v=theme-20261022"></script>
   <script src="/static/js/pwa.js?v=theme-20261022"></script>
 </body>
 </html>

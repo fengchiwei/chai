@@ -161,6 +161,25 @@ THIRD_PARTY = (r"(?:朋友|同學|閨蜜|好友|室友|網友|學長|學姊|學�
                r"(?:不想活|想死|自殺|傷害自己|吞藥|吞了.{0,10}(?:藥|安眠藥)|吃了.{0,8}(?:很多|好多|一堆|整瓶|整包|全部).{0,4}藥"
                r"|割(?:腕|手)|跳樓|燒炭|上吊)")
 CLARIFIED = r"只是(?:在)?(?:抱怨|開玩笑|說說|講講|誇張|形容|比喻|發牢騷)|開玩笑的|講好玩的|形容(?:詞|一下)?(?:啦|而已)"
+# PSY-01 preparatory acts. Alone → orange (gentle check); with final-goodbye wording → red.
+# Acts only: "last chat" or "won't need it" are final words, not acts, so they cannot make a red alone.
+PREPARATORY = (r"(?:把|將).{0,14}(?:帳號|裝備|收藏|寵物|心愛的|最喜歡的|存款|寶貝).{0,10}(?:送給|送人|送掉|留給|分給)"
+               r"|(?:把|將).{0,6}(?:所有|全部)(?:的)?東西.{0,6}(?:送給|送人|送掉|留給|分給)"
+               r"|(?:東西|帳號|裝備|收藏)(?:全部|都)(?:送人|送掉|送出去|分掉)|交代(?:好)?後事|託付.{0,6}(?:給你|給你們|照顧)"
+               r"|以後(?:就)?(?:麻煩|拜託)?(?:你|你們)?(?:幫我|替我)?照顧(?:好)?(?:我的)?(?:貓|狗|寵物|妹妹|弟弟)"
+               r"|寫好.{0,4}(?:遺書|給大家的信)")
+PREPARATORY_EXCLUDE = r"保管|借給|借我|幫我收|代收|作業|報告|講義"
+FINAL_WORDS = r"最後一次(?:聊天|見面|說話|跟你)|再見了|永別|不用再|不會再見|以後都不|以後(?:都)?用不到了|告別|不在了|離開這個世界"
+# PSY-03 volitional moderator: means available to a person who feels trapped.
+MEANS = r"美工刀|刀片|刀子|安眠藥|一整瓶藥|一整罐藥|藥(?:都)?(?:存|準備|收集)好|繩子|頂樓|跳下去|燒炭|農藥|模仿.{0,6}(?:自殺|跳樓)"
+# In later turns a means only counts with an access/readiness verb (「站在頂樓」, not 「在頂樓曬衣服」).
+MEANS_ACCESS = r"(?:有|準備(?:好)?|買好|存好|站在|拿著|藏(?:好)?|收集)(?:了)?.{0,6}(?:" + MEANS + r")"
+# SOC-05 microsystems: family and peers both failing, and no one to tell.
+FAMILY_STRAIN = (r"(?:爸媽|爸爸|媽媽|家人|父母).{0,12}(?:吵架|罵我|不理我|不要我|討厭我|冷戰|逼我|對我很失望)"
+                 r"|家裡.{0,4}(?:很亂|待不下去|好可怕)")
+PEER_REJECTION = r"沒(?:有)?人要我|被排擠|被霸凌|沒有朋友|同學都(?:不理我|笑我|討厭我)|被孤立|格格不入"
+NO_SUPPORT = (r"(?:沒有人|沒人|找不到人|不知道(?:要)?找誰).{0,10}(?:可以)?(?:說|聊|幫|講|理解)"
+              r"|不敢(?:跟|告訴)(?:任何人|別人|大人|家人|老師|爸媽)|只能自己(?:撐|扛)")
 CONCERNING_PRIORS = {"sleep": ("reported_difficulty",), "daily_function": ("reported_impact",),
                      "support_system": ("difficulty_seeking_support",), "safety": ("requires_human_review", "clarification_needed")}
 
@@ -192,7 +211,9 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
             "theoretical_basis": [], "pending_disambiguation": False,
             "ipts": dict(previous.get("ipts") or {}),
             "secondary_trauma_risk": bool(previous.get("secondary_trauma_risk")),
-            "dyn_checked": bool(previous.get("dyn_checked")), "negative_streak": 0}
+            "dyn_checked": bool(previous.get("dyn_checked")), "negative_streak": 0,
+            "microsystem": dict(previous.get("microsystem") or {}),
+            "microsystem_flagged": bool(previous.get("microsystem_flagged"))}
     candidates = []
 
     def add(kind, signal, danger, evidence, floor, subject="self", basis=()):
@@ -244,6 +265,35 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
         combined = ("pb" in ipts and "tb" in ipts) or ("entrapment" in ipts and ("pb" in ipts or "tb" in ipts))
         basis = (["PSY-02"] if hits.keys() & {"pb", "tb"} or combined else []) + (["PSY-03"] if "entrapment" in ipts else [])
         add("suicide", "indirect", "possible", next(iter(hits.values())), "orange" if combined else "yellow", basis=basis)
+
+    # PSY-01 (C-SSRS preparatory behaviour): giving away treasured things, settling affairs, last goodbyes.
+    preparatory = [(clause, evidence) for clause, evidence in _affirmative_matches(PREPARATORY, scan)
+                   if not re.search(PREPARATORY_EXCLUDE, clause)]
+    if preparatory:
+        # Final-goodbye wording counts only near the act (same sentence, outside the matched act itself).
+        clause, act = preparatory[0]
+        around = clause.replace(act, "　" * len(act))
+        final = bool(re.search(FINAL_WORDS, around))
+        add("suicide", "direct", "imminent" if final else "possible", act,
+            "red" if final or len(preparatory) > 1 else "orange", basis=("PSY-01",))
+
+    # PSY-03 volitional moderator: entrapment together with access to a means.
+    if "entrapment" in risk["ipts"]:
+        means = MEANS if "entrapment" in hits else MEANS_ACCESS
+        for _, evidence in _affirmative_matches(means, scan):
+            add("suicide", "direct", "imminent", evidence, "red", basis=("PSY-03", "PSY-01"))
+            break
+
+    # SOC-05 microsystem double break: family strain + peer rejection + nobody to turn to (across turns).
+    micro, fresh = dict(risk["microsystem"]), False
+    for key, pattern in (("family", FAMILY_STRAIN), ("peer", PEER_REJECTION), ("support", NO_SUPPORT)):
+        for _, evidence in _affirmative_matches(pattern, scan):
+            micro[key], fresh = evidence[:120], True
+            break
+    risk["microsystem"] = micro
+    if fresh and len(micro) == 3 and not risk["microsystem_flagged"]:
+        add("suicide", "indirect", "possible", micro["support"], "orange", basis=("SOC-05",))
+        risk["microsystem_flagged"] = True
 
     # LIN-01 + SIG-02: hyperbole is checked softly; with >=2 earlier concerns it goes to orange for human review.
     if hyperbole:
@@ -464,4 +514,5 @@ def remember_turn(state, message, reply):
         {"role": "user", "text": message[:2000]}, {"role": "assistant", "text": reply[:2000]}])[-24:]
     saved["last_reply"] = reply[:2000]
     saved.pop("_turn_deadline", None)
+    saved.pop("_prepared_reply", None)
     return saved

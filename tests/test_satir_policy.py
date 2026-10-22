@@ -197,7 +197,8 @@ class PolicyScenarios(unittest.TestCase):
         self.assertEqual(result['model_used'], '安全回覆')
 
     def test_mocked_model_reply_must_follow_final_guard(self):
-        with patch.object(Config, 'LLM_PROVIDER', 'gemini'), patch.object(Config, 'GEMINI_API_KEY', 'fake-test-key'), \
+        with patch.object(Config, 'LLM_CALL_MODE', 'two_stage'), \
+             patch.object(Config, 'LLM_PROVIDER', 'gemini'), patch.object(Config, 'GEMINI_API_KEY', 'fake-test-key'), \
              patch('engine.dialogue_ai.requests.post', side_effect=[gemini_response('{}'), gemini_response('你其實就是缺乏安全感。你為什麼哭？你希望什麼？')]):
             result = generate_youth_response('我告白被打槍', perform_triage('我告白被打槍'))
         self.assertIn('未通過', result['model_used'])

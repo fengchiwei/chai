@@ -1,6 +1,6 @@
 # 少年仔、安啦會客室：AI 陪伴與風險預警原型
 
-目前原始碼版本：**v2.3**（依 `專案開發計畫.md` v2.3 五個 Phase 實作）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)。
+目前原始碼版本：**v2.4**。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)。
 
 提供學生對話（四種回覆風格）、語音輸入／朗讀、南投資源、離線求助卡、模擬案例測試、可解釋重播，以及需密碼登入的真人覆核工作臺。
 
@@ -23,7 +23,7 @@
 anla-youth-v1.3-A.1/
 ├─ start.bat                    雙擊一鍵啟動
 ├─ app.py, config.py            Flask 路由與環境變數設定
-├─ desktop_launcher.py          桌面原生視窗（pywebview）；build_desktop.py 打包 .exe／.app
+├─ desktop_launcher.py          桌面原生視窗（pywebview）與系統列圖示；build_desktop.py 打包 .exe／.app
 ├─ engine/
 │  ├─ rules.py, triage.py, bsrs5.py      四級分流、誇飾遮蔽（LIN-01）、theoretical_basis
 │  ├─ dialogue_policy.py                 對話決策、IPTS／IMV、第三人稱、數位表型、回覆風格
@@ -37,7 +37,7 @@ anla-youth-v1.3-A.1/
 │  └─ dialogue_role.py, support.py, referral.py, ai_agent.py
 ├─ models/database.py           SQLite、雜湊鏈稽核日誌
 ├─ data/                        南投資源、30 組模擬案例、虛構重播情境與 P01–P10
-├─ templates/, static/          頁面、四主題 CSS、Boss Key、PWA（manifest、sw.js、離線頁）
+├─ templates/, static/          頁面、四主題 CSS、PWA（manifest、sw.js、離線頁）
 ├─ tests/                       unittest 回歸測試、eval_95_gate.py、eval_mutation_check.py
 ├─ mobile/, packaging/, .github/workflows/   Capacitor、Inno Setup、跨平台 CI
 ├─ scripts/                     start.ps1、run_local.ps1、run_tests.ps1
@@ -50,7 +50,7 @@ anla-youth-v1.3-A.1/
 - **風險分流**：綠黃橙紅四級，燈號只升不降。依文獻擴充：累贅感＋歸屬受挫／困頓感跨輪累積（PSY-02/03）、誇飾語軟性確認（LIN-01）、第三人稱危機與保密迷思（SOC-05）、深夜與突兀道別等啟發式（DYN-04）。每個判斷都有 `theoretical_basis` 代號。
 - **韌性**：分析＋回覆合計 30 秒預算；逾時、格式錯誤、額度用完（429）或金鑰錯誤時立即改用本機回覆，並暫停雲端呼叫一段時間；回應附 `fallback_reason`。
 - **資安**：送模型前遮罩姓名／地址／電話／身分證／帳號；學生訊息與摘錄標成資料、不能偽造提示詞段落；模型回覆若外洩內部設定或宣稱「解除限制」即被擋下。SQLite 對話與個案敏感欄位加密，稽核日誌以 SHA-256 雜湊鏈串接，查閱個案也會留紀錄。
-- **學生頁**：四套主題、Esc／📚 單字卡防窺偽裝、離線求助卡與 4-7-8 呼吸球、PWA 加入主畫面、手機掃碼安裝。
+- **學生頁**：四套主題、離線求助卡與 4-7-8 呼吸球、PWA 加入主畫面、手機掃碼安裝。（原計畫的英文單字卡偽裝畫面已依專案負責人決定移除。）
 - **工作臺**：`/counselor` 個案摘要含原話螢光筆、規則來源、理論代號與六類線索；`/explain` 重播虛構情境與 P01–P10；`/demo` 30 組模擬案例。
 
 ## 環境變數
@@ -61,7 +61,11 @@ anla-youth-v1.3-A.1/
 | `GEMINI_API_KEY`、`LLM_PROVIDER`、`GEMINI_MODEL` | 雲端模型；未設定使用本機備援（OpenAI 介面存在但未實測） |
 | `ANLA_DB_KEY` | 資料庫加密金鑰（任意長字串）。未設定時自動在資料庫旁產生 `anla_youth.db.key`，**遺失就無法解密**，切勿上傳 |
 | `HOST`、`PUBLIC_URL` | 讓手機連入：`HOST=0.0.0.0`；掃碼網址用 `PUBLIC_URL`（手機離線快取需 HTTPS） |
-| `LLM_TURN_BUDGET` | 每輪模型呼叫合計秒數上限（預設 30） |
+| `LLM_TURN_BUDGET`、`LLM_CONNECT_TIMEOUT` | 每輪模型呼叫合計秒數上限（預設 30）、連線逾時（預設 3） |
+| `LLM_CALL_MODE` | `single`（預設，一次結構化呼叫取得線索與回覆）或 `two_stage`（先分析再回覆） |
+| `CHAT_RATE_LIMIT`、`LOGIN_MAX_FAILURES`、`CORS_ORIGINS` | 每段對話每分鐘訊息上限（30，橙紅訊息不受限）、後台 10 分鐘內登入失敗上限（5）、允許跨來源的網址（預設不開放） |
+| `LLM_CALLS_PER_MINUTE` | 全站每分鐘雲端模型請求上限（120）；超過改用本機回覆，控制費用、不擋學生 |
+| `TRUSTED_PROXY_HOPS` | 部署在 HTTPS 通道或反向代理後面時的代理層數，登入鎖定才會依真實 IP 計算 |
 
 ## Windows PowerShell 逐步啟動
 
@@ -91,7 +95,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-22 本機結果：單元測試 **225 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-22 本機結果：單元測試 **244 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 

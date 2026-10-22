@@ -39,7 +39,8 @@ class ResilienceTests(unittest.TestCase):
         dialogue_ai.reset_model_health()
         self.clock = FakeClock()
         for p in (patch.object(Config, "LLM_PROVIDER", "gemini"), patch.object(Config, "GEMINI_API_KEY", "test-key"),
-                  patch.object(dialogue_ai, "_clock", self.clock)):
+                  patch.object(dialogue_ai, "_clock", self.clock),
+                  patch.object(Config, "LLM_CALL_MODE", "two_stage")):  # single-call budget: test_single_call_v23
             self.enterContext(p)
 
     def tearDown(self):
@@ -134,7 +135,7 @@ class ResilienceTests(unittest.TestCase):
         with patch.object(Config, "LLM_TURN_BUDGET", 20), \
              patch("engine.dialogue_ai.requests.post", side_effect=slow_analysis_then_reply) as post:
             self.turn()
-        timeouts = [c.kwargs["timeout"] for c in post.call_args_list]
+        timeouts = [c.kwargs["timeout"][1] for c in post.call_args_list]  # (connect, read)
         self.assertLessEqual(timeouts[0], 10)
         self.assertLessEqual(sum(timeouts), 20 + 0.01)
 

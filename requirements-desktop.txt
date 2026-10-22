@@ -3,3 +3,8 @@
 # pywebview：Windows 走 Edge WebView2（會一併安裝 pythonnet），macOS 走 Cocoa WebKit（pyobjc）。
 pywebview==6.2.1; sys_platform == "win32" or sys_platform == "darwin"
 pyinstaller==6.22.3
+# 系統列圖示（選用；目前只在 Windows 啟用，見 desktop_launcher.tray_unavailable_reason）。
+# 未安裝時啟動器照常運作，只是沒有系統列圖示。
+pystray==0.19.5; sys_platform == "win32"
+Pillow==12.3.0; sys_platform == "win32"
+six==1.17.0; sys_platform == "win32"

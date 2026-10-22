@@ -6,6 +6,7 @@ import os
 import re
 import secrets
 import threading
+import time
 from datetime import datetime
 from functools import wraps
 
@@ -13,6 +14,7 @@ import io
 import socket
 
 import segno
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 
 from config import Config
@@ -42,7 +44,45 @@ from models.database import (
 )
 
 app = Flask(__name__)
+if Config.TRUSTED_PROXY_HOPS > 0:
+    # Behind a TLS tunnel or reverse proxy, trust exactly this many X-Forwarded-For hops.
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=Config.TRUSTED_PROXY_HOPS, x_proto=Config.TRUSTED_PROXY_HOPS)
 _dialogue_locks = [threading.RLock() for _ in range(64)]
+
+
+class SlidingWindowLimiter:
+    """In-memory, per-process limiter. Behind several workers, use a shared store (e.g. Redis) instead."""
+
+    def __init__(self):
+        self._hits, self._lock, self._pruned = {}, threading.Lock(), 0.0
+
+    def hit(self, key, limit, window):
+        """Atomically check and record one event; False when `key` already had `limit` events in `window` s."""
+        now = time.monotonic()
+        with self._lock:
+            hits = [t for t in self._hits.get(key, ()) if now - t < window]
+            allowed = len(hits) < limit
+            if allowed:
+                hits.append(now)
+            self._hits[key] = hits
+            if len(self._hits) > 10000 and now - self._pruned > 60:  # bounded memory, pruned at most once a minute
+                self._hits = {k: v for k, v in self._hits.items() if v and now - v[-1] < 600}
+                self._pruned = now
+            return allowed
+
+    def forget_last(self, key):
+        """Undo the most recent hit (a reserved login attempt that turned out to be correct)."""
+        with self._lock:
+            if self._hits.get(key):
+                self._hits[key].pop()
+
+    def reset(self):
+        with self._lock:
+            self._hits.clear()
+
+
+limiter = SlidingWindowLimiter()
+LOGIN_WINDOW = 600
 app.config.from_object(Config)
 init_db()
 
@@ -145,8 +185,26 @@ def student_next_steps(context):
     }
 
 
+@app.before_request
+def cors_preflight():
+    # Cross-origin requests are refused unless the origin is explicitly whitelisted (CORS_ORIGINS).
+    if request.method == "OPTIONS" and request.path.startswith("/api/"):
+        allowed = request.headers.get("Origin") in Config.CORS_ORIGINS
+        return ("", 204) if allowed else (jsonify({"error": "來源未被允許"}), 403)
+    return None
+
+
 @app.after_request
 def sensitive_cache_policy(response):
+    origin = request.headers.get("Origin")
+    if origin and origin in Config.CORS_ORIGINS:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRF-Token"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+        response.headers["Vary"] = "Origin"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["X-Content-Type-Options"] = "nosniff"
     if request.path.startswith("/api/") or request.path in ("/", "/counselor", "/login", "/demo", "/explain"):
         response.headers["Cache-Control"] = "no-store"
@@ -175,8 +233,14 @@ def login():
         error = require_csrf()
         if error:
             return error
+        login_key = "login:" + (request.remote_addr or "unknown")
+        # Reserve an attempt atomically; a correct password gives the reservation back.
+        if not limiter.hit(login_key, Config.LOGIN_MAX_FAILURES, LOGIN_WINDOW):
+            return render_template("login.html", disabled=False, csrf_token=csrf_token(),
+                                   error="嘗試次數過多，請 10 分鐘後再試"), 429
         password = request.form.get("password", "")
         if hmac.compare_digest(password, Config.WORKBENCH_PASSWORD):
+            limiter.forget_last(login_key)
             # 同一瀏覽器的學生頁可能仍在對話；保留當前對話的安全警訊與 CSRF。
             session["staff"] = True
             return redirect(url_for("counselor"))
@@ -336,6 +400,12 @@ def api_chat():
     if not isinstance(message, str) or not message.strip() or len(message) > 2000:
         return jsonify({"error": "訊息需為 1 至 2000 字"}), 400
     message = message.strip()
+    # A message the rules already rate orange/red is never throttled.
+    urgent = perform_triage(text=message)["level"] in ("orange", "red")
+    if not urgent and not limiter.hit("chat:" + session["student_context_id"], Config.CHAT_RATE_LIMIT, 60):
+        # Even a throttled student sees where to get immediate help.
+        return jsonify({"error": "訊息傳得太快了，請稍等一下再傳。若有立即危險，請直接撥打 119，或 1925 安心專線。",
+                        "show_urgent_help": session.get("highest_risk") == "red"}), 429
     # The reply style is the student's own choice; it can never lower safety (see build_state).
     if data.get("reply_style") in REPLY_STYLES:
         session["reply_style"] = data["reply_style"]
@@ -358,8 +428,15 @@ def process_chat_turn(message):
     history = previous_state.get("history", [])
     # DYN-04: the server's local hour (Taiwan deployment) lets late-night ambiguous messages get human review.
     style = session.get("reply_style", "warm")
+    chosen = {}
+
+    def offer_chooser(state):
+        # Single-call mode: pick the offer from the rule-based state so the model prompt matches it.
+        chosen["offer"] = choose_support_offer(message, state["risk_level"], session.get("support_offer_state"), state)
+        return chosen["offer"][0]
+
     triage, dialogue_state = prepare_dialogue(message, triage, previous_state, history,
-                                              hour=datetime.now().hour, reply_style=style)
+                                              hour=datetime.now().hour, reply_style=style, offer_chooser=offer_chooser)
     context = stage_student_summary(session["student_context_id"], session["student_email_hash"], triage, {}, message)
     saved_triage = context["draft"]["triage"]
     if RISK_LEVEL_WEIGHTS[saved_triage["level"]] > RISK_LEVEL_WEIGHTS[triage["level"]]:
@@ -372,7 +449,11 @@ def process_chat_turn(message):
     session["highest_risk"] = level
     if level in ("orange", "red") and re.search(r"^(?:我)?(?:現在|還是|改成)?(?:願意|想要?|要)轉介", message):
         session.pop("referral_offer_level", None)
+    # Always decide the offer from the final state (hints may have raised risk since the draft was written).
     offer, offer_state = choose_support_offer(message, level, session.get("support_offer_state"), dialogue_state)
+    if chosen and dialogue_state.get("_prepared_reply") and (
+            chosen["offer"][0] != offer or dialogue_state.get("safety_check_required")):
+        dialogue_state.pop("_prepared_reply")  # the draft was written for a different offer or situation
     reply = generate_youth_response(message, triage, history, support_offer=offer, dialogue_state=dialogue_state)
     try:
         context = save_dialogue_state(session["student_context_id"], session["student_email_hash"],

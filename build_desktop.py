@@ -3,7 +3,7 @@
     python build_desktop.py                 # Windows → dist/AnlaYouth/AnlaYouth.exe；macOS → dist/AnlaYouth.app
     python build_desktop.py --dmg           # macOS：另包成 dist/AnlaYouth.dmg（預設 hdiutil）
     python build_desktop.py --installer     # Windows：另呼叫 Inno Setup (ISCC) 產生 dist/AnlaYouth_Setup.exe
-    python build_desktop.py --smoke         # 封裝後執行打包版 --check
+    python build_desktop.py --smoke         # 封裝後執行打包版 --check（Windows 且已安裝 pystray 時加 --require-tray）
 
 只封裝 templates/、static/、data/ 與程式碼；不封裝資料庫、.env 或任何 API 金鑰。
 需求：pip install -r requirements.txt -r requirements-desktop.txt
@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import fnmatch
+import importlib.util
 import os
 import shutil
 import subprocess
@@ -108,18 +109,29 @@ def executable_path(out: str) -> str:
     return out
 
 
+def tray_bundled() -> bool:
+    """建置環境有 pystray + Pillow 時，PyInstaller（pyinstaller-hooks-contrib 的 hook-pystray）會一併封裝；
+    系統列只在 Windows 啟用，所以只有 Windows 需要驗證。"""
+    return IS_WIN and all(importlib.util.find_spec(m) is not None for m in ("pystray", "PIL"))
+
+
 def smoke_test(out: str) -> None:
     exe = executable_path(out)
+    cmd = [exe, "--check"]
+    if tray_bundled():
+        # 只匯入 pystray／Pillow 並讀取圖示，不建立圖示或視窗；缺件時打包版回傳 exit 1。
+        cmd.append("--require-tray")
     with tempfile.TemporaryDirectory() as tmp:
         env = dict(os.environ, DATABASE_PATH=os.path.join(tmp, "smoke.db"))
         # windowed 版沒有主控台；desktop_launcher 會把輸出寫到使用者資料夾的 launcher.log，
         # 這裡以結束代碼判定成敗。
-        proc = subprocess.run([exe, "--check"], env=env, timeout=120, capture_output=True, text=True)
+        print("+", " ".join(cmd[1:]), flush=True)
+        proc = subprocess.run(cmd, env=env, timeout=120, capture_output=True, text=True)
         print(proc.stdout.strip() or "(打包版無主控台輸出；詳見使用者資料夾 launcher.log)")
         if proc.returncode != 0:
             print(proc.stderr)
             sys.exit(f"打包版 --check 失敗，exit={proc.returncode}")
-    print("打包版 --check 通過（exit 0）")
+    print(f"打包版 {' '.join(cmd[1:])} 通過（exit 0）")
 
 
 def build_dmg(app_path: str, tool: str) -> str:

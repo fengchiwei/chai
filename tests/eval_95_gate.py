@@ -230,12 +230,15 @@ def score_platform(r, deductions):
         all(f'data-theme="{t}"' in read("static/css/themes.css") or f"[data-theme=\"{t}\"]" in read("static/css/themes.css")
             for t in ("warm", "forest", "midnight", "paper")),
         all(s in read("templates/index.html") + read("static/js/app.js") for s in ("lively", "rational", "listen_only")),
-        bool(read("static/js/boss_key.js")) and bool(read("static/js/vocab_data.js")),
+        # The plan's Boss Key vocabulary disguise was dropped at the project owner's request (2026-10-22);
+        # this slot checks the phone-install dialog and PWA wiring instead.
+        "installButton" in read("templates/index.html") and "/manifest.json" in read("templates/index.html")
+        and bool(read("static/js/pwa.js")),
         "4-7-8" in read("static/offline.html"),
     ]
     score += 0.35 * sum(front) / len(front)
     if not all(front):
-        deductions.append(("platform", 0.35 * (1 - sum(front) / len(front)), "前端主題／風格按鈕／Boss Key／離線呼吸球不完整"))
+        deductions.append(("platform", 0.35 * (1 - sum(front) / len(front)), "前端主題／風格按鈕／手機安裝／離線呼吸球不完整"))
     pack = []
     for rel in ("desktop_launcher.py", "build_desktop.py"):
         try:

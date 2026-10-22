@@ -18,6 +18,23 @@
 
 找不到 pywebview 或原生視窗啟動失敗（例如舊版 Windows 缺 WebView2 Runtime）時，會自動改用系統瀏覽器；打包版會跳出對話框，按「確定」即停止本機服務。也可以加 `--browser` 直接用瀏覽器。
 
+### 系統列圖示（Windows）
+
+對應《專案開發計畫》貳.二第 1 項「整合 PyWebView 原生視窗與系統列圖示」。安裝 `requirements-desktop.txt` 裡的 `pystray` + `Pillow` 後，原生視窗模式會在 Windows 通知區域顯示圖示（`static/icons/icon-192.png`，讀不到時用程式畫的備用圖示）。右鍵選單：
+
+| 選單 | 動作 |
+|---|---|
+| 開啟會客室（預設；左鍵點圖示也會觸發） | 顯示／還原主視窗 |
+| 在瀏覽器開啟 | 用系統瀏覽器開啟同一個網址 |
+| 南投求助專線 ▸ | 「開啟求助專線頁面」與 119／110／1925／1995／1980 各項，都會在另一個小視窗開啟 `/offline`（離線求助頁），不會打斷會客室對話；開不了視窗時改用瀏覽器 |
+| 結束 | 關閉所有視窗、停止本機伺服器並結束程式 |
+
+- 圖示執行中時，按視窗的「X」只會**縮到系統列**（第一次會跳出通知說明），本機服務繼續執行；要真正結束請從圖示選「結束」。
+- 登出、關機或工作管理員結束時不會攔截關閉，程式照常結束，不會擋住關機。
+- 以下情況完全沒有圖示，行為與先前相同（關閉視窗即結束）：未安裝 pystray／Pillow、加 `--no-tray`、`--browser` 模式、macOS／Linux。
+- `--check` 不建立圖示或視窗，只在輸出加上 `tray=available|unavailable`（是否能載入 pystray、Pillow 與圖示）；加 `--require-tray` 時元件不可用即 exit 1（`build_desktop.py --smoke` 在 Windows 會自動加上，用來確認打包版確實含有系統列元件）。
+- **macOS 未啟用**：pystray 的 macOS 後端（NSStatusItem）與 pywebview 的 Cocoa 後端都要在主執行緒執行 `NSApplication` 迴圈；pystray 的 `run_detached` 需要取得 pywebview 內部的 `NSApplication` 並在 `webview.start()` 之前整合，pywebview 沒有公開這個介面，無法安全並存，所以 macOS 一律不建立圖示（也不安裝 pystray）。**Linux** 的 GTK／AppIndicator 迴圈整合未驗證，同樣停用。
+
 ## 二、環境變數與資料位置
 
 | 變數 | 用途 |
@@ -52,7 +69,8 @@ python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt -r requirements-desktop.txt
 .venv\Scripts\python desktop_launcher.py                 # All-in-One
 .venv\Scripts\python desktop_launcher.py --server https://anla.example.tw   # 遠端
-.venv\Scripts\python desktop_launcher.py --check         # 只做 /health 檢查，印出 OK
+.venv\Scripts\python desktop_launcher.py --check         # 只做 /health 檢查，印出 OK（含 tray=available）
+.venv\Scripts\python desktop_launcher.py --no-tray       # 不建立系統列圖示
 ```
 
 ### 打包
@@ -62,6 +80,7 @@ python -m venv .venv
 .venv\Scripts\python build_desktop.py --smoke --installer  # 另需 Inno Setup 6.3+，→ dist\AnlaYouth_Setup.exe
 ```
 
+- 打包時 pystray、Pillow 由 PyInstaller（`pyinstaller-hooks-contrib` 內建的 `hook-pystray`、`hook-PIL`）自動收進安裝包，不需額外參數；建置環境沒裝時，打包版就是沒有系統列圖示的版本。
 - `build_desktop.py` 只封裝 `templates/`、`static/`、`data/` 與程式碼；建置前會檢查這三個資料夾，發現 `*.db`、`.env`、`*.key` 等檔案就中止；建置後再檢查產物內沒有資料庫或 `.env`。
 - 安裝精靈腳本：`packaging/AnlaYouth.iss`（UTF-8 含 BOM）。也可手動執行 `ISCC /DMyAppVersion=1.3.1 packaging\AnlaYouth.iss`。預設免系統管理員權限，安裝到使用者資料夾。
 - Windows 11 內建 WebView2；Windows 10 若缺少，請安裝 Microsoft「Evergreen WebView2 Runtime」，否則會改用瀏覽器開啟。
@@ -156,7 +175,7 @@ cd android && ./gradlew assembleDebug    # Windows：gradlew.bat assembleDebug
 
 ## 九、驗證狀態（誠實揭露）
 
-以下為 2026-10-22 在開發者的 Windows 11 電腦（Python 3.12.10、pywebview 6.2.1、PyInstaller 6.22.3）上的實測結果。
+以下為 2026-10-22 在開發者的 Windows 11 電腦（Python 3.12.10、pywebview 6.2.1、PyInstaller 6.22.3、pystray 0.19.5、Pillow 12.3.0）上的實測結果。
 
 | 項目 | 狀態 | 說明 |
 |---|---|---|
@@ -166,6 +185,11 @@ cd android && ./gradlew assembleDebug    # Windows：gradlew.bat assembleDebug
 | `build_desktop.py --smoke`（Windows 打包） | ✅ 已驗證 | 產生 `dist\AnlaYouth\AnlaYouth.exe`，打包版 `--check` exit 0 |
 | 打包版預設資料庫位置 | ✅ 已驗證 | 未設 `DATABASE_PATH` 時寫到 `%APPDATA%\AnlaYouth\anla_youth.db` |
 | 打包版 GUI（WebView2 視窗） | ✅ 已驗證 | 視窗標題正確、WebView2 子程序啟動、`/`、`/resources`、`/static/*` 回 200；關閉視窗後程序結束 |
+| 系統列圖示（原始碼，Windows） | ✅ 已驗證（程式驅動） | 圖示執行緒啟動無例外；以程式呼叫 pystray 選單項目（未用滑鼠實際點擊）：關閉視窗→隱藏且伺服器仍回 200、「開啟會客室」→視窗重新顯示、「開啟求助專線頁面」→開啟 `/offline` 小視窗、「結束」→視窗關閉、`main()` exit 0、無殘留前景執行緒 |
+| `--no-tray`／缺 pystray（原始碼） | ✅ 已驗證 | 不建立圖示；關閉視窗即結束（exit 0）；`--check` 印出 `tray=unavailable` |
+| 打包版系統列 | ✅ 已驗證 | `--check --require-tray` exit 0（`tray=available`）；打包版 GUI 啟動後 `launcher.log` 記錄「系統列圖示已啟動」 |
+| 系統列：真人滑鼠點擊、Windows 登出／關機時的關閉行為 | ⚠️ 未驗證 | 選單只以程式觸發；關機路徑依 WinForms `CloseReason` 判斷，未實際登出測試 |
+| macOS／Linux 系統列 | ⚠️ 未啟用 | 見第一節「系統列圖示」；這兩個平台不建立圖示 |
 | Inno Setup `AnlaYouth_Setup.exe` | ⚠️ 未驗證 | 本機未安裝 Inno Setup；腳本語法未經 ISCC 編譯 |
 | macOS `.app` / `.dmg` | ⚠️ 未驗證 | 需 Mac 或 GitHub Actions macOS 機器 |
 | Capacitor `npm install`、`cap add android` | ✅ 已驗證 | 於暫存複本執行；設定正確複製到 Android 專案 |

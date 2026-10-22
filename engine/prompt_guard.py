@@ -22,18 +22,19 @@ PATTERNS = {
     "fake_marker": re.compile(
         r"(?im)^\s*(?:system|assistant|developer|系統|助理|管理員|開發者)\s*[:：]"
         r"|【[^】]{0,20}(?:系統|決策|指令|規則|記憶|設定)[^】]{0,20}】"
-        r"|<\|[^|>]{0,20}\|>|</?(?:system|assistant|user)>"
+        r"|<\|[^|>]{0,20}\|>|</?(?:system|assistant|user|student_message)\s*>"
         r"|\"(?:current_goal|risk_level|max_questions|safety_[a-z_]+)\"\s*:", re.I),
 }
 
 _BRACKET = re.compile(r"【([^】]{0,40})】")
 _ROLE_PREFIX = re.compile(r"(?im)^(\s*)(system|assistant|developer|user|系統|助理|管理員|開發者)\s*[:：]")
-_SPECIAL = re.compile(r"<\|[^|>]{0,20}\|>|</?(?:system|assistant|user)>", re.I)
+_SPECIAL = re.compile(r"<\|[^|>]{0,20}\|>|</?(?:system|assistant|user|student_message)\s*>", re.I)
 
 # Field names of the internal decision state and prompt headings that must never reach a student.
 _INTERNAL = re.compile(
     r"current_goal|response_strategy|max_questions|forbidden_actions|safety_check_required|safety_override"
     r"|risk_level|iceberg_stage|semantic_status|dialogue_content|human_escalation"
+    r"|\"(?:analysis|reply|risk|affirmed|evidence|signal)\"\s*:"
     r"|系統提示詞(?:是|如下|內容)|我的(?:系統)?(?:提示詞|指令)(?:是|如下)|以下是我的(?:設定|指令|提示詞)")
 _JAILBREAK_ACK = re.compile(
     r"(?:開發者|越獄|DAN|無限制)模式(?:已|已經)?(?:啟用|開啟|啟動)"
@@ -56,6 +57,11 @@ def as_data(text):
     text = _SPECIAL.sub("", text)
     text = _BRACKET.sub(r"［\1］", text)
     return _ROLE_PREFIX.sub(r"\1\2（學生輸入的文字）：", text)
+
+
+def student_block(text):
+    """Wrap (already neutralised) student text in the data tags the system prompt declares."""
+    return "<student_message>\n" + text + "\n</student_message>"
 
 
 def _prompt_lines(prompt):
