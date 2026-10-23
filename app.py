@@ -46,7 +46,9 @@ from models.database import (
     get_all_cases,
     flag_risk_after_consent,
     get_case_by_id,
+    get_setting,
     init_db,
+    set_setting,
     log_audit,
     update_case_status,
 )
@@ -111,6 +113,16 @@ limiter = SlidingWindowLimiter()
 LOGIN_WINDOW = 600
 app.config.from_object(Config)
 init_db()
+
+
+def restore_model_choice():
+    """The model chosen in the workbench survives a restart (saved per service in app_settings)."""
+    if providers.configured():
+        provider = providers.name()
+        model_router.set_manual(provider, get_setting("model:" + provider) or None)
+
+
+restore_model_choice()
 
 BASE_DIR = os.path.dirname(__file__)
 with open(os.path.join(BASE_DIR, "data", "nantou_resources.json"), encoding="utf-8") as f:
@@ -669,7 +681,8 @@ def api_referral_consent():
 @staff_only
 def api_config_llm():
     """Staff-only model panel: which models the key can use, their ranking, health and the active one.
-    POST {"action": "refresh"} re-reads the provider's model list (metadata only, no tokens)."""
+    POST {"action": "refresh"} re-reads the provider's model list (metadata only, no tokens);
+    POST {"action": "select_model", "model": name or ""} puts a listed model first ("" = automatic)."""
     provider = _provider()
     configured = providers.configured()
     info = providers.active() or {}
@@ -677,11 +690,23 @@ def api_config_llm():
         error = require_csrf()
         if error:
             return error
-        if (request.get_json(silent=True) or {}).get("action") != "refresh":
-            return jsonify({"error": "金鑰與服務商請在啟動前用環境變數設定；這裡只能重新偵測模型"}), 400
-        if configured:
+        data = request.get_json(silent=True)
+        action = data.get("action") if isinstance(data, dict) else None
+        if action not in ("refresh", "select_model"):
+            return jsonify({"error": "金鑰與服務商請在啟動前設定；這裡只能重新偵測或選擇模型"}), 400
+        if not configured:
+            return jsonify({"error": "尚未設定雲端 AI 金鑰"}), 400
+        if action == "refresh":
             model_router.discover(provider, force=True)
             log_audit(staff_actor(), "refresh_models", "", provider)
+        else:
+            model = data.get("model") or ""
+            if not isinstance(model, str) or (model and model not in model_router.catalog_models(provider)):
+                # Only names read from this key's model list: a typo or a model the key cannot use is refused.
+                return jsonify({"error": "只能選擇這把金鑰可用的模型；清單沒有出現時請先按「重新偵測可用模型」"}), 400
+            set_setting("model:" + provider, model)
+            model_router.set_manual(provider, model or None)
+            log_audit(staff_actor(), "select_model", "", f"{provider}：{model or '自動選擇'}")
     elif configured and Config.MODEL_AUTO_SELECT:
         model_router.discover(provider)  # cached for 30 minutes
     return jsonify({

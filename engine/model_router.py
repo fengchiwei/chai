@@ -50,6 +50,30 @@ def reset():
     with _lock:
         _catalog.clear()
         _health.clear()
+        _manual.clear()
+
+
+_manual = {}  # provider -> model chosen by staff in the workbench panel (saved by the app, restored at start)
+
+
+def set_manual(provider, model):
+    """Staff choice from the panel; None goes back to automatic selection. Failover still applies."""
+    with _lock:
+        if model:
+            _manual[provider] = model
+        else:
+            _manual.pop(provider, None)
+
+
+def manual_model(provider):
+    with _lock:
+        return _manual.get(provider)
+
+
+def catalog_models(provider):
+    """Models read from the key's model list (what staff may choose from)."""
+    with _lock:
+        return list(_catalog.get(provider, {}).get("models", []))
 
 
 def _api(provider):
@@ -64,8 +88,8 @@ def default_model(provider):
 
 
 def pinned_model(provider):
-    """A model the administrator chose explicitly via the environment (kept first in line)."""
-    return providers.pinned_model() if providers.name() == provider else None
+    """A model chosen explicitly (kept first in line): the workbench choice, else LLM_MODEL from the environment."""
+    return manual_model(provider) or (providers.pinned_model() if providers.name() == provider else None)
 
 
 def usable(provider, name):
@@ -224,9 +248,13 @@ def snapshot(provider):
                      "paused_for": round(paused), "last_error": h.get("last_error"),
                      "latency": round(h["latency"], 1) if h.get("latency") is not None else None,
                      "ok": h.get("ok", 0), "fail": h.get("fail", 0)})
+    manual = manual_model(provider)
     return {"provider": provider, "active": active, "pinned": pinned_model(provider), "models": rows,
+            "manual": manual, "pinned_source": "manual" if manual else "env" if pinned_model(provider) else None,
+            "choices": catalog_models(provider),
             "discovered": bool(entry.get("models")),
             "discovered_ago": round(now - entry["at"]) if entry.get("at") else None,
             "discovery_error": entry.get("error"),
             "ranking_rule": "版本越新越前；同版本較大的型號優先（pro > flash > lite、opus > sonnet > haiku、完整 > mini > nano）；"
-                            f"正式版優先於預覽版；平均回覆超過 {SLOW_SECONDS} 秒的模型排到最後；LLM_MODEL 可指定第一順位。"}
+                            f"正式版優先於預覽版；平均回覆超過 {SLOW_SECONDS} 秒的模型排到最後；"
+                            "在這裡手動選擇（或啟動前設定 LLM_MODEL）的模型排第一順位，故障時仍會暫時改用下一個。"}

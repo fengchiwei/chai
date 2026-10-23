@@ -99,10 +99,34 @@ def init_db():
     """)
     # Expired-context cleanup scans by time; without an index every write read the whole table.
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_student_contexts_updated ON student_contexts(updated_at)")
+    # Operator settings made in the workbench (e.g. the chosen model); no student data.
+    cursor.execute("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
 
     conn.commit()
     conn.execute("PRAGMA journal_mode=WAL")  # persistent per database file
     conn.close()
+
+
+def get_setting(key: str, default: str = "") -> str:
+    conn = get_connection()
+    try:
+        row = conn.execute("SELECT value FROM app_settings WHERE key = ?", (key,)).fetchone()
+        return row["value"] if row else default
+    finally:
+        conn.close()
+
+
+def set_setting(key: str, value: str):
+    """Empty value removes the setting."""
+    conn = get_connection()
+    try:
+        with conn:
+            if value:
+                conn.execute("INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)", (key, value))
+            else:
+                conn.execute("DELETE FROM app_settings WHERE key = ?", (key,))
+    finally:
+        conn.close()
 
     # 展示案例只從 data/mock_cases.json 讀取，不灌入真實個案資料表。
 

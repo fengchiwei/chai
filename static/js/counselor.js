@@ -27,14 +27,16 @@ const MODEL_ERROR = {
 const CONNECTION_STATE = { ok: "正常", degraded: "暫時無法使用", unknown: "尚未測試（學生傳訊或開頁後更新）", not_configured: "未設定" };
 const CALL_MODE = { single: "一次呼叫（分析＋回覆）", two_stage: "兩段呼叫（先分析再回覆）" };
 
-async function loadModels(refresh = false) {
+async function loadModels(refresh = false, selection = undefined) {
   const body = $("modelPanelBody");
   if (!body) return;
-  body.textContent = refresh ? "重新偵測中…（只讀取模型清單，不耗用 token）" : "讀取中…";
+  const posting = refresh || selection !== undefined;
+  body.textContent = selection !== undefined ? "套用中…" : refresh ? "重新偵測中…（只讀取模型清單，不耗用 token）" : "讀取中…";
   try {
-    const res = await fetch("/api/config/llm", refresh
+    const action = selection !== undefined ? { action: "select_model", model: selection } : { action: "refresh" };
+    const res = await fetch("/api/config/llm", posting
       ? { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-Token": window.ANLA_CSRF_TOKEN },
-          body: JSON.stringify({ action: "refresh" }) }
+          body: JSON.stringify(action) }
       : { cache: "no-store" });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "讀取失敗");
@@ -59,17 +61,28 @@ function renderModels(data) {
       : m.state === "retry" ? `可再試（上次：${error}）`
       : E(MODEL_STATE[m.state] || m.state);
     return `<tr${m.active ? ' style="background:#ecfdf5;font-weight:600"' : ""}>
-      <td>${m.rank}</td><td><code>${E(m.model)}</code>${m.active ? " ✅ 使用中" : ""}${m.pinned ? "（管理者指定）" : ""}</td>
+      <td>${m.rank}</td><td><code>${E(m.model)}</code>${m.active ? " ✅ 使用中" : ""}${m.pinned ? (r.pinned_source === "manual" ? "（手動指定）" : "（啟動設定指定）") : ""}</td>
       <td>${state}</td><td>${m.latency == null ? "—" : E(m.latency) + " 秒"}</td><td>${m.ok} / ${m.fail}</td></tr>`;
   }).join("");
   const status = data.status || {};
   const paused = r.models.filter(m => m.state === "paused").length;
   const wasOpen = body.querySelector("details")?.open;  // keep the table open across refreshes
   // One summary line stays visible; the full table is folded so the case list stays near the top.
+  const choices = r.choices || [];
+  const options = [`<option value="">自動選擇（推薦）</option>`]
+    .concat(choices.map(m => `<option value="${E(m)}"${m === r.manual ? " selected" : ""}>${E(m)}</option>`)).join("");
   body.innerHTML = `
-    <p>目前使用：<b><code>${E(r.active || "（無）")}</code></b>　｜　可用 ${r.models.length - paused} 個、暫停 ${paused} 個
+    <p>目前使用：<b><code>${E(r.active || "（無）")}</code></b>${r.manual ? "（手動指定）" : r.pinned_source === "env" ? "（啟動設定指定）" : "（自動選擇）"}
+      　｜　可用 ${r.models.length - paused} 個、暫停 ${paused} 個
       　｜　連線：${E(CONNECTION_STATE[status.state] || status.state || "")}${status.reason ? "（" + E(MODEL_ERROR[status.reason] || status.reason) + "）" : ""}</p>
     ${r.discovery_error ? `<p style="color:#b91c1c">模型清單讀取失敗：${E(r.discovery_error)}（先使用預設模型）</p>` : ""}
+    <p style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+      <label for="modelChoice">使用的模型：</label>
+      <select id="modelChoice" ${choices.length ? "" : "disabled"} style="padding:.35rem .5rem;border-radius:8px;border:1px solid var(--border-color)">${options}</select>
+      <button type="button" id="applyModel" ${choices.length ? "" : "disabled"} style="padding:.35rem .8rem">套用</button>
+      <span style="font-size:.82rem;color:#64748b">${choices.length ? "指定的模型會優先使用；它故障時仍會暫時改用下一個，學生不會沒有回覆。"
+        : "還沒讀到這把金鑰的模型清單，請先按「重新偵測可用模型」。"}</span>
+    </p>
     <details${wasOpen ? " open" : ""}><summary style="cursor:pointer">查看全部模型與排名規則</summary>
     <p>服務商：${E(data.provider_label || data.provider)}${data.base_url ? "（" + E(data.base_url) + "）" : ""}　｜　自動選擇：${data.auto_select ? "開啟" : "關閉（使用設定的模型）"}
       　｜　呼叫方式：${E(CALL_MODE[data.call_mode] || data.call_mode)}</p>
@@ -79,6 +92,7 @@ function renderModels(data) {
       <thead><tr><th>排名</th><th>模型</th><th>狀態</th><th>平均回覆</th><th>成功／失敗</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="5">沒有可用的對話模型</td></tr>'}</tbody></table></div>
     <p>排名規則：${E(r.ranking_rule || "")}</p></details>`;
+  $("applyModel")?.addEventListener("click", () => loadModels(false, $("modelChoice").value));
 }
 
 window.addEventListener("DOMContentLoaded", () => {

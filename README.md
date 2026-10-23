@@ -62,7 +62,7 @@ anla-youth-v1.3-A.1/
 | `LLM_API_KEY` | 雲端模型的金鑰（任一家）。未設定使用本機備援回覆。舊的 `GEMINI_API_KEY`、`OPENAI_API_KEY`、`ANTHROPIC_API_KEY` 仍可使用 |
 | `LLM_PROVIDER` | `auto`（預設，依金鑰開頭判斷）、`gemini`、`anthropic`、`openai`、`deepseek`、`groq`、`openrouter`、`xai`、`mistral`、`custom` 或 `builtin`。`sk-` 開頭的金鑰可能是 OpenAI 或 DeepSeek，請指定 |
 | `LLM_BASE_URL` | `custom` 用的服務網址（任何 OpenAI 相容服務，例如學校自架或 Ollama 的 `http://127.0.0.1:11434/v1`） |
-| `LLM_MODEL` | **通常不用設**。系統會依金鑰讀取可用模型並自動選最佳者；設定後該模型排第一順位，故障時仍會切換 |
+| `LLM_MODEL` | **通常不用設**。系統會依金鑰讀取可用模型並自動選最佳者；也可以在工作臺「AI 模型」面板用下拉選單手動選擇（重啟後保留）。指定的模型排第一順位，故障時仍會切換 |
 | `MODEL_AUTO_SELECT` | 預設 `true`；設 `false` 則不讀模型清單，只用 `LLM_MODEL`（或該服務的預設模型） |
 | `GEMINI_THINKING` | 預設 `low`：把模型的「思考」降到最低以縮短等待；`default` 則使用模型原本的設定 |
 | `ANLA_DB_KEY` | 資料庫加密金鑰（任意長字串）。未設定時自動在資料庫旁產生 `anla_youth.db.key`，**遺失就無法解密**，切勿上傳 |
@@ -101,7 +101,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-23 本機結果：單元測試 **345 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-23 本機結果：單元測試 **351 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 
