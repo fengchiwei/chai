@@ -28,11 +28,11 @@
     "evidence": "official_guideline",
     "sources": [
       {
-        "name": "紓解壓力有許多正向選擇 吸菸（煙）無法減壓且傷害腦部",
-        "publisher": "衛生福利部國民健康署",
-        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4809&pid=18118",
-        "updated": "2024-05-13",
-        "supports": "青少年有壓力時可向家長或學校求助，用聽音樂、找朋友聊聊、運動等方式紓壓；吸菸無法減壓反而增加壓力",
+        "name": "Dealing with stress (Every Mind Matters)",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/",
+        "updated": null,
+        "supports": "把大任務拆成小步驟並肯定自己、多活動身體、和信任的人聊聊；壓力影響日常生活時要找醫師或專業協助",
         "checked_at": "2026-10-23"
       },
       {
@@ -44,11 +44,11 @@
         "checked_at": "2026-10-23"
       },
       {
-        "name": "Dealing with stress (Every Mind Matters)",
-        "publisher": "NHS (UK)",
-        "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/",
-        "updated": null,
-        "supports": "把大任務拆成小步驟並肯定自己、多活動身體、和信任的人聊聊；壓力影響日常生活時要找醫師或專業協助",
+        "name": "紓解壓力有許多正向選擇 吸菸（煙）無法減壓且傷害腦部",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4809&pid=18118",
+        "updated": "2024-05-13",
+        "supports": "青少年有壓力時可向家長或學校求助，用聽音樂、找朋友聊聊、運動等方式紓壓；吸菸無法減壓反而增加壓力",
         "checked_at": "2026-10-23"
       }
     ],

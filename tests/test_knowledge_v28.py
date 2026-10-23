@@ -67,8 +67,9 @@ class ReplyTests(Base):
         self.assertIn("本輪參考資料卡", prompt)
         self.assertIn("放慢呼吸", prompt)
         self.assertEqual(result["reply"], reply)
-        self.assertEqual(result["sources"], [{"title": "放慢呼吸", "publisher": "英國國民保健署 NHS",
-                                              "url": "https://www.nhs.uk/y"}])
+        # The link carries the page's own title, not the card's (v2.8.6).
+        self.assertEqual(result["sources"], [{"title": "Breathing exercises", "publisher": "英國國民保健署 NHS",
+                                              "url": "https://www.nhs.uk/y", "card": "放慢呼吸"}])
 
     def test_a_made_up_source_is_not_sent(self):
         result, _, _ = self.turn(ASK, {"return_value": single("哈佛研究說每天冥想十分鐘就好。")})
@@ -84,6 +85,25 @@ class ReplyTests(Base):
     def test_listen_only_style_gets_no_cards(self):
         _, state = prepare_dialogue(ASK, perform_triage(ASK), {}, use_model=False, hour=14, reply_style="listen_only")
         self.assertEqual(knowledge.select(ASK, state), [])
+
+
+class SourceDisplayTests(unittest.TestCase):
+    def test_links_follow_what_the_reply_used(self):
+        card = {**SLEEP, "sources": [
+            {"publisher": "衛生福利部國民健康署", "name": "紓解壓力有許多正向選擇 吸菸無法減壓", "url": "https://www.hpa.gov.tw/a",
+             "supports": "聽音樂、找朋友聊聊、運動等方式紓壓"},
+            {"publisher": "NHS (UK)", "name": "Dealing with stress", "url": "https://www.nhs.uk/b",
+             "supports": "把大任務拆成小步驟並肯定自己"}]}
+        only_nhs = knowledge.public_sources("把卡住的事切成小步驟，一次做一塊。（資料來源：NHS）", [card])
+        self.assertEqual([s["url"] for s in only_nhs], ["https://www.nhs.uk/b"])
+        both = knowledge.public_sources("聽音樂或找朋友聊聊，也可以把事情拆成小步驟。（資料來源：國健署、NHS）", [card])
+        self.assertEqual({s["title"] for s in both}, {"紓解壓力有許多正向選擇 吸菸無法減壓", "Dealing with stress"})
+        self.assertEqual(knowledge.public_sources("好好休息就好。", [card]), [])  # nothing cited, no link
+
+    def test_prompt_says_which_source_backs_which_point(self):
+        block = knowledge.prompt_block([BREATH])
+        self.assertIn("〈Breathing exercises〉", block)
+        self.assertIn("實際用到的那個重點的來源機構", block)
 
 
 class RouteTests(unittest.TestCase):

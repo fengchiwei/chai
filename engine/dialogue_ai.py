@@ -816,7 +816,7 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
             if issues:
                 logging.info("對話回覆有小問題但照樣送出：%s", ",".join(issues))
             result = include_support_offer(model, offer)
-            result["sources"] = knowledge.public_sources(knowledge.cited(model["reply"], cards))
+            result["sources"] = knowledge.public_sources(model["reply"], cards)
             return result
         logging.info("對話回覆未通過規則檢查：%s", ",".join(hard))
         status = "rule_check"

@@ -486,7 +486,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.8.5"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.8.6"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -657,7 +657,8 @@ def process_chat_turn(message):
     exchange = [{"role": "user", "text": message, "at": sent_at},
                 {"role": "assistant", "text": reply["reply"], "at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                  "source": reply_source(reply["model_used"]),
-                 **({"cards": [s["title"] for s in reply["sources"]]} if reply.get("sources") else {})}]
+                 **({"cards": list(dict.fromkeys(s.get("card", s["title"]) for s in reply["sources"]))}
+                    if reply.get("sources") else {})}]
     try:
         context = save_dialogue_state(session["student_context_id"], session["student_email_hash"],
             remember_turn(dialogue_state, message, reply["reply"]), previous_state.get("turn_count", 0),

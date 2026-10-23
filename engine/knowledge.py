@@ -155,11 +155,14 @@ def prompt_block(selected):
     lines = ["【本輪參考資料卡（來源已核對；學生在問方法或資訊）】",
              "請從下面挑最合適的一張，用自己的話回答學生的問題，或給一個做得到的小步驟（最多兩個選項），不要整張照念。"
              "卡片沒寫到的數字、日期、法規細節不要自己補。",
-             "句尾用「（資料來源：機構名稱）」標出你用的那張卡的來源機構；只能寫下面列出的機構，不要提到其他研究或機構，也不要加入用藥建議。"]
+             "每張卡的來源各自支持不同重點（見「來源」）。句尾用「（資料來源：機構名稱）」標出你實際用到的那個重點的來源機構，"
+             "用到兩個來源的重點就標兩個；只能寫下面列出的機構，不要提到其他研究或機構，也不要加入用藥建議。"]
     for i, card in enumerate(selected, 1):
+        sources = "；".join(f"{s.get('publisher') or s.get('name')}〈{s.get('name', '')}〉支持：{s.get('supports', '')}"
+                           for s in card["sources"])
         lines.append(f"卡{i}｜{card['title']}｜重點：{card.get('summary', '')}｜步驟：{'；'.join(card['steps'])}"
                      + (f"｜注意：{'；'.join(card['cautions'])}" if card.get("cautions") else "")
-                     + f"｜何時找人：{card.get('when_to_seek_help', '')}｜來源機構：{'、'.join(publishers(card))}")
+                     + f"｜何時找人：{card.get('when_to_seek_help', '')}｜來源：{sources}")
     return "\n".join(lines)
 
 
@@ -210,7 +213,24 @@ def invented_source(reply, selected):
     return False
 
 
-def public_sources(selected):
-    """What the student page shows under a reply: name, organisation and link only."""
-    return [{"title": card["title"], "publisher": publishers(card)[0], "url": card["sources"][0]["url"]}
-            for card in selected]
+def public_sources(reply, selected, limit=2):
+    """The pages the reply actually drew on, for the links under it: each source whose organisation the reply
+    names, best match to the reply first, labelled with the page's own title. A link labelled with the card's title
+    once pointed to a press release about quitting smoking (2026-10-23 live test)."""
+    words = set(_grams(reply))
+    found = []
+    for card in selected:
+        for source in card.get("sources", []):
+            publisher = source.get("publisher") or source.get("name", "")
+            if not _mentions(reply, publisher):
+                continue
+            overlap = len(words & set(_grams(source.get("supports", "") + source.get("name", ""))))
+            found.append((overlap, {"title": source.get("name") or card["title"], "publisher": publisher,
+                                    "url": source["url"], "card": card["title"]}))
+    found.sort(key=lambda pair: -pair[0])
+    shown, seen = [], set()
+    for _, item in found:
+        if item["url"] not in seen:
+            seen.add(item["url"])
+            shown.append(item)
+    return shown[:limit]
