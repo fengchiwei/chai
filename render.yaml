@@ -1,0 +1,30 @@
+# 少年仔、安啦會客室：Render 部署設定（Blueprint）。用法見 docs/DEPLOY_RENDER.md。
+# 金鑰與密碼都標成 sync: false，只在 Render 後台填寫，不會寫進 GitHub。
+services:
+  - type: web
+    name: anla-youth
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: pip install -r requirements.txt
+    # 單一行程：對話鎖、速率限制、模型健康狀態都存在記憶體裡，多個行程會各算各的。
+    startCommand: gunicorn app:app --workers 1 --threads 8 --timeout 90 --bind 0.0.0.0:$PORT
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: SECRET_KEY
+        generateValue: true
+      # 資料庫欄位加密金鑰；用環境變數，不在主機上留 .key 檔。
+      - key: ANLA_DB_KEY
+        generateValue: true
+      - key: COOKIE_SECURE
+        value: "true"
+      # Render 前面有一層負載平衡，登入鎖定才會依真實來源 IP 計算。
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
+      - key: WORKBENCH_PASSWORD
+        sync: false
+      - key: LLM_API_KEY
+        sync: false

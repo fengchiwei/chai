@@ -52,7 +52,8 @@ class Config:
     DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
     HOST = os.environ.get("HOST", "127.0.0.1")
     # 手機掃碼安裝 PWA 時要開啟的網址（例如 https://anla.example.tw/）；未設定時使用本機區網位址。
-    PUBLIC_URL = os.environ.get("PUBLIC_URL", "")
+    # Render 會自動提供 RENDER_EXTERNAL_URL。
+    PUBLIC_URL = os.environ.get("PUBLIC_URL") or os.environ.get("RENDER_EXTERNAL_URL", "")
     # 資安閘道：每段對話每分鐘訊息上限、同一 IP 登入失敗上限（10 分鐘內）、允許跨來源的網址（逗號分隔，預設不開放）。
     CHAT_RATE_LIMIT = int(os.environ.get("CHAT_RATE_LIMIT", "30"))
     LOGIN_MAX_FAILURES = int(os.environ.get("LOGIN_MAX_FAILURES", "5"))

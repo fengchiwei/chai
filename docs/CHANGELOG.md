@@ -2,6 +2,17 @@
 
 > 依 `PROJECT_STATUS_20261021.md` 與 `專案開發計畫.md`（v2.3）續作。所有測試只使用虛構句子，不連網。
 
+## 2026-10-23：v2.5.12（部署：Render 線上網站與 GitHub Releases 下載）
+
+GitHub Pages 只能放靜態網頁，跑不了 Python 後端，所以分兩條路部署，步驟見 `docs/DEPLOY.md`：
+- **Render 線上網站**：
+  - 新增 `render.yaml`（Blueprint），以 gunicorn 單一行程、8 個執行緒啟動，健康檢查 `/health`。
+  - `SECRET_KEY`、`ANLA_DB_KEY` 由 Render 自動產生；`WORKBENCH_PASSWORD`、`LLM_API_KEY` 只在 Render 後台填寫，不進 GitHub。
+  - `requirements.txt` 新增 gunicorn（只在 Linux 安裝）；`PUBLIC_URL` 未設定時改用 Render 提供的 `RENDER_EXTERNAL_URL`。
+  - 已在 Linux 容器內用同樣的啟動指令實測：`/health`、學生頁、工作臺登入頁都回應 200。
+  - 免費方案會休眠，且重新部署會清空 SQLite 資料庫；正式使用需付費方案加永久磁碟。
+- **GitHub Releases**：建置流程新增 release 工作，推送 `v*` 標籤時把 Windows 安裝檔、免安裝版、macOS dmg、Android debug APK 附到 Releases 頁面。安裝檔都沒有程式碼簽章。
+
 ## 2026-10-23：v2.5.11（不要把天聊死）
 
 實測對話：AI 問「這種感覺持續多久了呢？」，學生回「一段時間了」，AI 只回「嗯，一段時間了，那這份低落可能已經陪你走了一陣子。」，學生不知道怎麼接。存下的狀態顯示這一輪本來允許問一個問題。

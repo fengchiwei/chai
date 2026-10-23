@@ -4,6 +4,7 @@
 #   * macos   ：PyInstaller → AnlaYouth.app，hdiutil → AnlaYouth.dmg（未簽章、未公證）
 #   * android ：Capacitor → 未簽章的 debug APK
 #   * ios     ：（選用，手動觸發）Capacitor + xcodebuild 模擬器版編譯檢查，不產生 .ipa
+#   * release ：推送 v* 標籤時，把上面的安裝檔附到 GitHub Releases 頁面
 #
 # 不使用、也不需要任何 API 金鑰；產物只連到 ANLA_SERVER_URL（Repository variable，非 secret）。
 name: Build cross-platform
@@ -193,3 +194,23 @@ jobs:
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug \
             -sdk iphonesimulator -destination "generic/platform=iOS Simulator" \
             CODE_SIGNING_ALLOWED=NO build
+
+  release:
+    name: Publish GitHub Release
+    if: ${{ github.ref_type == 'tag' }}
+    needs: [windows, macos, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Create release with installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -l artifacts
+          gh release create "$GITHUB_REF_NAME" artifacts/* --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes
