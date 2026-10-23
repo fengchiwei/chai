@@ -841,3 +841,33 @@ body.has-urgent-help { padding-top: var(--urgent-help-height, 125px); }
 .explain-tag.pending { background: var(--risk-yellow-bg); color: #b45309; border: 1px dashed #f59e0b; }
 .explain-user mark { background: #fde68a; color: inherit; padding: 0 .1em; border-radius: 3px; }
 .explain-chip.theory { background: #eef2ff; border-color: #c7d2fe; color: #3730a3; font-family: ui-monospace, monospace; }
+
+/* ---------- 工作臺：完整對話紀錄與列印版面（v2.5.7） ---------- */
+.transcript { max-height: 26rem; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px; padding: .6rem .8rem; background: #f8fafc; }
+.transcript-row { display: grid; grid-template-columns: 3.2rem 8.6rem 1fr; gap: .5rem; padding: .35rem 0; border-bottom: 1px dashed #e2e8f0; }
+.transcript-row:last-child { border-bottom: 0; }
+.transcript-row.student .transcript-who { color: #1e3a8a; font-weight: 700; }
+.transcript-row.assistant .transcript-who { color: #475569; }
+.transcript-time { color: #94a3b8; font-size: .8rem; }
+.transcript-text { white-space: pre-wrap; word-break: break-word; }
+.print-only { display: none; }
+
+@media print {
+  @page { size: A4; margin: 14mm 13mm; }
+  /* Only the open case is printed: no case list, navigation, scroll bars, buttons or form fields. */
+  body.case-open { background: #fff !important; }
+  body.case-open > *:not(#summaryModal) { display: none !important; }
+  body.case-open #summaryModal { position: static !important; display: block !important; inset: auto !important;
+    width: auto !important; height: auto !important; padding: 0 !important; background: none !important; backdrop-filter: none !important; }
+  body.case-open #summaryModal .modal-content { max-width: none !important; width: auto !important; max-height: none !important;
+    overflow: visible !important; box-shadow: none !important; border: 0 !important; border-radius: 0 !important; padding: 0 !important; }
+  body.case-open #summaryModalContent > :not(#printableArea),
+  body.case-open .modal-close, body.case-open .no-print { display: none !important; }
+  body.case-open .print-only { display: block !important; }
+  body.case-open .transcript { max-height: none !important; overflow: visible !important; background: none !important; }
+  body.case-open #printableArea { font-size: 10.5pt; line-height: 1.6 !important; color: #000; }
+  body.case-open #printableArea h2 { font-size: 15pt; margin: 0 0 .3rem; }
+  body.case-open #printableArea h3 { font-size: 12pt; margin: .8rem 0 .3rem; border-bottom: 1px solid #94a3b8; }
+  .transcript-row, .explain-domain, .reporting-checklist, .print-header { break-inside: avoid; }
+  h3 { break-after: avoid; }
+}

@@ -230,7 +230,9 @@ def student_next_steps(context):
         preview = (
             f"學校：{profile.get('student_school') or '尚未填寫'}\n"
             f"信箱：{profile['student_email'] + '（未驗證）' if profile['student_email'] else '未提供'}\n鄉鎮：{profile['township']}\n"
-            f"目前對話節錄：\n{context['draft'].get('dialogue_snippet') or '尚無對話文字'}"
+            f"目前對話節錄：\n{context['draft'].get('dialogue_snippet') or '尚無對話文字'}\n"
+            f"也會一起分享：這次的完整對話紀錄（你說的話和安啦的回覆，共 {len(context.get('transcript', []))} 則，"
+            "到你按下同意為止；之後再聊的內容不會自動分享）"
         )
     return {
         "choices": [{"action": action, "label": label} for action, label in choices[level]],
@@ -549,9 +551,14 @@ def process_chat_turn(message):
             chosen["offer"][0] != offer or dialogue_state.get("safety_check_required")):
         dialogue_state.pop("_prepared_reply")  # the draft was written for a different offer or situation
     reply = generate_youth_response(message, triage, history, support_offer=offer, dialogue_state=dialogue_state)
+    sent_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    exchange = [{"role": "user", "text": message, "at": sent_at},
+                {"role": "assistant", "text": reply["reply"], "at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                 "source": reply_source(reply["model_used"])}]
     try:
         context = save_dialogue_state(session["student_context_id"], session["student_email_hash"],
-            remember_turn(dialogue_state, message, reply["reply"]), previous_state.get("turn_count", 0))
+            remember_turn(dialogue_state, message, reply["reply"]), previous_state.get("turn_count", 0),
+            exchange=exchange)
     except ValueError as exc:
         return jsonify({"error": str(exc), "show_urgent_help": session.get("highest_risk") == "red"}), 409
     session["support_offer_state"] = offer_state
@@ -768,6 +775,19 @@ def api_update_case_status(case_id):
 def staff_actor():
     name = session.get("staff_name")
     return f"{name}（共用帳號）" if name else "已登入工作臺人員"
+
+
+@app.route("/api/cases/<case_id>/printed", methods=["POST"])
+@staff_only
+def api_case_printed(case_id):
+    """Printing takes student records off the screen; it is audited like viewing."""
+    error = require_csrf()
+    if error:
+        return error
+    if not get_case_by_id(case_id):
+        return jsonify({"error": "個案不存在"}), 404
+    log_audit(staff_actor(), "print_case", case_id, "列印個案摘要")
+    return jsonify({"success": True})
 
 
 @app.route("/api/stats")

@@ -47,7 +47,11 @@ REPORTING = {
     "digital_sexual_violence": "疑似兒少性剝削或私密影像外流：教育人員知悉後應立即通報縣市主管機關（兒少性剝削防制條例）；涉及校園性別事件依性別平等教育法於 24 小時內通報；協助保全證據、申請下架。",
     "violence": "可能傷害他人：評估是否有立即危險，必要時報警（110）；通知學務處並依校安通報規定處理。",
 }
-REPORTING_NOTE = "法條與時限請以最新公告及校內規定為準；本系統不會代為通報。"
+# Same wording as the 燈號判讀說明 page (static/js/explain.js); staff never see the internal codes.
+RISK_TYPE_LABELS = {"suicide": "自殺意念", "self_harm": "自傷", "abuse": "受虐／家暴", "violence": "暴力",
+                    "digital_sexual_violence": "數位性暴力", "other": "其他"}
+SUBJECT_LABELS = {"self": "學生本人", "other": "他人（朋友、同學等）", "unknown": "待確認"}
+REPORTING_NOTE ="法條與時限請以最新公告及校內規定為準；本系統不會代為通報。"
 
 
 def reporting_checklist(level, safety):
@@ -89,8 +93,10 @@ def generate_counselor_one_page_summary(case_info: dict, triage_result: dict) ->
         self_harm_signals.extend([f"規則安全訊號（類型待核對）: {f}" for f in rules["orange_flags"]])
     dialogue_safety = triage_result.get("dialogue_safety", {})
     if dialogue_safety.get("risk_signal", "none") != "none":
-        self_harm_signals.append("對話安全線索（非診斷）：" + dialogue_safety.get("risk_type", "other")
-            + "；對象：" + dialogue_safety.get("risk_subject", "unknown") + "；" + dialogue_safety.get("risk_evidence", ""))
+        kind = dialogue_safety.get("risk_type", "other")
+        subject = dialogue_safety.get("risk_subject", "unknown")
+        self_harm_signals.append("對話安全線索（非診斷）：" + RISK_TYPE_LABELS.get(kind, kind)
+            + "；對象：" + SUBJECT_LABELS.get(subject, subject) + "；" + dialogue_safety.get("risk_evidence", ""))
     if not self_harm_signals:
         self_harm_signals.append("目前輸入未檢出相關訊號，不能據此排除風險")
 

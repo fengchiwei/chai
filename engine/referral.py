@@ -101,8 +101,14 @@ def stage_student_summary(context_id, email_hash, triage, fields, message=None):
         conn.close()
 
 
-def save_dialogue_state(context_id, email_hash, state, expected_turn):
-    """Keep bounded memory inside the existing expiring context, never in the browser cookie."""
+TRANSCRIPT_LIMIT = 400  # entries (200 exchanges); the context itself still expires after CONTEXT_TTL
+
+
+def save_dialogue_state(context_id, email_hash, state, expected_turn, exchange=None):
+    """Keep bounded memory inside the existing expiring context, never in the browser cookie.
+
+    `exchange` (the student's message and the reply, with times) is appended to the full transcript. It stays
+    in this encrypted, expiring context and reaches the workbench only as a snapshot when the student consents."""
     conn = get_connection()
     try:
         with conn:
@@ -117,6 +123,10 @@ def save_dialogue_state(context_id, email_hash, state, expected_turn):
             if RISK_LEVEL_WEIGHTS[context["draft"].get("risk_level", "green")] > RISK_LEVEL_WEIGHTS[state["risk_level"]]:
                 raise ValueError("安全資訊已有更新，請重新送出這一輪訊息以確認安全")
             context["dialogue_state"] = state
+            if exchange:
+                entries = [{"role": e["role"], "text": str(e["text"])[:2000], "at": e.get("at", ""),
+                            **({"source": e["source"]} if e.get("source") else {})} for e in exchange]
+                context["transcript"] = (context.get("transcript", []) + entries)[-TRANSCRIPT_LIMIT:]
             _write(conn, context_id, email_hash, context)
         return context
     finally:
@@ -165,7 +175,10 @@ def record_student_consent(context_id, email_hash, revision, kind, preferred_nam
             payload["summary"]["student_consent"] = {
                 "kind": kind, "consented_at": now, "revision": revision,
                 "preferred_name": payload["student_alias"], "external_referral_sent": False,
+                "includes_transcript": True,
             }
+            # The whole conversation up to this consent (the student was told it would be shared); nothing later.
+            payload["summary"]["transcript"] = list(context.get("transcript", []))
             save_case(payload, connection=conn)
             context["consented_revision"] = revision
             _write(conn, context_id, email_hash, context)

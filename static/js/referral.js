@@ -255,8 +255,8 @@
     if (current?.consent_kind === "summary" && !current.recorded) {
       preview(output, current);
       optionalContact(output, current, steps => showTeacherNote(bubble, {...data, next_steps: steps}));
-      output.appendChild(node("p", "你同意把目前這份摘要交給真人工作臺查看嗎？"));
-      output.appendChild(button("我同意分享摘要", () => consent(true), true));
+      output.appendChild(node("p", "你同意把目前這份摘要和這次的完整對話紀錄交給真人工作臺查看嗎？"));
+      output.appendChild(button("我同意分享摘要與對話", () => consent(true), true));
       output.appendChild(button("先不要", () => consent(false)));
     }
   }
@@ -282,7 +282,7 @@
     panel.setAttribute("aria-label", "是否同意轉介");
     panel.replaceChildren(node("h3", "如果你願意，可以請真人一起幫忙"));
     if (steps.consent_kind === "referral") {
-      panel.appendChild(node("p", "同意後，當前摘要與登錄資料會存入本網站真人工作臺，產生尚未外送的轉介單。尚未接通輔導中心，也不會自動通知學校。"));
+      panel.appendChild(node("p", "同意後，當前摘要、登錄資料，以及這次的完整對話紀錄（你說的話和安啦的回覆，到按下同意為止）會存入本網站真人工作臺，產生尚未外送的轉介單。之後再聊的內容不會自動分享。尚未接通輔導中心，也不會自動通知學校。"));
       preview(panel, steps);
       optionalContact(panel, steps);
       const label = node("label", "希望被稱呼的名字（選填）");

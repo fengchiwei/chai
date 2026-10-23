@@ -161,9 +161,43 @@ async function openSummaryModal(caseId) {
     currentActiveCase = (await res.json()).case;
     renderOnePageSummary(currentActiveCase);
     $("summaryModal").style.display = "flex";
+    document.body.classList.add("case-open");  // print rules apply to the open case only
   } catch (error) { alert(error.message); }
 }
-function closeSummaryModal() { $("summaryModal").style.display = "none"; }
+function closeSummaryModal() {
+  $("summaryModal").style.display = "none";
+  document.body.classList.remove("case-open");
+}
+async function printCase() {
+  if (!currentActiveCase) return;
+  // Printing student records is logged like viewing them; print even if the log call fails, the view is already logged.
+  try {
+    await fetch(`/api/cases/${encodeURIComponent(currentActiveCase.case_id)}/printed`, {
+      method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": window.ANLA_CSRF_TOKEN}, body: "{}"});
+  } catch (error) { console.warn(error); }
+  const stamp = $("printStamp");
+  if (stamp) stamp.textContent = new Date().toLocaleString("zh-TW", {hour12: false});
+  window.print();
+}
+const SOURCE_LABELS = {ai: "AI 回覆", safety: "安全回覆", rules: "對話規則", local: "本機回覆"};
+function renderTranscript(c, E) {
+  const transcript = (c.summary || {}).transcript;
+  if (!Array.isArray(transcript)) {
+    return '<p class="explain-meta">這個個案建立於「完整對話紀錄」功能之前，只有上方的原話節錄。</p>';
+  }
+  if (!transcript.length) return '<p class="explain-meta">沒有對話紀錄。</p>';
+  const rows = transcript.map(t => {
+    const student = t.role === "user";
+    const who = student ? "學生" : `安啦（${SOURCE_LABELS[t.source] || "回覆"}）`;
+    return `<div class="transcript-row ${student ? "student" : "assistant"}">
+      <span class="transcript-time">${E((t.at || "").slice(11, 16))}</span>
+      <span class="transcript-who">${E(who)}</span>
+      <span class="transcript-text">${E(t.text || "")}</span></div>`;
+  }).join("");
+  const first = (transcript[0].at || "").slice(0, 16), last = (transcript[transcript.length - 1].at || "").slice(0, 16);
+  return `<p class="explain-meta">共 ${transcript.length} 則，${E(first)} 到 ${E(last)}；只包含學生按下同意之前的對話。</p>
+    <div class="transcript">${rows}</div>`;
+}
 
 // v2.3 HFE-06：判讀依據。確認危機（實線）與待消歧（虛線）分開；原話以螢光筆標示，供 3 秒內看懂。
 const DOMAIN_LABELS = {duration: "持續時間", sleep: "睡眠", daily_function: "生活／上學功能",
@@ -232,6 +266,9 @@ function renderOnePageSummary(c) {
   const staffStatuses = {reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
   $("summaryModalContent").innerHTML = `
     <div id="printableArea" style="line-height:1.75">
+      <div class="print-only print-header" style="border-bottom:2px solid #000;margin-bottom:.6rem;padding-bottom:.3rem">
+        <b>安啦會客室｜真人覆核摘要（機密，僅限授權人員閱覽）</b><br>
+        列印時間：<span id="printStamp"></span>　本文件含學生輔導資料，請依校內規定保管，用畢銷毀。</div>
       ${raised ? `<p class="risk-raised-banner" style="background:#fee2e2;color:#991b1b;padding:.6rem .8rem;border-radius:8px">
         ⚠ 學生同意分享後，對話燈號在 ${E(raised.at)} 升至<b>${E(LEVEL_NAMES[raised.level] || raised.level)}</b>。新的內容沒有分享給工作臺；
         請依校內流程主動關心，或請學生再次同意分享。</p>` : ""}
@@ -244,6 +281,8 @@ function renderOnePageSummary(c) {
       <b>學校：</b>${E(sum.student_profile?.student_school || "尚未填寫")}；本次為學生同意的摘要快照，尚未對外轉介。</p>` : ""}
       <h3>對話資訊</h3>
       <p><b>使用者原話節錄：</b><span style="white-space:pre-wrap">${E(c.dialogue_snippet || "無")}</span></p>
+      <h3>完整對話紀錄</h3>
+      ${renderTranscript(c, E)}
       <p><b>持續時間：</b>${E(c.duration || "尚未確認")}　<b>生活影響：</b>${E(c.life_impact || "尚未確認")}</p>
       <p><b>支持系統：</b>${E(c.support_system || "尚未確認")}</p>
       <p><b>BSRS-5：</b>${done ? E(bsrsScore(c.bsrs5)) + " / 20；" : ""}${fields}</p>
@@ -254,11 +293,16 @@ function renderOnePageSummary(c) {
       ${(sum.reporting_checklist || []).length ? `<div class="reporting-checklist" style="border:1px solid #fca5a5;border-radius:8px;padding:.6rem .8rem;margin:.5rem 0">
         <b>通報與處理檢核（依類型）</b><ul style="margin:.3rem 0 0 1.1rem">${sum.reporting_checklist.map(item => `<li>${E(item)}</li>`).join("")}</ul></div>` : ""}
       <p style="color:#9a3412">系統判讀可能出錯，僅供受訓人員覆核。任何通報、撥號或轉介都須另行執行；本網站沒有自動聯絡功能。</p>
-      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <div class="no-print" style="display:flex;gap:.5rem;flex-wrap:wrap">
         <button type="button" onclick="quickApplyDecision('緊急聯繫提議')">擬緊急聯繫</button>
         <button type="button" onclick="quickApplyDecision('聯絡學生／可信任大人提議')">擬聯絡關懷</button>
         <button type="button" onclick="quickApplyDecision('轉介提議')">擬轉介資源</button>
         <a href="tel:119">119</a> <a href="tel:110">110</a> <a href="tel:1925">1925</a>
+      </div>
+      <div class="print-only">
+        <h3>處理紀錄</h3>
+        <p><b>處理狀態：</b>${E(statusLabels[c.status] || "待覆核")}　<b>處置摘要：</b>${E(c.decision_action || "無")}</p>
+        <pre style="white-space:pre-wrap;font-family:inherit">${E(c.counselor_notes || "尚無紀錄")}</pre>
       </div>
     </div>
     <hr>
@@ -271,7 +315,7 @@ function renderOnePageSummary(c) {
     <p><label>新增一筆紀錄：<textarea id="updateNotesInput" maxlength="1000" rows="3" style="width:100%" placeholder="例：10/23 14:00 已電話聯絡導師，約明天輔導室晤談"></textarea></label></p>
     <p><label><input type="checkbox" id="contactConfirmed"> 若選「已聯絡／已轉介」，我確認已在本網站以外實際完成，並在備註記錄方式與時間。</label></p>
     <button type="button" class="btn-primary-action" onclick="saveCounselorReview()">儲存真人覆核</button>
-    <button type="button" onclick="window.print()">列印</button>
+    <button type="button" onclick="printCase()">列印摘要</button>
     <button type="button" onclick="closeSummaryModal()">關閉</button>`;
 }
 function quickApplyDecision(proposal) {

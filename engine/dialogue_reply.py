@@ -16,7 +16,7 @@ THOUGHTS_QUESTION = "我想直接問你：你有想過結束自己的生命嗎�
 MEANS_QUESTION = "現在有已經準備好的工具或打算行動的時間嗎？"
 COMPANY_QUESTION = "現在有人能到你身邊陪你嗎？"
 # Answer to 「你會通報學校嗎」; honest about what consent to share means.
-PRIVACY_LIMIT = ("這個網站不會自動通知學校或任何人；如果你同意分享摘要，輔導老師為了你的安全，"
+PRIVACY_LIMIT = ("這個網站不會自動通知學校或任何人；如果你同意分享摘要和對話紀錄，輔導老師為了你的安全，"
                  "可能需要和其他大人合作，這部分我沒辦法保證不讓人知道。")
 SECRECY_ASKED = r"不要(?:告訴|跟.{0,6}(?:說|講))|保密|別說出去|不准說|怕他知道|不能讓.{0,6}知道"
 
@@ -90,7 +90,10 @@ def safety_reply(message, state):
     if first:
         return ("謝謝你願意跟我說這麼重的事。" + question + "如果已經受傷、吃了藥或正要行動，請現在打 119 或 110；"
                 "想找人談可以打 1925，二十四小時都有人接。" + privacy + "我會在這裡，你也可以繼續說。")
-    return ("我還在，也記得你剛才說的。" + privacy + question
+    # 「我可以跟誰說？」 in safety mode deserves an answer, not only the standing reminder.
+    who = ("可以先找一位你信任的大人，例如導師、輔導老師或家人；也可以打 1925，和專人談談現在的感受。"
+           if re.search(r"跟誰|找誰|可以找|能找|誰可以", message) else "")
+    return ("我還在，也記得你剛才說的。" + who + privacy + question
             + "需要的時候，119、110 和 1925 一直都在，頁面上的求助資訊也隨時可以打開。")
 
 
@@ -290,7 +293,7 @@ def _local_reply(message, state):
         if re.search(r"刪|關掉|錄|記錄|紀錄|保存|存", message):
             specific += "對話會暫存在這個網站，最後一次使用後 24 小時自動失效；目前沒有手動刪除的按鈕。"
         return (specific + "你在意誰會知道這些話，這點需要先說清楚。這個網站會暫存對話與整理，雲端 AI 啟用時也會收到對話文字；"
-                "只有你同意分享的摘要才進工作臺，目前沒有自動通知學校。我不能保證絕對保密，有立即危險時仍需要真人協助。")
+                "只有你同意分享時，摘要和這次的對話紀錄才會進工作臺，目前沒有自動通知學校。我不能保證絕對保密，有立即危險時仍需要真人協助。")
     if state["safety_denied"]:
         # The review level stays for a human; the student gets the conversation back, with the door left open.
         door = "之後如果哪天真的冒出這種念頭，隨時可以跟我說，1925 二十四小時都有人接。"
