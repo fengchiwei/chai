@@ -65,6 +65,7 @@ anla-youth-v1.3-A.1/
 | `LLM_MODEL` | **通常不用設**。系統會依金鑰讀取可用模型並自動選最佳者；也可以在工作臺「AI 模型」面板用下拉選單手動選擇（重啟後保留）。指定的模型排第一順位，故障時仍會切換 |
 | `MODEL_AUTO_SELECT` | 預設 `true`；設 `false` 則不讀模型清單，只用 `LLM_MODEL`（或該服務的預設模型） |
 | `GEMINI_THINKING` | 預設 `low`：把模型的「思考」降到最低以縮短等待；`default` 則使用模型原本的設定 |
+| `LLM_EFFORT` | Claude 等會先思考的模型用的思考程度，預設 `low`（短回覆、等待短）；可設 `medium`、`high`、`xhigh`、`max`，或 `default` 使用模型本身的預設 |
 | `ANLA_DB_KEY` | 資料庫加密金鑰（任意長字串）。未設定時自動在資料庫旁產生 `anla_youth.db.key`，**遺失就無法解密**，切勿上傳 |
 | `HOST`、`PUBLIC_URL` | 讓手機連入：`HOST=0.0.0.0`；掃碼網址用 `PUBLIC_URL`（手機離線快取需 HTTPS） |
 | `LLM_TURN_BUDGET`、`LLM_CONNECT_TIMEOUT` | 每輪模型呼叫合計秒數上限（預設 30）、連線逾時（預設 3） |
@@ -101,7 +102,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-23 本機結果：單元測試 **357 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-23 本機結果：單元測試 **362 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 

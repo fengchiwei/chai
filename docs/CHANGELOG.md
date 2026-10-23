@@ -2,6 +2,18 @@
 
 > 依 `PROJECT_STATUS_20261021.md` 與 `專案開發計畫.md`（v2.3）續作。所有測試只使用虛構句子，不連網。
 
+## 2026-10-23：v2.5.8（修正：Claude 模型全部回 400「不接受這個請求」）
+
+- **原因**：實際接上 Anthropic 金鑰後，Haiku 5.5、Opus 5.5、Sonnet 5.5 同時被拒。Claude 目前的模型（Fable、Mythos、Opus 4.7 以後、Sonnet 5 以後、Haiku 5 以後）不再接受 `temperature` 這類取樣參數，送了就回 HTTP 400；我們的 Anthropic 呼叫一律送 `temperature: 0.8`，所以每個模型都失敗。這部分先前只用假 API 測過，沒有發現。
+- **修正**：
+  - 依模型決定送出的欄位：目前的模型不送 `temperature`，改用 `output_config.effort`（預設 `low`）。
+  - 這些模型回答前會先思考，思考也算在輸出上限裡，因此把上限提高到至少 4000，避免回覆被截斷。
+  - 較舊的模型（Opus／Sonnet 4.6、Haiku 4.5 以前）照舊送 `temperature`。
+  - 新環境變數 `LLM_EFFORT`（`low`／`medium`／`high`／`xhigh`／`max`；`default` 表示不指定）。
+- **後台看得到真正原因**：模型被暫停時，「AI 模型」面板會顯示服務回傳的錯誤原文（例如「HTTP 400：temperature: …」），只在後台顯示。
+- **重新偵測會讓暫停中的模型立刻重試**：按「重新偵測可用模型」會清除各模型的暫停與全站冷卻。原本被拒的模型要等 30 分鐘，修正設定後也無法馬上重試。
+- 測試：新增 `tests/test_claude_options_v258.py`（5 項），共 362 項全部通過。尚未用真實 Claude 金鑰再測一次。
+
 ## 2026-10-23：v2.5.7（工作臺完整對話紀錄、列印版面）
 
 - **完整對話紀錄**：

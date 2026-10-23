@@ -149,6 +149,13 @@ _probe_cache = {"at": -1e9, "result": None, "seq": 0}
 PROBE_TTL = 60  # seconds; the public status endpoint never probes more often than this
 
 
+def reset_provider_cooldown():
+    """Staff retry: drop the service-wide pause and the cached status, keep per-model statistics."""
+    with _health_lock:
+        _health.update(failures=0, open_until=0.0, last_status=None)
+        _probe_cache.update(at=-1e9, result=None)
+
+
 def reset_model_health():
     with _health_lock:
         _health.update(failures=0, open_until=0.0, last_status=None, last_at=0.0, seq=0, last_seq=0)
@@ -354,8 +361,9 @@ def _call_model(prompt, message, history=None, analysis=False, timeout=None, str
         result, status = _request_model(info, model, prompt, message, history, analysis, limits, structured)
         if status == "ok" and validate and not validate(result["reply"]):
             status = "bad_response"
+        failure = result if status != "ok" and isinstance(result, dict) else {}
         model_router.record(provider, model, status, latency=_clock() - started,
-                            retry_after=result if status == "rate_limited" else None)
+                            retry_after=failure.get("retry_after"), detail=failure.get("detail"))
         if status == "ok":
             result.update(provider=provider, model=model)
             break
@@ -382,6 +390,39 @@ def _thinking_config(model):
         return {"thinkingBudget": 0}
     version = re.match(r"gemini-(\d+)", model)
     return {"thinkingLevel": "low"} if version and int(version.group(1)) >= 3 else None
+
+
+CLAUDE_MODEL = re.compile(r"claude-(opus|sonnet|haiku|fable|mythos)-(\d)(?:-(\d{1,2}))?(?=-|$)")
+
+
+def _anthropic_options(model, max_tokens, temperature):
+    """Request fields that differ by Claude model.
+
+    Current models (Fable, Mythos, Opus 4.7+, Sonnet 5+, Haiku 5+) reject sampling parameters such as
+    `temperature` with HTTP 400 and think before answering; the thinking counts toward max_tokens, so the cap
+    is raised and effort set low (short companion replies, short waits). Older models keep temperature."""
+    match = CLAUDE_MODEL.match(model)
+    if not match:
+        return {"max_tokens": max_tokens, "temperature": temperature}
+    family, major, minor = match.group(1), int(match.group(2)), int(match.group(3) or 0)
+    current = (family in ("fable", "mythos") or (family == "opus" and (major, minor) >= (4, 7))
+               or (family in ("sonnet", "haiku") and major >= 5))
+    if not current:
+        return {"max_tokens": max_tokens, "temperature": temperature}
+    options = {"max_tokens": max(max_tokens, 4000)}
+    if Config.LLM_EFFORT in ("low", "medium", "high", "xhigh", "max"):
+        options["output_config"] = {"effort": Config.LLM_EFFORT}
+    return options
+
+
+def _error_detail(response):
+    """The provider's own short error message (shown to staff only), e.g. 「temperature: ...」."""
+    try:
+        error = response.json().get("error")
+    except (ValueError, AttributeError, TypeError):
+        return ""
+    message = error.get("message") if isinstance(error, dict) else error if isinstance(error, str) else ""
+    return re.sub(r"\s+", " ", str(message or "")).strip()[:200]
 
 
 def _request_model(info, model, prompt, message, history, analysis, timeout, structured=False):
@@ -424,7 +465,7 @@ def _request_model(info, model, prompt, message, history, analysis, timeout, str
             messages.append({"role": "user", "content": message})
             response = requests.post(f"{base}/messages", headers=headers, proxies=DIRECT_CONNECTION, timeout=timeout,
                                      json={"model": model, "system": prompt, "messages": messages,
-                                           "max_tokens": max_tokens, "temperature": temperature})
+                                           **_anthropic_options(model, max_tokens, temperature)})
         else:
             messages = [{"role": "system", "content": prompt}] + [{"role": t["role"], "content": t["text"]} for t in history]
             messages.append({"role": "user", "content": message})
@@ -441,13 +482,16 @@ def _request_model(info, model, prompt, message, history, analysis, timeout, str
         return None, "api_error"
     if response.status_code != 200:
         code = response.status_code
-        logging.warning("對話模型 %s／%s HTTP %s", provider, model, code)
+        detail = _error_detail(response)
+        logging.warning("對話模型 %s／%s HTTP %s %s", provider, model, code, detail)
+        failure = {"detail": f"HTTP {code}" + (f"：{detail}" if detail else ""), "retry_after": None}
         if code == 429:
-            return _retry_after(response), "rate_limited"
+            failure["retry_after"] = _retry_after(response)
+            return failure, "rate_limited"
         if code in (401, 403) or _bad_key(response):
-            return None, "auth_error"
+            return failure, "auth_error"
         # 404: retired/unknown model; 5xx: overloaded; other 4xx: this model rejects the request.
-        return None, "model_not_found" if code == 404 else "unavailable" if code >= 500 else "rejected"
+        return failure, "model_not_found" if code == 404 else "unavailable" if code >= 500 else "rejected"
     try:
         data = response.json()
         if api == "gemini":

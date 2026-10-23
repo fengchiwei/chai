@@ -57,9 +57,11 @@ function renderModels(data) {
   const r = data.router || { models: [] };
   const rows = r.models.map(m => {
     const error = E(MODEL_ERROR[m.last_error] || m.last_error || "");
-    const state = m.state === "paused" ? `暫停中（${error}，約 ${m.paused_for} 秒後恢復）`
+    // The provider's own error text (e.g. 「HTTP 400：temperature: ...」) tells the operator what to fix.
+    const detail = m.detail ? `<br><small style="color:#b91c1c">服務回覆：${E(m.detail)}</small>` : "";
+    const state = (m.state === "paused" ? `暫停中（${error}，約 ${m.paused_for} 秒後恢復）`
       : m.state === "retry" ? `可再試（上次：${error}）`
-      : E(MODEL_STATE[m.state] || m.state);
+      : E(MODEL_STATE[m.state] || m.state)) + (m.state === "ok" ? "" : detail);
     return `<tr${m.active ? ' style="background:#ecfdf5;font-weight:600"' : ""}>
       <td>${m.rank}</td><td><code>${E(m.model)}</code>${m.active ? " ✅ 使用中" : ""}${m.pinned ? (r.pinned_source === "manual" ? "（手動指定）" : "（啟動設定指定）") : ""}</td>
       <td>${state}</td><td>${m.latency == null ? "—" : E(m.latency) + " 秒"}</td><td>${m.ok} / ${m.fail}</td></tr>`;
@@ -80,7 +82,7 @@ function renderModels(data) {
       <label for="modelChoice">使用的模型：</label>
       <select id="modelChoice" ${choices.length ? "" : "disabled"} style="padding:.35rem .5rem;border-radius:8px;border:1px solid var(--border-color)">${options}</select>
       <button type="button" id="applyModel" ${choices.length ? "" : "disabled"} style="padding:.35rem .8rem">套用</button>
-      <span style="font-size:.82rem;color:#64748b">${choices.length ? "指定的模型會優先使用；它故障時仍會暫時改用下一個，學生不會沒有回覆。"
+      <span style="font-size:.82rem;color:#64748b">${choices.length ? "指定的模型會優先使用；它故障時仍會暫時改用下一個，學生不會沒有回覆。改過設定後按「重新偵測可用模型」，暫停中的模型會立刻重試。"
         : "還沒讀到這把金鑰的模型清單，請先按「重新偵測可用模型」。"}</span>
     </p>
     <details${wasOpen ? " open" : ""}><summary style="cursor:pointer">查看全部模型與排名規則</summary>

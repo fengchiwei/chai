@@ -29,7 +29,7 @@ from engine.ai_agent import (
     prepare_dialogue,
 )
 from engine import model_router, providers
-from engine.dialogue_ai import _provider, model_status
+from engine.dialogue_ai import _provider, model_status, reset_provider_cooldown
 from engine.dialogue_policy import POLICY_VERSION, REPLY_STYLES, build_state, remember_turn
 from engine.dialogue_reply import TOPIC_PATTERN
 from engine.dialogue_role import public_role
@@ -705,6 +705,8 @@ def api_config_llm():
             return jsonify({"error": "尚未設定雲端 AI 金鑰"}), 400
         if action == "refresh":
             model_router.discover(provider, force=True)
+            model_router.clear_pauses(provider)  # retry at once after a setting was fixed
+            reset_provider_cooldown()
             log_audit(staff_actor(), "refresh_models", "", provider)
         else:
             model = data.get("model") or ""

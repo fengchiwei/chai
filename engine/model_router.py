@@ -194,18 +194,19 @@ def candidates(provider, limit=MAX_FAILOVER):
     return [m for m in ranked(provider) if m not in paused][:limit]
 
 
-def record(provider, model, status, latency=None, retry_after=None):
+def record(provider, model, status, latency=None, retry_after=None, detail=None):
+    """`detail` is the provider's own error text, kept for the staff panel (never shown to students)."""
     with _lock:
         h = _health_of(provider, model)
         now = _clock()
         if status == "ok":
-            h.update(ok=h["ok"] + 1, streak=0, paused_until=0.0, last_error=None, last_ok_at=now)
+            h.update(ok=h["ok"] + 1, streak=0, paused_until=0.0, last_error=None, last_ok_at=now, detail=None)
             if latency is not None:
                 h["latency"] = latency if h["latency"] is None else 0.7 * h["latency"] + 0.3 * latency
             return
         if status not in MODEL_LEVEL:
             return
-        h.update(fail=h["fail"] + 1, streak=h["streak"] + 1, last_error=status)
+        h.update(fail=h["fail"] + 1, streak=h["streak"] + 1, last_error=status, detail=(detail or "")[:200] or None)
         if status in IMMEDIATE or h["streak"] >= FAILURES_BEFORE_PAUSE:
             pause = PAUSE_SECONDS[status]
             if status == "rate_limited" and retry_after:
@@ -217,6 +218,14 @@ def latency(provider, model):
     """Measured average reply time in seconds, or None before the first successful reply."""
     with _lock:
         return (_health.get((provider, model)) or {}).get("latency")
+
+
+def clear_pauses(provider):
+    """Staff pressed 「重新偵測」 (typically after fixing a setting): let every paused model be tried again."""
+    with _lock:
+        for (p, _), h in _health.items():
+            if p == provider:
+                h.update(paused_until=0.0, streak=0)
 
 
 def pause_summary(provider):
@@ -247,7 +256,7 @@ def snapshot(provider):
                      "state": "paused" if paused else "ok" if h.get("ok") else "retry" if h.get("fail") else "untested",
                      "paused_for": round(paused), "last_error": h.get("last_error"),
                      "latency": round(h["latency"], 1) if h.get("latency") is not None else None,
-                     "ok": h.get("ok", 0), "fail": h.get("fail", 0)})
+                     "ok": h.get("ok", 0), "fail": h.get("fail", 0), "detail": h.get("detail")})
     manual = manual_model(provider)
     return {"provider": provider, "active": active, "pinned": pinned_model(provider), "models": rows,
             "manual": manual, "pinned_source": "manual" if manual else "env" if pinned_model(provider) else None,
