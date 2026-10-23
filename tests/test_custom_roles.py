@@ -32,6 +32,12 @@ def model_response(text):
 
 
 class CustomRoleScenarios(unittest.TestCase):
+    def setUp(self):
+        # A paused model from an earlier test must not change this one (an empty answer is now retried once,
+        # so it counts twice toward the pause).
+        from engine import dialogue_ai
+        dialogue_ai.reset_model_health()
+
     def test_descriptions_are_open_ended_not_two_presets(self):
         cases = {
             '你是一個我的心靈陪伴者': '心靈陪伴者',

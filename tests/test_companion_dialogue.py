@@ -13,6 +13,12 @@ def chinese_length(value):
 
 
 class CompanionDialogueTests(unittest.TestCase):
+    def setUp(self):
+        # A paused model from an earlier test must not change this one (an empty answer is now retried once,
+        # so it counts twice toward the pause).
+        from engine import dialogue_ai
+        dialogue_ai.reset_model_health()
+
     def test_normal_replies_are_short_and_keep_student_words(self):
         scenarios = [
             ('我最近心情不好', ['心情不好']),

@@ -808,10 +808,17 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
     if MODEL_STAND_IN is not None:
         model, status = {"reply": MODEL_STAND_IN(message, state), "model_used": STAND_IN_LABEL}, "ok"
     elif Config.LLM_CALL_MODE == "single" and status != "not_needed":
-        # The one structured call already ran (or failed) this turn; never make a second request.
+        # The one structured call already ran (or failed) this turn; a second request only for an empty answer.
         model = prepared
         if model is None and status == "ok":
             status = "situation_changed"
+        if (model is None and status == "empty" and not state["safety_check_required"]
+                and remaining >= MIN_REPLY_SECONDS):
+            # One plain reply request after an empty structured answer (2026-10-23 live tests: two
+            # empty answers in one afternoon left the student with 「AI 暫時連不上」). Outages and timeouts are not
+            # retried, and a safety turn keeps the reviewed text instead of waiting longer.
+            model, status = _call_model(_reply_prompt(state, offer, message, cards), _student_input(state, message),
+                                        state.get("history"), timeout=min(Config.LLM_TIMEOUT, remaining))
     elif status in FAILED_STATUSES:
         pass  # The analysis call already failed this turn; do not wait on the same outage twice.
     elif remaining < MIN_REPLY_SECONDS:

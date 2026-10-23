@@ -8,6 +8,9 @@ from engine.knowledge import prompt_block, select
 from engine.referral import DEFAULT_CATEGORY, summary_category
 from engine.support import choose_support_offer, support_turn_instruction
 from engine.triage import perform_triage
+from unittest.mock import Mock
+
+from tests.test_ai_only_v259 import Base, single
 from tests.test_finals_v29 import RouteBase
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,13 +73,13 @@ class DiagnosticsTimingTests(RouteBase):
 
         def slow(*args, **kwargs):
             import time
-            time.sleep(0.05)
+            time.sleep(0.2)
             return real(*args, **kwargs)
 
         with patch.object(app_module, "prepare_dialogue", slow):
             client.post("/api/chat", headers=headers, json={"message": "今天好累"})
         turns = self.admin().get("/api/admin/diagnostics").json["turns"]
-        self.assertGreaterEqual(turns[0]["latency_ms"], 50)
+        self.assertGreaterEqual(turns[0]["latency_ms"], 150)
 
 
 class SecondRoundLiveTests(unittest.TestCase):
@@ -104,6 +107,45 @@ class SecondRoundLiveTests(unittest.TestCase):
             task = turn_task(message, state)
             state = remember_turn(state, message, safety_reply(message, state))
         self.assertIn("這一輪不要自己再加求助電話", task)
+
+
+class CarriedLevelTests(RouteBase):
+    """2026-10-23 third live round: after a redeploy the cookie still remembered an orange level, and a report
+    about a tutor's messages got the suicide-safety script plus a new workbench alert with no evidence."""
+
+    def test_a_remembered_level_does_not_restart_the_safety_script(self):
+        from models import database
+        client, headers = self.student()
+        with client.session_transaction() as sess:
+            sess["highest_risk"] = "orange"
+            sess["student_context_id"] = "expired-context-id"      # the stored conversation is gone
+        client.post("/api/onboarding", headers=headers, json={"privacy_acknowledged": True})
+        data = client.post("/api/chat", headers=headers,
+                           json={"message": "補習班老師一直私訊我，說我身材很好"}).json
+        self.assertFalse(data["style_overridden_by_safety"])
+        self.assertNotIn("結束自己的生命", data["reply"])
+        self.assertIsNone(data["safety_alert"])
+        self.assertEqual(database.get_all_cases(), [])
+        danger = client.post("/api/chat", headers=headers, json={"message": "我今晚已決定傷害自己，並已做好準備"}).json
+        self.assertTrue(danger["show_urgent_help"])
+        self.assertIsNotNone(danger["safety_alert"])               # new evidence still reaches the workbench
+
+
+class EmptyAnswerRetryTests(Base):
+    """2026-10-23 live test: the structured answer came back with an empty reply and the student was told the AI
+    could not be reached. One plain retry is made when time allows; safety turns keep the reviewed text."""
+
+    def test_an_empty_answer_is_retried_once(self):
+        plain = Mock(status_code=200, json=Mock(return_value={"candidates": [{"content": {"parts": [
+            {"text": "睡不著真的很磨人。今晚可以先把手機放遠一點，躺不住就起來做點安靜的事。"}]}}]}))
+        result, post, _ = self.turn("睡不著怎麼辦", {"side_effect": [single(""), plain]})
+        self.assertEqual(post.call_count, 2)
+        self.assertIn("手機放遠", result["reply"])
+
+    def test_a_safety_turn_is_not_retried(self):
+        result, post, _ = self.turn("我不想活了", {"side_effect": [single("")] * 3})
+        self.assertEqual(post.call_count, 1)
+        self.assertEqual(result["model_used"], "安全回覆")
 
 
 if __name__ == "__main__":

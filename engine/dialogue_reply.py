@@ -153,6 +153,14 @@ def _protection_reply(message, state, first):
                 + ("如果又被堵或被打，請打 110，也告訴導師、輔導老師或學務處。" if peer
                    else "如果他現在在身邊、你覺得危險，請打 110；113 保護專線二十四小時都可以打。")
                 + _unasked(state, "現在你身邊安全嗎？" if peer else "現在傷害你的人還在身邊嗎？"))
+    said = message + "".join(t.get("text", "") for t in state.get("history", []) if t.get("role") == "user")
+    if not peer and re.search(r"私訊|訊息|LINE|IG|傳.{0,6}(?:給我|照片|圖)|約我|單獨", said):
+        # Harassment through messages or an invitation to meet (2026-10-23 live test: a tutor's messages got the
+        # home-abuse script 「現在傷害你的人還在身邊嗎？」).
+        alone = "先不要單獨去見對方。" if re.search(r"單獨|約我|見面|去找他|去找她|私下", said) else ""
+        return ("謝謝你說出來，這不是你的錯，錯的是對方。" + alone + "那些訊息先截圖留著，不用回覆，也不用一個人處理。"
+                "113 保護專線二十四小時都有人接，可以先跟專人討論怎麼做；學校的輔導老師也可以陪你處理。" + secret
+                + "如果對方出現在你身邊、你覺得危險，請打 110。" + _unasked(state, "你身邊有可以一起處理這件事的大人嗎？"))
     if peer:
         return ("謝謝你說出來，被堵、被打不是你的錯。先離開那群人，到有大人在的地方；可以找導師、輔導老師或學務處，學校有責任處理這件事。"
                 + secret + "如果正在被打或被威脅，請打 110；受傷了打 119。" + _unasked(state, "現在你身邊安全嗎？"))

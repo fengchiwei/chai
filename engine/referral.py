@@ -203,6 +203,8 @@ def auto_safety_handoff(context_id, email_hash):
             level = draft.get("risk_level", "green")
             if level not in ("orange", "red"):
                 return None
+            if draft.get("carried_over") and not draft.get("risk_messages") and not draft.get("bsrs5"):
+                return None  # only a level remembered from an earlier conversation; staff already had that alert
             existing = get_case_by_id(context["case_id"])
             if existing and existing["summary"].get("student_consent"):
                 return None

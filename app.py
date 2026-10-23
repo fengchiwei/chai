@@ -507,7 +507,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.9.4"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.9.5"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -553,7 +553,7 @@ def api_onboarding():
     if not context["draft"] and session.get("highest_risk", "green") != "green":
         # 暫存到期後重新確認同一身分，也不清除原先已出現的求助訊號。
         triage = perform_triage(text="", previous_level=session["highest_risk"])
-        context = stage_student_summary(session["student_context_id"], email_hash, triage, {})
+        context = stage_student_summary(session["student_context_id"], email_hash, triage, {"carried_over": True})
     return jsonify({"success": True, "email_verified": False, "notification_connected": False,
                     "student_profile": context["profile"], "next_steps": student_next_steps(context),
                     "show_urgent_help": session.get("highest_risk") == "red" or context["draft"].get("risk_level") == "red"})
@@ -645,6 +645,11 @@ def process_chat_turn(message):
     )
     triage = perform_triage(text=message, previous_level=previous_level)
     previous_state = context.get("dialogue_state", {})
+    if not previous_state and context["draft"].get("carried_over"):
+        # The conversation expired (or the server was redeployed) but the review level was kept. Staff keep that
+        # floor; the student is not greeted with the full suicide-safety script for a message with no new cue
+        # (2026-10-23 live test: a report about a tutor's messages got 「你有想過結束自己的生命嗎？」).
+        previous_state = {"risk_level": previous_level, "safety_lifted": True}
     history = previous_state.get("history", [])
     # DYN-04: the server's local hour (Taiwan deployment) lets late-night ambiguous messages get human review.
     style = session.get("reply_style", "warm")
