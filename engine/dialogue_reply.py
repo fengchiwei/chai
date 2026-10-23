@@ -28,6 +28,11 @@ def _unasked(state, *questions):
     return next((q for q in questions if q not in asked), "")
 
 
+# The student is the one who might hurt someone (「我想揍他」), not the one in danger.
+WANTS_TO_HURT = (r"我.{0,6}(?:想|要|會|打算|好想|真想|很想|忍不住).{0,12}"
+                 r"(?:打|揍|殺|砍|捅|弄死|教訓|報復|算帳|堵|修理|給他好看)")
+
+
 def safety_reply(message, state):
     """Type-specific safety response. Does not make diagnoses, dispatch or confidentiality promises.
 
@@ -38,6 +43,10 @@ def safety_reply(message, state):
     who = "對方" if other else "你"
     night = state.get("night_review")
     if action == "brief_safety_check":
+        if state.get("risk_type") == "violence":
+            # Never a question about dying for angry words about someone else.
+            return ("聽得出來你真的氣到不行。想先確認一下：你是氣到這樣說說，還是真的有打算動手？"
+                    "不管是哪一種，都可以先說說發生了什麼事。")
         if state.get("pending_disambiguation") and state.get("risk_evidence") in message:
             # LIN-01: name the hyperbole as probably figurative, then check once, gently.
             return (f"「{quote(state['risk_evidence'], 20)}」聽起來比較像很誇張的形容，"
@@ -49,7 +58,8 @@ def safety_reply(message, state):
                     "沒有的話也很好，我們就照你的步調繼續聊。")
         if state.get("risk_evidence") and state["risk_evidence"] not in message:
             return "我有聽到你這一輪的話，先不往深處問；剛才那句讓我還有點擔心。你現在有沒有不想活了，或傷害自己的念頭？"
-        return (f"你說「{quote(message)}」，我有認真聽。" + ("現在很晚了，我還是想確認一下，" if night else "想先確認一下，")
+        # No echo of the student's whole sentence (2026-10-23 live test: 「你說『我想打老師』，我有認真聽」).
+        return ("我有認真聽你剛才說的。" + ("現在很晚了，我還是想確認一下，" if night else "想先確認一下，")
                 + f"{who}最近有沒有不想活了，或傷害自己的念頭？")
     first = state.get("safety_turns", 1) <= 1 or state.get("fresh_safety")
     privacy = PRIVACY_LIMIT if state.get("privacy_concern") else ""
@@ -62,6 +72,13 @@ def safety_reply(message, state):
         return _digital_reply(message, state, first)
     if action == "child_protection":
         return _protection_reply(message, state, first) + privacy
+    if action == "violence_safety" and re.search(WANTS_TO_HURT, message) and not other:
+        # The student wants to hurt someone: cool down and step away, not 「保持距離、不要上前制止」.
+        if not first:
+            return "我還在。先離開那個人和那個地方，等身體的火降下來再決定；若有人可能立刻受傷，請直接打 110。" + privacy
+        return ("聽得出來你真的氣炸了。先讓自己離開那個人和那個地方，慢慢吐幾口氣，等身體的火降下來再決定要怎麼做；"
+                "動手會讓你自己也受傷或惹上麻煩。覺得快控制不住時，可以先打 1925 找人談，或找一位信任的大人陪你；"
+                "若有人可能立刻受傷，請打 110。" + privacy + "現在你身邊有可以陪你的人嗎？")
     if action == "violence_safety":
         if not first:
             return "我還在。先和可能發生衝突的人保持距離；若有人可能立刻受傷，請直接打 110，有人受傷請打 119。" + privacy

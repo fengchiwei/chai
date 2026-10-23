@@ -130,6 +130,12 @@ FILLER = (r"怎麼辦|怎麼|該怎麼|要怎麼|有點|一直|最近|每天|晚
           r"|[我你他她好很太超都也就了的啊喔欸呢嗎吧該要會是這那樣又還]")
 
 
+# 「我想打老師」 is anger to be heard, not a safety check (2026-10-23 live test: the model labelled it violence and
+# the student was asked about suicide). A model violence hint counts only with a plan, weapon, time or a lethal verb.
+VIOLENCE_PLAN = (r"刀|槍|武器|棍|球棒|鐵條|已經準備|準備好|計畫|打算|明天|今天|今晚|等一下|放學|下課後|堵他|堵她|約他出來"
+                 r"|約她出來|帶.{0,4}(?:去|到)學校|殺|砍|捅|弄死|打死|同歸於盡")
+
+
 def everyday_distress_only(evidence):
     rest = re.sub(FILLER, "", re.sub(EVERYDAY_DISTRESS, "", evidence or ""))
     return len(re.sub(r"[^㐀-鿿A-Za-z]", "", rest)) <= 1
@@ -330,7 +336,7 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
         (ABUSE, "abuse", "orange", ""),
         # Physical bullying shares the protection type; its own wording points to school staff (cue "peer").
         (PEER_VIOLENCE, "abuse", "orange", "peer"),
-        (r"(?:我|他|她|有人).{0,16}(?:拿刀|帶刀|持刀).{0,18}(?:殺|砍|捅|堵|門外|門口|付出代價|報仇|算帳|教訓)"
+        (r"(?:我|他|她|有人).{0,16}(?:拿|帶|持)(?:刀|球棒|棍子|鐵條|武器|槍).{0,18}(?:殺|砍|捅|堵|打|揍|門外|門口|付出代價|報仇|算帳|教訓)"
          r"|(?:我|他|她).{0,14}(?:要殺|想殺|要砍|要捅).{0,6}(?:人|他|她|同學|我)", "violence", "orange", ""),
         (r"(?:我今晚|我現在|我等一下|我今天).{0,12}(?:打算|要).{0,12}(?:這些藥|全部.*藥|整瓶.*藥).{0,8}(?:吃掉|吞|吃完)", "suicide", "red", ""),
     ]
@@ -464,6 +470,8 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
         observation = {}
     if observation and everyday_distress_only(observation.get("evidence", "")):
         observation = {}  # 「睡不著」「好累」 alone are not a risk signal, whatever the model labels them
+    if observation.get("type") == "violence" and not re.search(VIOLENCE_PLAN, message):
+        observation = {}  # angry words without a plan: listen to the anger instead of starting a safety check
     if observation.get("affirmed") is True and not (pending and denied and not candidates):
         kind, signal, danger = observation.get("type"), observation.get("signal"), observation.get("danger")
         if kind in RISK_TYPES[1:] and signal in ("ambiguous", "indirect", "direct") and danger in ("none", "possible", "imminent"):
