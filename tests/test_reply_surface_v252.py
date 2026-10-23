@@ -17,7 +17,7 @@ LIVE = "朋友之間有小摩擦，心情多少會受影響包 🥰 那時候發
 
 class SurfaceTests(unittest.TestCase):
     def test_live_gemini_reply_is_repaired(self):
-        self.assertEqual(tidy_surface(LIVE, "跟朋友有小摩擦"), "朋友之間有小摩擦，心情多少會受影響吧。那時候發生了什麼事呀？")
+        self.assertEqual(tidy_surface(LIVE, "跟朋友有小摩擦"), "朋友之間有小摩擦，心情多少會受影響吧，那時候發生了什麼事呀？")
 
     def test_good_news_keeps_its_emoji(self):
         reply = "太讚了吧 🎉 抽到稀有角色超幸運！"

@@ -1,6 +1,6 @@
 # 少年仔、安啦會客室：AI 陪伴與風險預警原型
 
-目前原始碼版本：**v2.8.6**。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)，與計畫書的逐項對照見 [docs/PROPOSAL_ALIGNMENT.md](docs/PROPOSAL_ALIGNMENT.md)，專業人員審閱包見 [docs/PROFESSIONAL_REVIEW.md](docs/PROFESSIONAL_REVIEW.md)。
+目前原始碼版本：**v2.8.7**。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)，與計畫書的逐項對照見 [docs/PROPOSAL_ALIGNMENT.md](docs/PROPOSAL_ALIGNMENT.md)，專業人員審閱包見 [docs/PROFESSIONAL_REVIEW.md](docs/PROFESSIONAL_REVIEW.md)。
 
 提供學生對話（四種回覆風格）、語音輸入／朗讀、南投資源、離線求助卡、模擬案例測試、燈號判讀說明，以及需密碼登入的真人覆核工作臺。
 
@@ -52,6 +52,7 @@ anla-youth-v1.3-A.1/
 - **回覆一律由 AI 寫**：一般聊天、隱私與身分問題、界線都由 AI 回覆（規則決定的事實當參考內容）。偵測到危險時，AI 依審過的安全文字改寫，必須保留求助電話、不能承諾保密或先問手段，沒通過或超過 12 秒就改用那段固定文字。AI 回覆不了時（沒金鑰、額度用完、全部模型故障、逾時），學生看到誠實的說明與 119／1925，不再有制式的本機對話回覆；回應附 `fallback_reason`。
 - **青少年生活知識庫（Harness）**：學生問方法或資訊時（「睡不著怎麼辦」「電子煙有什麼影響」「15 歲可以打工嗎」「被霸凌可以找誰」），先在本機的知識卡裡找最相關的 1–2 張，讓 AI 依卡片回答並在回覆下方附「📚 資料來源」連結。78 張卡涵蓋情緒與壓力、學習與升學、人際與安全、身體與健康、權益與求助五大面向 39 個主題，每個來源都在白名單上、都開啟核對過。安全回合不使用；AI 引用沒提供的來源時不送出。見 `docs/HARNESS_PLAN.md`。
 - **找真人幫忙**：學生頁頂端的「🙋 找真人幫忙」隨時看得到。綠色、黃色時，學生可以自己選擇把摘要與完整對話分享到工作臺、留一段想讓老師知道的話與聯絡方式（個案狀態「學生主動請求協助」）；橙色、紅色時打開原本的轉介選項。
+- **等待提醒**：安啦回覆後 1 分鐘、5 分鐘學生都沒回應時，畫面上會出現輕輕的提醒；安全模式時改提醒求助電話。只顯示在學生的裝置，不送給 AI、不記進對話紀錄，學生開始打字就取消。
 - **開始新對話**：學生頁頂端「開始新對話」會刪除剛才的對話暫存（記憶、對話紀錄、未分享的摘要）與它的風險等級，從頭開始；暱稱、鄉鎮與回覆風格保留，已送到工作臺的個案不受影響，並留操作紀錄。
 - **身心電力檢核**：學生頁「身心檢核」約 2–3 分鐘，BSRS-5 六題（含自殺想法附加題）加持續時間、生活影響、壓力來源、支持系統四題。學生只看到白話說明與下一步，不看到燈號或分數；分數、各題答案與用時只給工作臺。
 - **橙紅色自動送出必要安全資訊**：對話或檢核達橙色、紅色時，不等學生同意，就把燈號、理由、引發警訊的原話（最多 5 句）、檢核結果、時間與鄉鎮送到工作臺（「系統安全通報」）；不含暱稱、學校、聯絡方式與完整對話，學生畫面會說明送出了什麼。學生之後同意分享，才補上身分與完整對話。
@@ -82,6 +83,7 @@ anla-youth-v1.3-A.1/
 | `AZURE_SPEECH_KEY`、`AZURE_SPEECH_REGION` | 朗讀用的 Azure 語音金鑰與區域（例如 `eastasia`）；提供台灣華語的曉臻、曉雨、雲哲。建議優先設定這個 |
 | 朗讀的其他雲端語音 | `OPENAI_API_KEY`（或主要金鑰是 OpenAI 時）提供 OpenAI 語音；`GEMINI_API_KEY`（或主要金鑰是 Gemini 時）提供 Gemini 語音。`TTS_OPENAI_MODEL`（預設 `gpt-4o-mini-tts`）、`TTS_GEMINI_MODEL`（留白時自動找金鑰可用的語音模型） |
 | `TTS_ENABLED`、`TTS_CALLS_PER_MINUTE` | 設 `false` 關閉雲端朗讀，只用裝置內建聲音；全站每分鐘雲端朗讀上限（60），每段對話 10 分鐘最多 40 次 |
+| `LLM_TEMPERATURE` | AI 回覆的隨機程度，預設 `0.6`（0.8 用字較活潑，但錯字與簡體字較多）；Claude 新模型不使用這個設定 |
 | `APP_TIMEZONE` | 記錄時間與深夜規則使用的時區，預設 `Asia/Taipei`；雲端主機（如 Render）的時鐘是 UTC，不設定也會自動換成台灣時間 |
 | `TRUSTED_PROXY_HOPS` | 部署在 HTTPS 通道或反向代理後面時的代理層數，登入鎖定才會依真實 IP 計算 |
 
@@ -113,7 +115,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-23 本機結果：單元測試 **446 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-23 本機結果：單元測試 **452 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 

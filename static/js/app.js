@@ -210,6 +210,46 @@ function startConversationalCheckin() {
   quickSend(checkinPrompt);
 }
 
+// 等待提醒：安啦回覆後 1 分鐘、5 分鐘學生都沒有回應時，在畫面上輕輕提醒。
+// 只顯示在這台裝置，不送給 AI、不記進對話紀錄；學生開始打字或送出就取消。安全模式時改提醒求助電話。
+const IDLE_REMINDERS = [
+  { after: 60 * 1000,
+    normal: "慢慢來，不急著回。想到什麼再打就好，一個字也可以。",
+    safety: "你還好嗎？不急著回。如果現在有危險，請直接打 119；想找人談可以打 1925，24 小時都有人接。" },
+  { after: 5 * 60 * 1000,
+    normal: "我還在這裡。先去忙也沒關係，想聊的時候再回來就好。",
+    safety: "還沒看到你的回覆，我有點擔心你。如果現在有立即危險，請撥 119 或 110，或請身邊的大人幫忙；想找人談可以打 1925。" },
+];
+let idleTimers = [];
+
+function clearIdleReminders() {
+  idleTimers.forEach(clearTimeout);
+  idleTimers = [];
+}
+
+function scheduleIdleReminders(safety) {
+  clearIdleReminders();
+  IDLE_REMINDERS.forEach(reminder => {
+    idleTimers.push(setTimeout(() => showIdleReminder(safety ? reminder.safety : reminder.normal), reminder.after));
+  });
+}
+
+function showIdleReminder(text) {
+  const input = document.getElementById("userInput");
+  if (input && input.value.trim()) return;  // 學生正在打字
+  const chat = document.getElementById("chatMessages");
+  const note = document.createElement("div");
+  note.className = "idle-reminder";
+  note.setAttribute("role", "status");
+  note.textContent = "☀️ " + text;
+  chat.appendChild(note);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("userInput")?.addEventListener("input", clearIdleReminders);
+});
+
 // 開始新對話：刪除剛才的對話暫存與它的風險狀態，重新整理頁面從頭開始（工作臺既有個案不受影響）。
 async function startNewConversation() {
   if (!studentOnboarded) {
@@ -247,6 +287,7 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
   isSending = true;
+  clearIdleReminders();
 
   // 若正在語音錄音，先停止錄音
   if (isRecording) {
@@ -289,6 +330,7 @@ async function sendMessage() {
       // 純溫暖回覆，學生端不顯示任何燈號或評判結果 (燈號全數保留至後台由真人覆核)
       replyBubble = appendMessage("ai", data.reply);
       appendSources(replyBubble, data.sources);
+      scheduleIdleReminders(Boolean(data.show_support_help || data.style_overridden_by_safety));
       conversationHistory.push({ role: "assistant", text: data.reply });
 
       updateAiStatusFromReply(data);

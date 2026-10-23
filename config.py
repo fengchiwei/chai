@@ -41,7 +41,8 @@ class Config:
     GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
     # 一般陪伴 1–4 短句；安全與界線以決策層優先。
-    LLM_TEMPERATURE = 0.8
+    # 0.8 gave lively wording but more slips (wrong homophones, simplified characters); 0.6 keeps the tone.
+    LLM_TEMPERATURE = float(os.environ.get("LLM_TEMPERATURE", "0.6"))
     LLM_TIMEOUT = 25
     # 連線階段上限：網路斷線時幾秒內就改用本機備援，不必等滿 LLM_TIMEOUT。
     LLM_CONNECT_TIMEOUT = float(os.environ.get("LLM_CONNECT_TIMEOUT", "3"))

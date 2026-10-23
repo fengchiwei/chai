@@ -432,18 +432,18 @@ RATIONAL_LINES = re.compile(r"1[.．、]\s*重點整理[:：].+?2[.．、]\s*目
 CHEERFUL_EMOJI = r"(?:🥰|😍|🤩|😆|😂|🤣|🎉|🥳|😁|😄|😃|😘|💕|💖|💗)️?"
 # Cute spellings of 吧 seen in live Gemini output: 「心情多少會受影響包 🥰」, 「好ㄅ」.
 # 包 is only rewritten right before an emoji or ～, and never after the first character of a real word (麵包、紅包…).
-CUTESY_BA = (r"(?<=[一-鿿])(?:(?<![麵紅書錢背荷皮肉菜包打帶提拿買豆湯煎])包"
+CUTESY_BA = (r"(?<=[一-鿿])(?:(?<![麵紅書錢背荷皮肉菜包打帶提拿買豆湯煎個這那手錢錢])包"
              r"(?=\s*(?:[\U0001F300-\U0001FAFF☀-➿]|[～~]))|ㄅ)")
 
 
 def tidy_surface(reply, message, state=None):
     """Repair surface slips in a model reply instead of discarding it: 「包／ㄅ」 written for 「吧」, and
     party or heart emoji when the student is not sharing good news (「跟朋友有小摩擦」 → 🥰)."""
-    text = re.sub(CUTESY_BA, "吧", reply)
+    text = re.sub(CUTESY_BA, "吧", reply.translate(SIMPLIFIED))
     if not positive_context(message, state) and re.search(CHEERFUL_EMOJI, text):
         text = re.sub(r"\s*(?:" + CHEERFUL_EMOJI + r")+\s*", "\0", text)
-        # An emoji that stood between two sentences leaves a sentence break, not a run-on.
-        text = re.sub(r"(?<=[一-鿿])\0(?=[一-鿿])", "。", text).replace("\0", "")
+        # An emoji inside a sentence leaves a comma; a full stop there read like a typo (「這樣。真的」).
+        text = re.sub(r"(?<=[一-鿿])\0(?=[一-鿿])", "，", text).replace("\0", "")
     return text.strip()
 
 
@@ -460,6 +460,30 @@ def drop_trailing_questions(reply, keep=0):
     if len(kept) < max(20, len(reply.strip()) // 3):
         return None
     return kept if kept != reply.strip() else None
+
+
+# Lines that decide for the student what they feel or need (2026-10-23 feedback: replies felt 自以為是).
+PRESUMPTUOUS = (r"一定(?:很|是|會|不太|超|非常)|肯定(?:很|是|會)|其實你|你其實|你只是|說穿了|說到底|你要知道|相信我"
+                r"|我(?:完全|都|真的)?(?:懂|明白|知道)(?:你|這種|你的感受)|我能理解你的感受|你(?:真正)?需要的是|你缺的是"
+                r"|你應該要|你就是太")
+
+
+def presumptuous(reply):
+    return bool(re.search(PRESUMPTUOUS, re.sub(QUOTED, "", reply or "")))
+
+
+# Simplified characters a model sometimes slips into Traditional Chinese replies. Only characters whose
+# Traditional form is unambiguous in this context (no 后/里/发/干 style one-to-many cases).
+SIMPLIFIED = str.maketrans({
+    "们": "們", "这": "這", "说": "說", "个": "個", "为": "為", "时": "時", "么": "麼", "还": "還", "没": "沒", "会": "會",
+    "对": "對", "过": "過", "着": "著", "让": "讓", "样": "樣", "学": "學", "习": "習", "觉": "覺", "吗": "嗎", "开": "開",
+    "关": "關", "应": "應", "该": "該", "现": "現", "实": "實", "问": "問", "题": "題", "谢": "謝", "帮": "幫", "难": "難",
+    "欢": "歡", "爱": "愛", "听": "聽", "话": "話", "认": "認", "识": "識", "绪": "緒", "压": "壓", "试": "試", "办": "辦",
+    "气": "氣", "长": "長", "怀": "懷", "疗": "療", "医": "醫", "师": "師", "动": "動", "运": "運", "边": "邊", "绝": "絕",
+    "饭": "飯", "钟": "鐘", "体": "體", "种": "種", "论": "論", "专": "專", "线": "線", "电": "電", "脑": "腦", "机": "機",
+    "网": "網", "经": "經", "历": "歷", "红": "紅", "黄": "黃", "发": "發", "头": "頭", "当": "當", "从": "從",
+    "间": "間", "们": "們", "给": "給", "请": "請", "谁": "誰", "这": "這", "处": "處", "笔": "筆", "书": "書",
+})
 
 
 def parroting(reply, message):
@@ -531,6 +555,8 @@ def response_violations(reply, state, message="", offer=None):
         issues.append("repeat")
     if parroting(body, message):
         issues.append("parroting")
+    if presumptuous(body):
+        issues.append("presumptuous")
     old_questions = re.findall(r"[^。！？!?\n]*[？?]", previous)
     if any(q.strip() in [old.strip() for old in old_questions] for q in questions):
         issues.append("repeated_question")

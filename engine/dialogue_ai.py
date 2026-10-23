@@ -13,7 +13,8 @@ import requests
 from config import Config
 from engine.dialogue_policy import (STAGES, build_state, history_clean, observe_safety,
                                     raise_triage, remember_turn)
-from engine.dialogue_reply import (drop_trailing_questions, local_reply, parroting, response_violations, safety_reply,
+from engine.dialogue_reply import (drop_trailing_questions, local_reply, parroting, presumptuous, response_violations,
+                                   safety_reply,
                                    tidy_surface)
 from engine.dialogue_role import ROLE_RULES, role_notice, role_user_message
 from engine import model_router, providers
@@ -45,7 +46,8 @@ max_questions=1 時不要只回一句感想就停，讓學生不知道怎麼接�
 學生只回一小句（「一段時間了」「還好」）時，問題要更具體、更好答，可以給兩三個方向讓他挑，例如「是學校、家裡，還是說不上來的累？」。
 【傾聽與回應技巧】（參考輔導的同理反映、動機式晤談 OARS、心理急救與 Gordon 的溝通絆腳石）
 不當鸚鵡：不要把學生的句子或一串關鍵詞搬回來。學生說「最近心情好低落，做什麼都提不起勁，覺得很空虛」，不要回「聽到你最近心情很低落、提不起勁、覺得空虛」；改說你聽出的意思，例如「好像連平常喜歡的事都變得沒什麼味道」。一則回覆最多沿用學生一個關鍵詞。
-反映要多走半步（高層次同理）：說出學生話裡還沒說完的感受或在意的事，用猜測、可以被修正的平敘句（「好像……」「會不會有點……」），不要用問號包裝；猜錯了就照學生的說法修正。
+反映可以多走半步（高層次同理），但只在學生的話裡有線索時才猜，而且要用可以被推翻的說法（「會不會有點……」「不知道我有沒有猜對」）；猜錯了就照學生的說法修正。
+不要自以為是：你不在現場，不知道全部的事。不替學生下定論（不說「一定很……」「肯定是……」「其實你……」「你只是……」「說穿了」），不說「我完全懂」「我知道你的感受」，不告訴學生他需要什麼、應該怎麼想，不總結他的人生或性格；學生自己最清楚，解釋權在他。
 多反映、少發問：一則回覆以一個反映為主，問題最多一個而且放在反映之後；不要每則都用問句結尾，也不要連續用問題推著學生走。
 不急著給答案：學生沒有問方法時不主動給建議，想給時先問「要不要聽聽一個小方法？」；學生問了方法（support_choice）才直接給一個小步驟。
 避開會讓人關上心門的回應：命令、警告、說教、講道理、評斷、分析他「其實是……」、空泛稱讚、「沒事啦」「想開一點」這類保證、急著轉移話題。
@@ -54,7 +56,8 @@ max_questions=1 時不要只回一句感想就停，讓學生不知道怎麼接�
 不逼對方說：學生不想多說就不追，讓他知道想說時再說；不知道答案就直接說不知道。
 開頭要有變化：不要每輪用「聽起來」「聽到你」「我懂」「我能理解」「辛苦了」開頭，也不要連續兩輪換詞重述同一件事。
 【自然口語】
-用日常臺灣青少年能理解的短句，像一個可靠的朋友，不要像諮商紀錄或機械摘要。
+用日常臺灣青少年能理解的短句，像一個可靠、謙虛的朋友，不要像諮商紀錄、老師訓話或機械摘要。
+只用正確的臺灣繁體中文：不用簡體字（著不是着、們不是们、這不是这），注意同音錯字（在／再、的／得／地、做／作、已／以），送出前把整段讀一遍，有錯字就改掉。
 每輪優先接本輪新意思：事件、尚未被確認的情緒、對方的期待，或此刻希望得到的協助；沒有新訊息時可以簡短留白。
 情緒只能以輕微、可修正的方式推測，例如「這樣可能有點悶」，不說「一定很委屈」「難怪你心灰意冷」。
 分享開心、期待的事時就跟著那份好心情回應；不要自行加上壓力、緊繃、需要喘息等學生沒說的狀態。
@@ -616,21 +619,27 @@ def safety_reply_ok(reply, reference, state, message):
 
 
 REWRITE_SECONDS = 8  # an echoing reply is rewritten once only when this much of the turn budget is left
-REWRITE_NOTE = ("【改寫】你的草稿把學生的原話搬了回來，讀起來像鸚鵡：「{draft}」。請保留意思與分寸，改成用自己的話"
-                "說出你聽到的感受或在意的事（可以多走半步猜他沒說完的部分），最多沿用學生一個關鍵詞；"
-                "長度相近，問題數不增加。只輸出改寫後要對學生說的話，不要 JSON 或其他文字。")
+REWRITE_NOTE = ("【改寫】你的草稿有這些問題：{problems}。草稿：「{draft}」。請保留意思與分寸重寫：用自己的話說出你聽到的，"
+                "最多沿用學生一個關鍵詞；用可以被推翻的說法，不替學生下定論；長度相近，問題數不增加。"
+                "只輸出改寫後要對學生說的話，不要 JSON 或其他文字。")
+REWRITE_PROBLEMS = {"parroting": "把學生的原話搬了回來，讀起來像鸚鵡",
+                    "presumptuous": "替學生下定論或自以為懂他（例如「一定很…」「其實你…」「我完全懂」），讀起來自以為是"}
 
 
-def _rewrite_echo(draft, state, offer, message, cards, deadline):
-    """One extra call to rewrite a reply that echoes the student; None when it fails or still echoes."""
-    prompt = _reply_prompt(state, offer, message, cards) + "\n\n" + REWRITE_NOTE.format(draft=draft)
+def _rewrite_echo(draft, state, offer, message, cards, deadline, problems=("parroting",)):
+    """One extra call to rewrite a reply that echoes the student or sounds presumptuous; None when it fails or
+    the rewrite still has the problem."""
+    note = REWRITE_NOTE.format(draft=draft, problems="；".join(REWRITE_PROBLEMS[p] for p in problems))
+    prompt = _reply_prompt(state, offer, message, cards) + "\n\n" + note
     model, _ = _call_model(prompt, _student_input(state, message), state.get("history"),
                            timeout=min(Config.LLM_TIMEOUT, deadline - _clock()))
     if not model:
         return None
     parsed = _parse_single(model["reply"])
     text = tidy_surface((parsed[1] if parsed and parsed[1] else model["reply"]).strip(), message, state)
-    return None if not text or parroting(text, message) else text
+    if not text or parroting(text, message) or presumptuous(text):
+        return None
+    return text
 
 
 def unavailable_reply(status):
@@ -803,8 +812,9 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
             # the question must not be cut off).
             if "questions" not in after and set(after) <= set(issues):
                 model["reply"], issues = trimmed, after
-        if "parroting" in issues and deadline - _clock() >= REWRITE_SECONDS:
-            better = _rewrite_echo(model["reply"], state, offer, message, cards, deadline)
+        problems = [p for p in ("parroting", "presumptuous") if p in issues]
+        if problems and deadline - _clock() >= REWRITE_SECONDS:
+            better = _rewrite_echo(model["reply"], state, offer, message, cards, deadline, problems)
             if better:
                 model["reply"] = better
                 issues = response_violations(better, state, message, offer) + output_issues(better, SYSTEM_PROMPT)

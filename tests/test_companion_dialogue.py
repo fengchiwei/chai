@@ -86,7 +86,7 @@ class CompanionDialogueTests(unittest.TestCase):
         payload = post.call_args.kwargs['json']
         self.assertEqual([c['role'] for c in payload['contents']], ['user', 'model', 'user'])
         self.assertEqual(payload['contents'][-1]['parts'][0]['text'], '<student_message>\n不知道\n</student_message>')
-        self.assertEqual(payload['generationConfig']['temperature'], 0.8)
+        self.assertEqual(payload['generationConfig']['temperature'], 0.6)  # v2.8.7: fewer slips than 0.8
         self.assertEqual(payload['generationConfig']['thinkingConfig']['thinkingBudget'], 0)
         self.assertGreaterEqual(payload['generationConfig']['maxOutputTokens'], 500)
 

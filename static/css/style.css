@@ -233,6 +233,8 @@ body {
 .reply-sources a { color: inherit; text-decoration: underline; }
 .help-request-button { font-weight: 700; }
 .next-step-panel textarea.choice-text { width: 100%; box-sizing: border-box; font: inherit; }
+.idle-reminder { margin: .5rem auto .5rem 3.25rem; max-width: 80%; padding: .45rem .8rem; border-radius: 12px;
+  background: transparent; border: 1px dashed #d6c4b5; color: inherit; opacity: .8; font-size: .88rem; line-height: 1.6; }
 .btn-stop-voice {
   margin-left: .4rem;
   background: transparent;
