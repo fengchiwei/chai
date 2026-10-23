@@ -486,9 +486,13 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
+APP_VERSION = "2.8.2"  # shown on /health so you can tell which release a host (e.g. Render) is running
+
+
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok", "service": "少年仔、安啦會客室 Demo", "dialogue_policy": POLICY_VERSION})
+    return jsonify({"status": "ok", "service": "少年仔、安啦會客室 Demo", "version": APP_VERSION,
+                    "dialogue_policy": POLICY_VERSION})
 
 
 @app.route("/api/onboarding", methods=["POST"])
