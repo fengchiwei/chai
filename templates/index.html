@@ -39,6 +39,7 @@
           <span id="badgeAlias">先用暱稱聊聊</span> · <span id="badgeEmail">學校／信箱選填</span>
         </button>
         <button id="ttsToggleBtn" class="voice-toggle-btn" onclick="toggleAutoSpeech()" title="切換是否自動語音朗讀回覆">🔇 語音朗讀：已關閉</button>
+        <button type="button" id="voiceSettingsBtn" class="voice-toggle-btn" aria-haspopup="dialog" aria-controls="voiceDialog" title="選擇朗讀的聲音與速度">🗣️ 聲音</button>
         <label class="theme-picker">
           <span class="visually-hidden">畫面主題</span>
           <select id="themeSelect" aria-label="切換畫面主題">
@@ -99,7 +100,7 @@
               在這裡你可以放鬆把心事說出來，<b>按下方麥克風 🎙️ 也可以直接用說的喔！</b><br>
               我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。
               <div style="margin-top: 0.5rem; text-align: right;">
-                <button class="btn-play-voice" onclick="speakMessage(this)">🔊 朗讀這段話</button>
+                <button type="button" class="btn-play-voice" onclick="speakMessage(this)">🔊 朗讀這段話</button>
               </div>
             </div>
           </div>
@@ -308,6 +309,30 @@
       指導老師：林家平 ‧ 隊長：蔡睿恩 ‧ 隊員：何小侓、洪聖傑、李欣亮 ‧ 同德高中 / 台中女中 / 台中一中 跨校聯隊
     </p>
   </footer>
+
+  <!-- 朗讀聲音：雲端自然語音（伺服器有設定金鑰時）或裝置內建語音；選擇只存在這台裝置。 -->
+  <dialog id="voiceDialog" class="install-dialog voice-dialog" aria-labelledby="voiceTitle">
+    <div class="install-dialog-body">
+      <div class="install-dialog-head">
+        <h2 id="voiceTitle">🗣️ 朗讀的聲音</h2>
+        <button type="button" id="voiceClose" class="install-close" aria-label="關閉聲音設定">×</button>
+      </div>
+      <label class="voice-field">聲音
+        <select id="voiceSelect"></select>
+      </label>
+      <label class="voice-field">速度
+        <select id="voiceRate">
+          <option value="0.85">慢一點</option>
+          <option value="1">正常</option>
+          <option value="1.15">快一點</option>
+        </select>
+      </label>
+      <button type="button" id="voicePreview" class="btn-primary-action">▶ 試聽這個聲音</button>
+      <p id="voiceNotice" class="voice-notice" role="status"></p>
+      <p id="voiceCloudNote" class="install-privacy" hidden>雲端語音會把 AI 這段回覆的文字傳給語音服務來產生聲音；你自己打的訊息不會傳過去。</p>
+      <p class="install-privacy">朗讀時再按一次按鈕可以暫停，再按就繼續。裝置內建的聲音不經網路；用 Microsoft Edge 開啟會有比較自然的「Natural」聲音。</p>
+    </div>
+  </dialog>
 
   <!-- 手機掃碼安裝：QR Code 由伺服器產生（/api/qr.svg），指向手機應開啟的網址。 -->
   <dialog id="installDialog" class="install-dialog" aria-labelledby="installTitle">

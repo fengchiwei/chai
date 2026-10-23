@@ -294,6 +294,7 @@ function appendMessage(sender, text) {
     voiceBtnDiv.style.textAlign = "right";
     
     const voiceBtn = document.createElement("button");
+    voiceBtn.type = "button";
     voiceBtn.className = "btn-play-voice";
     voiceBtn.innerText = "🔊 朗讀這段話";
     voiceBtn.onclick = function () { speakMessage(this); };
@@ -309,7 +310,7 @@ function appendMessage(sender, text) {
 
   // 若開啟自動語音朗讀，且為 AI 回覆，則自動播放語音
   if (sender === "ai" && isAutoSpeech) {
-    speakMessage(text);
+    speakMessage(bubble.querySelector(".btn-play-voice") || text); // 用按鈕朗讀，學生才能暫停
   }
   return bubble;
 }
@@ -445,14 +446,22 @@ function stopVoiceRecognition() {
   if (banner) banner.style.display = "none";
 }
 
-// 2. 語音朗讀合成 (Text-to-Speech / TTS 語音發音)
+// 2. 語音朗讀 (Text-to-Speech)：可暫停／繼續／停止；聲音可選雲端自然語音（伺服器有設定時）或裝置內建語音。
+const SPEECH_LABELS = { idle: "🔊 朗讀這段話", loading: "⏳ 準備聲音…", playing: "⏸ 暫停", paused: "▶ 繼續" };
+const VOICE_SAMPLE = "嗨，我是安啦會客室的陪伴夥伴。有什麼想說的，都可以慢慢說。";
+// Android 的瀏覽器內建語音不支援暫停，在那裡按暫停就直接停止。
+const DEVICE_PAUSE_WORKS = !/Android/i.test(navigator.userAgent);
+let speech = null; // 目前的朗讀：{ btn, kind: "device" | "audio" | null, audio, paused, cancelled }
+let cloudVoices = [];
+let voiceChoice = localStorage.getItem("anla_voice") || ""; // "cloud:<id>"、"device:<name>"；空白＝自動
+let voiceRate = parseFloat(localStorage.getItem("anla_voice_rate") || "1") || 1;
+const audioCache = new Map(); // 同一段話再聽一次不必重新產生
+
 function toggleAutoSpeech() {
   isAutoSpeech = !isAutoSpeech;
   localStorage.setItem("anla_auto_speech", isAutoSpeech ? "true" : "false");
   updateTTSButtonUI();
-  if (!isAutoSpeech && window.speechSynthesis) {
-    window.speechSynthesis.cancel();
-  }
+  if (!isAutoSpeech) stopSpeech();
 }
 
 function updateTTSButtonUI() {
@@ -467,77 +476,270 @@ function updateTTSButtonUI() {
   }
 }
 
-function speakMessage(elementOrText) {
-  if (!window.speechSynthesis) {
-    alert("您的瀏覽器暫不支援語音朗讀功能。");
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-
-  let textToSpeak = "";
-  let targetBtn = null;
-
+function speechText(elementOrText) {
+  let text = "";
   if (typeof elementOrText === "string") {
-    textToSpeak = elementOrText;
+    text = elementOrText;
   } else if (elementOrText && elementOrText.nodeType) {
-    targetBtn = elementOrText;
     const bubble = elementOrText.closest(".bubble");
     if (bubble) {
       const clone = bubble.cloneNode(true);
-      const buttons = clone.querySelectorAll("button");
-      buttons.forEach(b => {
+      clone.querySelectorAll("button").forEach(b => {
         if (b.classList.contains("inline-support-link")) b.replaceWith(document.createTextNode(b.textContent));
         else b.remove();
       });
-      textToSpeak = clone.innerText || clone.textContent;
+      text = clone.innerText || clone.textContent;
     }
   }
-
-  if (!textToSpeak || !textToSpeak.trim()) return;
-
   // 清除 emoji 與特殊符號使朗讀更加流暢自然
-  const cleanText = textToSpeak
-    .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
-    .replace(/[🌱☀️🐾👋✨❤️💪💭🚨🚓📞📋⚠️]/g, "")
+  return (text || "")
+    .replace(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{27BF}]|️/gu, "")
     .trim();
+}
 
-  const utterance = new SpeechSynthesisUtterance(cleanText);
-  utterance.lang = "zh-TW";
-  utterance.rate = 0.95; // 舒緩溫柔的陪伴語速
-  utterance.pitch = 1.05; // 溫暖親切的聲調
+function deviceVoices() {
+  if (!window.speechSynthesis) return [];
+  return window.speechSynthesis.getVoices().filter(v => /^(zh|cmn|yue)/i.test(v.lang) || /Chinese|Taiwan|Mandarin/i.test(v.name));
+}
 
-  // 選取繁體中文最佳發音
-  const voices = window.speechSynthesis.getVoices();
-  const twVoice = voices.find(v => 
-    v.lang === "zh-TW" || 
-    v.lang === "cmn-Hant-TW" || 
-    v.name.includes("Taiwan") || 
-    v.name.includes("Mei-Jia") || 
-    v.name.includes("HsiaoChen") ||
-    v.name.includes("Yating")
-  );
-  if (twVoice) {
-    utterance.voice = twVoice;
+function isNaturalVoice(v) {
+  return /Natural|Online|Neural|Premium|Enhanced/i.test(v.name);
+}
+
+function bestDeviceVoice() {
+  const list = deviceVoices();
+  const taiwan = v => /zh[-_]TW|Hant|Taiwan|HsiaoChen|HsiaoYu|YunJhe|Mei-Jia/i.test(v.lang + " " + v.name);
+  return list.find(v => taiwan(v) && isNaturalVoice(v)) || list.find(taiwan) || list.find(isNaturalVoice) || list[0] || null;
+}
+
+function selectedVoice() {
+  if (voiceChoice.startsWith("cloud:")) {
+    const id = voiceChoice.slice(6);
+    if (cloudVoices.some(v => v.id === id)) return { kind: "cloud", id };
   }
-
-  if (targetBtn) {
-    const originalText = targetBtn.innerText;
-    targetBtn.innerText = "🔊 朗讀中...";
-    targetBtn.style.opacity = "0.7";
-    
-    utterance.onend = () => {
-      targetBtn.innerText = originalText;
-      targetBtn.style.opacity = "1";
-    };
-    utterance.onerror = () => {
-      targetBtn.innerText = originalText;
-      targetBtn.style.opacity = "1";
-    };
+  if (voiceChoice.startsWith("device:")) {
+    const name = voiceChoice.slice(7);
+    return { kind: "device", voice: deviceVoices().find(v => v.name === name) || bestDeviceVoice() };
   }
+  // 沒選過：伺服器有雲端語音就用第一個（最自然的台灣華語），否則用裝置內建最好的中文聲音。
+  if (cloudVoices.length) return { kind: "cloud", id: cloudVoices[0].id };
+  return { kind: "device", voice: bestDeviceVoice() };
+}
 
+function setSpeechButton(btn, state) {
+  if (!btn || !btn.classList.contains("btn-play-voice")) return;
+  btn.textContent = SPEECH_LABELS[state];
+  btn.dataset.speech = state;
+  btn.setAttribute("aria-label", state === "playing" ? "暫停朗讀" : state === "paused" ? "繼續朗讀" : "朗讀這段話");
+  let stop = btn.parentElement && btn.parentElement.querySelector(".btn-stop-voice");
+  if (state === "idle") {
+    if (stop) stop.remove();
+    return;
+  }
+  if (!stop && btn.parentElement) {
+    stop = document.createElement("button");
+    stop.type = "button";
+    stop.className = "btn-stop-voice";
+    stop.textContent = "⏹ 停止";
+    stop.setAttribute("aria-label", "停止朗讀");
+    stop.onclick = stopSpeech;
+    btn.after(stop);
+  }
+}
+
+function stopSpeech() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  if (speech) {
+    speech.cancelled = true;
+    if (speech.audio) speech.audio.pause();
+    setSpeechButton(speech.btn, "idle");
+  }
+  speech = null;
+}
+
+function finishSpeech(s) {
+  if (speech !== s) return;
+  setSpeechButton(s.btn, "idle");
+  speech = null;
+}
+
+// 按鈕第一次按是朗讀；朗讀中再按是暫停，暫停時再按是繼續。
+function speakMessage(elementOrText) {
+  const btn = elementOrText && elementOrText.nodeType ? elementOrText : null;
+  if (btn && speech && speech.btn === btn) {
+    togglePause();
+    return;
+  }
+  stopSpeech();
+  const text = speechText(elementOrText);
+  if (!text) return;
+  const current = speech = { btn, kind: null, audio: null, paused: false, cancelled: false };
+  const choice = selectedVoice();
+  if (choice.kind === "cloud") playCloud(current, choice.id, text);
+  else playDevice(current, choice.voice, text);
+}
+
+function togglePause() {
+  const s = speech;
+  if (!s || !s.kind) return; // 聲音還在準備中
+  if (s.kind === "device" && !DEVICE_PAUSE_WORKS) {
+    stopSpeech();
+    return;
+  }
+  if (s.paused) {
+    if (s.kind === "audio") s.audio.play().catch(() => {});
+    else window.speechSynthesis.resume();
+    s.paused = false;
+    setSpeechButton(s.btn, "playing");
+  } else {
+    if (s.kind === "audio") s.audio.pause();
+    else window.speechSynthesis.pause();
+    s.paused = true;
+    setSpeechButton(s.btn, "paused");
+  }
+}
+
+function playDevice(s, voice, text) {
+  if (!window.speechSynthesis) {
+    finishSpeech(s);
+    alert("這個瀏覽器不支援語音朗讀。");
+    return;
+  }
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = voice ? voice.lang : "zh-TW";
+  if (voice) utterance.voice = voice;
+  utterance.rate = 0.95 * voiceRate; // 舒緩溫柔的陪伴語速
+  utterance.pitch = 1.05;
+  utterance.onend = () => finishSpeech(s);
+  utterance.onerror = () => finishSpeech(s);
+  s.kind = "device";
+  setSpeechButton(s.btn, "playing");
   window.speechSynthesis.speak(utterance);
 }
+
+async function playCloud(s, voiceId, text) {
+  setSpeechButton(s.btn, "loading");
+  const key = `${voiceId}|${voiceRate}|${text}`;
+  let url = audioCache.get(key);
+  if (!url) {
+    try {
+      const res = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": window.ANLA_CSRF_TOKEN },
+        body: JSON.stringify({ text: text.slice(0, 800), voice: voiceId, rate: voiceRate }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      url = URL.createObjectURL(await res.blob());
+      audioCache.set(key, url);
+      if (audioCache.size > 20) {
+        const [oldKey, oldUrl] = audioCache.entries().next().value;
+        URL.revokeObjectURL(oldUrl);
+        audioCache.delete(oldKey);
+      }
+    } catch (e) {
+      if (s.cancelled) return;
+      showVoiceNotice("雲端語音暫時無法使用，這次改用裝置內建的聲音。");
+      playDevice(s, bestDeviceVoice(), text);
+      return;
+    }
+  }
+  if (s.cancelled) return;
+  const audio = new Audio(url);
+  s.audio = audio;
+  s.kind = "audio";
+  audio.onended = () => finishSpeech(s);
+  setSpeechButton(s.btn, "playing");
+  audio.play().catch(() => {
+    // 瀏覽器擋下自動播放（例如自動朗讀時頁面還沒被點過）：停在「繼續」，讓學生自己按。
+    if (s.cancelled) return;
+    s.paused = true;
+    setSpeechButton(s.btn, "paused");
+  });
+}
+
+function showVoiceNotice(text) {
+  const notice = document.getElementById("voiceNotice");
+  if (notice) notice.textContent = text;
+}
+
+// ---------- 朗讀聲音選單 ----------
+async function loadCloudVoices() {
+  try {
+    const res = await fetch("/api/tts/voices", { cache: "no-store" });
+    cloudVoices = res.ok ? ((await res.json()).voices || []) : [];
+  } catch (e) {
+    cloudVoices = [];
+  }
+  renderVoiceOptions();
+}
+
+function renderVoiceOptions() {
+  const select = document.getElementById("voiceSelect");
+  if (!select) return;
+  select.innerHTML = "";
+  if (cloudVoices.length) {
+    const group = document.createElement("optgroup");
+    group.label = "雲端自然語音";
+    cloudVoices.forEach(v => group.appendChild(new Option(`${v.label}（${v.service}）`, "cloud:" + v.id)));
+    select.appendChild(group);
+  }
+  const device = document.createElement("optgroup");
+  device.label = "這台裝置內建的聲音（不經網路）";
+  device.appendChild(new Option("自動挑選中文聲音", "device:"));
+  deviceVoices().forEach(v => device.appendChild(new Option(v.name + (isNaturalVoice(v) ? "（自然）" : ""), "device:" + v.name)));
+  select.appendChild(device);
+  const choice = selectedVoice();
+  select.value = choice.kind === "cloud" ? "cloud:" + choice.id
+    : (voiceChoice.startsWith("device:") && [...select.options].some(o => o.value === voiceChoice) ? voiceChoice : "device:");
+  const rate = document.getElementById("voiceRate");
+  if (rate) rate.value = String(voiceRate);
+  const note = document.getElementById("voiceCloudNote");
+  if (note) note.hidden = !select.value.startsWith("cloud:");
+}
+
+function openVoiceDialog() {
+  const dialog = document.getElementById("voiceDialog");
+  if (!dialog) return;
+  renderVoiceOptions();
+  showVoiceNotice("");
+  if (typeof dialog.showModal === "function") {
+    if (!dialog.open) dialog.showModal();
+  } else {
+    dialog.setAttribute("open", "");
+  }
+  document.getElementById("voiceSelect")?.focus();
+}
+
+function closeVoiceDialog() {
+  const dialog = document.getElementById("voiceDialog");
+  if (!dialog) return;
+  if (typeof dialog.close === "function" && dialog.open) dialog.close();
+  else dialog.removeAttribute("open");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadCloudVoices();
+  if (window.speechSynthesis) window.speechSynthesis.addEventListener("voiceschanged", renderVoiceOptions);
+  document.getElementById("voiceSettingsBtn")?.addEventListener("click", openVoiceDialog);
+  document.getElementById("voiceClose")?.addEventListener("click", closeVoiceDialog);
+  const dialog = document.getElementById("voiceDialog");
+  if (dialog) {
+    dialog.addEventListener("click", event => { if (event.target === dialog) closeVoiceDialog(); });
+    dialog.addEventListener("close", () => document.getElementById("voiceSettingsBtn")?.focus());
+  }
+  document.getElementById("voiceSelect")?.addEventListener("change", event => {
+    voiceChoice = event.target.value;
+    localStorage.setItem("anla_voice", voiceChoice);
+    stopSpeech();
+    renderVoiceOptions();
+  });
+  document.getElementById("voiceRate")?.addEventListener("change", event => {
+    voiceRate = parseFloat(event.target.value) || 1;
+    localStorage.setItem("anla_voice_rate", String(voiceRate));
+    stopSpeech();
+  });
+  document.getElementById("voicePreview")?.addEventListener("click", () => speakMessage(VOICE_SAMPLE));
+});
 
 // ---------- AI 連線狀態燈：讓使用者看得出雲端 AI 是否正常運作 ----------
 // 回覆都來自雲端 AI；AI 無法回覆時，學生會看到誠實的說明與求助電話（危險時改用審過的固定安全文字）。

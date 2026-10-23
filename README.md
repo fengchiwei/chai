@@ -1,6 +1,6 @@
 # 少年仔、安啦會客室：AI 陪伴與風險預警原型
 
-目前原始碼版本：**v2.5.12**。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)。
+目前原始碼版本：**v2.6**。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)。
 
 提供學生對話（四種回覆風格）、語音輸入／朗讀、南投資源、離線求助卡、模擬案例測試、燈號判讀說明，以及需密碼登入的真人覆核工作臺。
 
@@ -50,6 +50,7 @@ anla-youth-v1.3-A.1/
 - **風險分流**：綠黃橙紅四級，燈號只升不降。依文獻擴充：累贅感＋歸屬受挫／困頓感跨輪累積（PSY-02/03）、誇飾語軟性確認（LIN-01）、第三人稱危機與保密迷思（SOC-05）、深夜與突兀道別等啟發式（DYN-04）。每個判斷都有 `theoretical_basis` 代號。
 - **自動選模型與故障切換**：依金鑰讀取它能用的對話模型（只讀清單、不耗 token），預設用排名最高的；某個模型額度用完（429）、已停用（404）、過載（503）或逾時，同一則訊息內自動改用下一個（最多 3 個、不超過 30 秒預算），出問題的模型暫停一段時間後再試。學生不用選模型、也看不到模型名稱；排名、使用中的模型與各模型狀態只在工作臺「🤖 AI 模型」面板。
 - **回覆一律由 AI 寫**：一般聊天、隱私與身分問題、界線都由 AI 回覆（規則決定的事實當參考內容）。偵測到危險時，AI 依審過的安全文字改寫，必須保留求助電話、不能承諾保密或先問手段，沒通過或超過 12 秒就改用那段固定文字。AI 回覆不了時（沒金鑰、額度用完、全部模型故障、逾時），學生看到誠實的說明與 119／1925，不再有制式的本機對話回覆；回應附 `fallback_reason`。
+- **朗讀**：每則回覆都能朗讀，朗讀中再按一次是暫停、再按是繼續，旁邊有停止鍵。「🗣️ 聲音」可選聲音與速度：伺服器有設定語音金鑰時提供雲端自然語音（Azure 台灣華語、OpenAI、Gemini），也可選這台裝置內建的聲音（不經網路）。雲端語音只傳 AI 回覆文字，失敗時自動改用裝置內建聲音。
 - **資安**：送模型前遮罩姓名／地址／電話／身分證／帳號；學生訊息與摘錄標成資料、不能偽造提示詞段落；模型回覆若外洩內部設定或宣稱「解除限制」即被擋下。SQLite 對話與個案敏感欄位加密，稽核日誌以 SHA-256 雜湊鏈串接，查閱個案也會留紀錄。
 - **學生頁**：對話框上方的 **AI 連線狀態燈**（🟢 AI 連線正常／⚪ 尚未接上 AI／🟠 AI 暫時無法使用＋原因，例如金鑰無效、額度用完、逾時；點一下重新檢查）、四套主題、離線求助卡與 4-7-8 呼吸球、PWA 加入主畫面、手機掃碼安裝。（原計畫的英文單字卡偽裝畫面已依專案負責人決定移除。）
 - **工作臺**：`/counselor` 個案摘要含完整對話紀錄（到學生同意分享為止）、原話螢光筆、規則來源、理論代號、六類線索、依類型的通報檢核與處理紀錄時間軸，可列印成乾淨的 A4 版本（留稽核紀錄）；頁尾「🤖 AI 模型」面板可看可用模型、手動選擇或重新偵測；`/explain` 重播虛構情境與 P01–P10；`/demo` 30 組模擬案例。
@@ -72,6 +73,9 @@ anla-youth-v1.3-A.1/
 | `LLM_CALL_MODE` | `single`（預設，一次結構化呼叫取得線索與回覆）或 `two_stage`（先分析再回覆） |
 | `CHAT_RATE_LIMIT`、`LOGIN_MAX_FAILURES`、`CORS_ORIGINS` | 每段對話每分鐘訊息上限（30，橙紅訊息不受限）、後台 10 分鐘內登入失敗上限（5）、允許跨來源的網址（預設不開放） |
 | `LLM_CALLS_PER_MINUTE` | 全站每分鐘雲端模型請求上限（120）；超過時學生看到「AI 目前太忙」的說明（危險訊息仍有固定安全文字），控制費用 |
+| `AZURE_SPEECH_KEY`、`AZURE_SPEECH_REGION` | 朗讀用的 Azure 語音金鑰與區域（例如 `eastasia`）；提供台灣華語的曉臻、曉雨、雲哲。建議優先設定這個 |
+| 朗讀的其他雲端語音 | `OPENAI_API_KEY`（或主要金鑰是 OpenAI 時）提供 OpenAI 語音；`GEMINI_API_KEY`（或主要金鑰是 Gemini 時）提供 Gemini 語音。`TTS_OPENAI_MODEL`（預設 `gpt-4o-mini-tts`）、`TTS_GEMINI_MODEL`（留白時自動找金鑰可用的語音模型） |
+| `TTS_ENABLED`、`TTS_CALLS_PER_MINUTE` | 設 `false` 關閉雲端朗讀，只用裝置內建聲音；全站每分鐘雲端朗讀上限（60），每段對話 10 分鐘最多 40 次 |
 | `TRUSTED_PROXY_HOPS` | 部署在 HTTPS 通道或反向代理後面時的代理層數，登入鎖定才會依真實 IP 計算 |
 
 ## Windows PowerShell 逐步啟動
@@ -102,7 +106,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-23 本機結果：單元測試 **381 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-23 本機結果：單元測試 **393 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 

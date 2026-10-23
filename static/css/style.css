@@ -201,6 +201,21 @@ body {
   color: #1d4ed8;
 }
 
+.btn-stop-voice {
+  margin-left: .4rem;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: .25rem .65rem;
+  font-size: .8rem;
+  color: inherit;
+  opacity: .75;
+  cursor: pointer;
+}
+.btn-stop-voice:hover { opacity: 1; }
+.voice-dialog .voice-field { display: flex; flex-direction: column; gap: .35rem; margin: .75rem 0; font-weight: 600; }
+.voice-dialog .voice-field select { width: 100%; min-height: 40px; padding: .4rem .5rem; font: inherit; font-weight: 400; }
+.voice-dialog .voice-notice { min-height: 1.2em; margin: .5rem 0 0; font-size: .85rem; color: #b45309; }
 .btn-play-voice {
   background: #ffffff;
   border: 1px solid #cbd5e1;
