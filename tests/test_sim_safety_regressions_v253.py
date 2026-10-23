@@ -85,10 +85,12 @@ class ContextEscalationTests(unittest.TestCase):
                 self.assertEqual(results[red_from][1]["risk_subject"], subject)
 
     def test_yes_to_the_means_question_is_red(self):
-        first = converse(["我覺得活著好累，不想活了"])
-        self.assertIn("工具", first[0][2])  # the safety reply asked about means and timing
-        results = converse(["我覺得活著好累，不想活了", "有"])
-        self.assertEqual(results[1][0], "red")
+        # v2.5.4 gatekeeper order: thoughts first; 「有」 there confirms them (orange), then the means question.
+        results = converse(["我覺得活著好累，不想活了", "有", "有"])
+        self.assertIn("結束自己的生命", results[0][2])
+        self.assertEqual(results[1][0], "orange")
+        self.assertIn("工具", results[1][2])
+        self.assertEqual(results[2][0], "red")
 
     def test_yes_to_a_different_question_is_not_red(self):
         # Second safety reply asks「現在有人能到你身邊陪你嗎？」; 「有」 there is protective, not a plan.

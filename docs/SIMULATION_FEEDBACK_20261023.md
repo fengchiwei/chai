@@ -23,7 +23,10 @@
 
 ## P0：安全相關，必須先修
 
-> **進度**：第 1–3 項已在 v2.5.3 修正，測試員的句子都已加入回歸測試，見 `tests/test_sim_safety_regressions_v253.py` 與 CHANGELOG。第 4–8 項尚未處理。
+> **進度**：
+> - 第 1–3 項已在 v2.5.3 修正，見 `tests/test_sim_safety_regressions_v253.py`。
+> - 第 4–8 項已在 v2.5.4 修正，見 `tests/test_safety_flow_v254.py`。
+> - 安全措辭仍需真人輔導專業審閱；在地電話仍需核實。詳見 CHANGELOG。
 
 1. **明確自殺說法漏判** ✅
    以下都判成綠燈，學生端沒有任何安全回應，個案也進不了工作臺：

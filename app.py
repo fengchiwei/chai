@@ -8,6 +8,7 @@ import re
 import secrets
 import threading
 import time
+import weakref
 from datetime import datetime
 from functools import wraps
 
@@ -50,7 +51,25 @@ app = Flask(__name__)
 if Config.TRUSTED_PROXY_HOPS > 0:
     # Behind a TLS tunnel or reverse proxy, trust exactly this many X-Forwarded-For hops.
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=Config.TRUSTED_PROXY_HOPS, x_proto=Config.TRUSTED_PROXY_HOPS)
-_dialogue_locks = [threading.RLock() for _ in range(64)]
+class _ConversationLock:
+    """One lock per conversation. Striped locks made unrelated students wait for each other's model calls:
+    a 「我想自殺」 reply waited 24.7 s behind another student's timeout (2026-10-23 simulation)."""
+    __slots__ = ("lock", "__weakref__")
+
+    def __init__(self):
+        self.lock = threading.RLock()
+
+
+_dialogue_locks = weakref.WeakValueDictionary()  # entries vanish once no request holds them
+_dialogue_locks_guard = threading.Lock()
+
+
+def conversation_lock(context_id):
+    with _dialogue_locks_guard:
+        holder = _dialogue_locks.get(context_id)
+        if holder is None:
+            holder = _dialogue_locks[context_id] = _ConversationLock()
+        return holder
 
 
 class SlidingWindowLimiter:
@@ -438,8 +457,10 @@ def api_chat():
     if not isinstance(message, str) or not message.strip() or len(message) > 2000:
         return jsonify({"error": "訊息需為 1 至 2000 字"}), 400
     message = message.strip()
-    # A message the rules already rate orange/red is never throttled.
-    urgent = perform_triage(text=message)["level"] in ("orange", "red")
+    # Never throttled: a message the rules rate orange/red, any message in a conversation that has reached
+    # orange/red, or an answer to an open safety question (「有，藥已經準備好了」 got HTTP 429 before).
+    urgent = (perform_triage(text=message)["level"] in ("orange", "red")
+              or session.get("highest_risk") in ("orange", "red") or session.get("safety_pending", False))
     if not urgent and not limiter.hit("chat:" + session["student_context_id"], Config.CHAT_RATE_LIMIT, 60):
         # Even a throttled student sees where to get immediate help.
         return jsonify({"error": "訊息傳得太快了，請稍等一下再傳。若有立即危險，請直接撥打 119，或 1925 安心專線。",
@@ -448,8 +469,8 @@ def api_chat():
     if data.get("reply_style") in REPLY_STYLES:
         session["reply_style"] = data["reply_style"]
     # Browser-provided history/state is not authoritative. The expiring server context owns memory.
-    lock = _dialogue_locks[sum(session["student_context_id"].encode("utf-8")) % len(_dialogue_locks)]
-    with lock:
+    holder = conversation_lock(session["student_context_id"])
+    with holder.lock:
         return process_chat_turn(message)
 
 
@@ -499,6 +520,7 @@ def process_chat_turn(message):
     except ValueError as exc:
         return jsonify({"error": str(exc), "show_urgent_help": session.get("highest_risk") == "red"}), 409
     session["support_offer_state"] = offer_state
+    session["safety_pending"] = bool(dialogue_state.get("safety_check_required"))
     return jsonify({
         "reply": reply["reply"],
         # Model names are backend-only; the student page only needs to know where the reply came from.

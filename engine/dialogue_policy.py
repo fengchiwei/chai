@@ -77,6 +77,8 @@ def initial_state():
         "risk_subject": "unknown", "risk_evidence": "", "immediate_danger": "none",
         "safety_check_required": False, "safety_override": False, "pending_safety_check": False,
         "human_escalation_required": False, "safety_action": "none", "safety_denied": False,
+        "safety_lifted": False, "safety_turns": 0, "fresh_safety": False, "ideation_confirmed": False,
+        "risk_cue": "", "night_review": False, "fresh_level": "green",
         "emotion_intensity": "low", "conversation_willingness": "medium", "privacy_concern": False,
         "confidentiality_limit_needed": False, "advice_request": False,
         "iceberg_stage": "unknown", "current_goal": "clarify_event", "response_strategy": "clarify",
@@ -125,11 +127,21 @@ def _context_escalation(message, scan, previous):
     """(kind, subject, evidence) when a follow-up adds timing, a place, ready means, final words or a
     yes to the means question to a concern that is already orange; otherwise None."""
     kind = previous.get("risk_type")
-    if WEIGHTS.get(previous.get("risk_level"), 1) < WEIGHTS["orange"] or kind not in ("suicide", "self_harm", "abuse"):
+    # An open gentle check counts too: 「有，藥已經準備好了」 answers it with ready means.
+    concern = (WEIGHTS.get(previous.get("risk_level"), 1) >= WEIGHTS["orange"]
+               or (previous.get("pending_safety_check") and kind in ("suicide", "self_harm")))
+    if not concern or kind not in ("suicide", "self_harm", "abuse", "digital_sexual_violence"):
         return None
     if re.search(CLARIFIED, message):
         return None
     subject = previous.get("risk_subject") if previous.get("risk_subject") in ("self", "other") else "self"
+    # Short answers to the protection questions: the person is still there / not safe right now.
+    asked, answer = previous.get("last_reply", ""), message.strip()
+    if (("還在身邊嗎" in asked or "在同一個地方嗎" in asked) and re.search(YES_ANSWER, answer)) or (
+            "身邊安全嗎" in asked and re.search(r"^(?:不|沒有|不太|不安全|不是很)", answer)):
+        return kind, subject, message[:120]
+    if kind == "digital_sexual_violence":
+        return None
     patterns = ([ESCALATION_ABUSE] if kind == "abuse"
                 else [ESCALATION_SUICIDE, FINAL_WORDS] + ([ESCALATION_OTHER] if subject == "other" else []))
     for pattern in patterns:
@@ -205,7 +217,8 @@ PASSIVE_DEATH_WISH = (r"(?:覺得|乾脆|我)消失(?:了)?(?:也|就)?(?:沒差
 # Follow-up details that make an existing orange concern imminent (red).
 ESCALATION_SUICIDE = (r"(?:今晚|今天晚上|明天晚上|明晚|等一下|待會|馬上|現在就).{0,10}"
                       r"(?:吞|割|跳下|結束|動手|行動|去死|吃掉|吃完|全部吃|吃下去)"
-                      r"|(?:已經|現在|正)?(?:在|到|站在|坐在|爬上)(?:了)?(?:頂樓|樓頂|天台|橋上|河邊|海邊|鐵軌|月台邊|陽台外)"
+                      # 「我們在頂樓曬衣服」 is not a location of danger: 在／到 needs 已經／現在／正.
+                      r"|(?:(?:已經|現在|正)(?:在|到)|站在|坐在|爬上)(?:了)?(?:頂樓|樓頂|天台|橋上|河邊|海邊|鐵軌|月台邊|陽台外)"
                       r"|(?:刀片|美工刀|刀子|刀|藥|安眠藥|繩子|繩|木炭|炭).{0,6}(?:準備好|藏好|存好|買好|藏起來|存起來|拿出來)"
                       r"|(?:準備好|藏好|存好|買好)了?.{0,4}(?:刀片|美工刀|刀子|藥|繩|炭)")
 ESCALATION_OTHER = r"已讀不回|聯絡不到|不接(?:電話)?|找不到(?:他|她|人)|關機了"
@@ -266,13 +279,17 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
             "secondary_trauma_risk": bool(previous.get("secondary_trauma_risk")),
             "dyn_checked": bool(previous.get("dyn_checked")), "negative_streak": 0,
             "microsystem": dict(previous.get("microsystem") or {}),
-            "microsystem_flagged": bool(previous.get("microsystem_flagged"))}
+            "microsystem_flagged": bool(previous.get("microsystem_flagged")),
+            # risk_cue picks the wording (peer bullying, leaked images, affect streak); fresh_level is what THIS
+            # message shows on its own, for the student-facing safety mode (night review and carry-overs excluded).
+            "risk_cue": "", "night_review": False, "fresh_level": "green", "thoughts_confirmed": False}
     candidates = []
 
-    def add(kind, signal, danger, evidence, floor, subject="self", basis=()):
+    def add(kind, signal, danger, evidence, floor, subject="self", basis=(), cue="", carry=False):
         candidates.append({"risk_signal": signal, "risk_type": kind, "risk_subject": subject,
                            "risk_evidence": evidence[:240], "immediate_danger": danger,
-                           "minimum_level": floor, "theoretical_basis": list(basis)})
+                           "minimum_level": floor, "theoretical_basis": list(basis),
+                           "_cue": cue, "_carry": carry, "_night": False})
 
     # Existing explicit rules and quantitative/high-water levels cannot be vetoed by the LLM.
     if current in ("orange", "red"):
@@ -284,19 +301,22 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
             basis=triage.get("theoretical_basis") or ("PSY-01",))
 
     specs = [
-        (DIGITAL_SEXUAL_VIOLENCE, "digital_sexual_violence", "orange"),
-        (ABUSE, "abuse", "orange"),
-        # Physical bullying shares the protection reply (get away from the person, 110/119).
-        (PEER_VIOLENCE, "abuse", "orange"),
+        (DIGITAL_SEXUAL_VIOLENCE, "digital_sexual_violence", "orange", ""),
+        (ABUSE, "abuse", "orange", ""),
+        # Physical bullying shares the protection type; its own wording points to school staff (cue "peer").
+        (PEER_VIOLENCE, "abuse", "orange", "peer"),
         (r"(?:我|他|她|有人).{0,16}(?:拿刀|帶刀|持刀).{0,18}(?:殺|砍|捅|堵|門外|門口|付出代價|報仇|算帳|教訓)"
-         r"|(?:我|他|她).{0,14}(?:要殺|想殺|要砍|要捅).{0,6}(?:人|他|她|同學|我)", "violence", "orange"),
-        (r"(?:我今晚|我現在|我等一下|我今天).{0,12}(?:打算|要).{0,12}(?:這些藥|全部.*藥|整瓶.*藥).{0,8}(?:吃掉|吞|吃完)", "suicide", "red"),
+         r"|(?:我|他|她).{0,14}(?:要殺|想殺|要砍|要捅).{0,6}(?:人|他|她|同學|我)", "violence", "orange", ""),
+        (r"(?:我今晚|我現在|我等一下|我今天).{0,12}(?:打算|要).{0,12}(?:這些藥|全部.*藥|整瓶.*藥).{0,8}(?:吃掉|吞|吃完)", "suicide", "red", ""),
     ]
-    for pattern, kind, floor in specs:
+    for pattern, kind, floor, cue in specs:
         for clause, evidence in _affirmative_matches(pattern, scan):
             if kind in ("abuse", "violence") and re.search(r"現在|正在|今晚|等一下|門外|門口|拿刀|帶刀|持刀", clause):
                 floor = "red"
-            add(kind, "direct", "imminent" if floor == "red" else "possible", evidence, floor, basis=("PSY-01",))
+            if kind == "digital_sexual_violence":
+                # Images already posted vs a threat to post them need different first steps.
+                cue = "threat" if re.search(r"威脅|恐嚇|逼我|強迫|勒索|不(?:再)?傳.{0,10}就|不然", clause) else "leaked"
+            add(kind, "direct", "imminent" if floor == "red" else "possible", evidence, floor, basis=("PSY-01",), cue=cue)
 
     # Follow-up details turn an existing orange concern red (2026-10-23 simulation: these stayed orange/green).
     escalation = _context_escalation(message, scan, previous)
@@ -371,34 +391,47 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
         farewell = (re.fullmatch(FAREWELL, message.strip(), re.I) and len(_last_user_text(previous)) >= 40
                     and (previous.get("negative_streak", 0) >= 1 or WEIGHTS.get(previous.get("risk_level", "green"), 1) >= 2))
         if risk["negative_streak"] >= 3 or farewell:
-            add("suicide", "ambiguous", "possible", message[:120], "yellow", basis=("DYN-04",))
+            add("suicide", "ambiguous", "possible", message[:120], "yellow", basis=("DYN-04",),
+                cue="" if farewell else "affect_streak")
             risk["dyn_checked"] = True
     if hour is not None and 1 <= hour < 5:
-        # Late-night disclosures: an ambiguous or indirect signal is escalated for human review.
+        # Late-night disclosures: an ambiguous or indirect signal is escalated for HUMAN REVIEW only; the student
+        # still gets the gentle daytime check (2026-10-23 simulation). A run of ordinary complaints is not a
+        # risk signal by itself and is not escalated.
         for candidate in candidates:
-            if candidate["risk_signal"] in ("ambiguous", "indirect") and candidate["minimum_level"] == "yellow":
+            if (candidate["risk_signal"] in ("ambiguous", "indirect") and candidate["minimum_level"] == "yellow"
+                    and candidate["_cue"] != "affect_streak"):
                 candidate["minimum_level"] = "orange"
                 candidate["theoretical_basis"] = candidate["theoretical_basis"] + ["DYN-04"]
+                candidate["_night"] = True
 
-    # A short answer is interpreted only against a server-recorded pending safety question.
-    pending = previous.get("pending_safety_check", False)
-    denied = bool(re.search(r"^(?:沒有啦|沒有|沒啦|並沒有|沒有耶)(?:$|[，,。!！\s])", message) or re.search(
-        r"(?:沒有|不會|不想).{0,4}(?:傷害自己|自殺)|沒有.{0,3}不想活", message) or re.search(CLARIFIED, message))
+    # A short answer is interpreted only against a server-recorded pending safety question, or while the
+    # student is in the full safety mode (so 「沒有啦，開玩笑的」 can end it for an orange concern).
+    pending = previous.get("pending_safety_check", False) or bool(previous.get("safety_override"))
+    # A bare 「沒有／有」 answers only the thoughts question: 「沒有」 to 「有人能陪你嗎？」 or to the means
+    # question is not a denial of suicidal thoughts, and 「嗯」 to 「有人陪你嗎」 is not an admission.
+    asked_thoughts = previous.get("pending_safety_check") or "結束自己的生命嗎" in previous.get("last_reply", "")
+    denied = bool((asked_thoughts and re.search(r"^(?:沒有啦|沒有|沒啦|並沒有|沒有耶)(?:$|[，,。!！\s])", message))
+                  or re.search(r"(?:沒有|不會|不想).{0,4}(?:傷害自己|自殺)|沒有.{0,3}(?:不想活|想死)", message)
+                  or re.search(CLARIFIED, message))
     if pending and not candidates:
         reaffirms = _reaffirms_after_denial(message)
         if reaffirms:
             add(previous.get("risk_type") if previous.get("risk_type") in RISK_TYPES[1:] else "suicide",
                 "direct", "possible", reaffirms, "orange",
                 previous.get("risk_subject") if previous.get("risk_subject") in ("self", "other") else "self", ("PSY-01",))
+            risk["thoughts_confirmed"] = True
         elif denied:
             risk["safety_denied"] = True
-        elif re.search(r"^(?:有|有啊|有耶|對|是|嗯|有一點|會|想過)(?:$|[，,。!！\s])", message):
+        elif asked_thoughts and re.search(r"^(?:有|有啊|有耶|對|是|嗯|有一點|會|想過)(?:$|[，,。!！\s])", message):
             add(previous.get("risk_type", "suicide"), "direct", "possible", message, "orange",
                 previous.get("risk_subject", "self"), ("PSY-01",))
-        else:
+            risk["thoughts_confirmed"] = True
+        elif previous.get("pending_safety_check"):
+            # An unanswered gentle check stays open (the full safety mode carries over in build_state instead).
             add(previous.get("risk_type", "suicide"), previous.get("risk_signal", "ambiguous"),
                 "possible", previous.get("risk_evidence", ""), "yellow", previous.get("risk_subject", "self"),
-                previous.get("theoretical_basis") or ())
+                previous.get("theoretical_basis") or (), cue=previous.get("risk_cue", ""), carry=True)
 
     observation = _valid_observations(hints, message).get("risk", {})
     # Grounding alone is insufficient: a quote can explicitly deny a harmful intention.
@@ -417,7 +450,10 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
                                                     c["risk_signal"] == "direct",
                                                     c["risk_type"] in ("violence", "abuse", "digital_sexual_violence"),
                                                     c["risk_subject"] == "self"))
-        risk.update(selected)
+        risk.update({k: v for k, v in selected.items() if not k.startswith("_")})
+        risk["risk_cue"], risk["night_review"] = selected["_cue"], selected["_night"]
+        own = [("yellow" if c["_night"] else c["minimum_level"]) for c in candidates if not c["_carry"]]
+        risk["fresh_level"] = max(own, key=WEIGHTS.get) if own else "green"
         risk["risk_types"] = list(dict.fromkeys(c["risk_type"] for c in candidates))
         risk["theoretical_basis"] = list(dict.fromkeys(code for c in candidates for code in c["theoretical_basis"]))
         risk["pending_safety_check"] = selected["risk_signal"] in ("ambiguous", "indirect")
@@ -463,9 +499,26 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
         if safety["minimum_level"] == "green" or WEIGHTS[old["risk_level"]] > WEIGHTS[safety["minimum_level"]]:
             state["risk_type"] = old.get("risk_type", "other")
             state["risk_subject"] = old.get("risk_subject", "unknown")
-    state["safety_override"] = state["risk_level"] in ("orange", "red")
+    # The review level never drops; what the student sees can (2026-10-23 simulation: the full safety script
+    # repeated every turn after 「開玩笑的」, and night review turned a hyperbole into a means question).
+    fresh = safety.get("fresh_level", "green")
+    if WEIGHTS[fresh] >= WEIGHTS["orange"]:
+        lifted = False                      # new danger in this message: full safety reply again
+    elif state["safety_denied"] and state["risk_level"] != "red":
+        lifted = True                       # denied/clarified an orange concern: back to conversation
+    elif safety.get("night_review") and WEIGHTS[old.get("risk_level", "green")] < WEIGHTS["orange"]:
+        lifted = True                       # orange for human review only; the student gets the gentle check
+    else:
+        lifted = bool(old.get("safety_lifted"))
+    state["safety_lifted"] = lifted
+    state["safety_override"] = state["risk_level"] in ("orange", "red") and not lifted
     state["safety_check_required"] = state["safety_override"] or state["pending_safety_check"]
-    state["human_escalation_required"] = state["safety_override"]
+    state["human_escalation_required"] = state["risk_level"] in ("orange", "red")
+    state["safety_turns"] = old.get("safety_turns", 0) + 1 if state["safety_override"] else 0
+    # The full safety message comes back only when the level rises (orange → red), not on every new cue.
+    state["fresh_safety"] = WEIGHTS[state["risk_level"]] > WEIGHTS[old.get("risk_level", "green")]
+    # Gatekeeper order: the means question waits until the student has answered the thoughts question.
+    state["ideation_confirmed"] = bool(old.get("ideation_confirmed") or safety.get("thoughts_confirmed"))
     state["safety_action"] = ({"suicide": "suicide_safety", "self_harm": "self_harm_safety", "abuse": "child_protection",
                                "violence": "violence_safety", "digital_sexual_violence": "digital_safety"}.get(
                                    state["risk_type"], "general_safety") if state["safety_override"]
@@ -488,7 +541,10 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
                 continue
             state[field] = item["value"]
     state["boundary_active"] = bool(re.search(BOUNDARY, original_message)) or bool(old.get("boundary_active") and (short or len(text) < 6))
-    state["privacy_concern"] = bool(re.search(r"不能.*(?:講|說)|不要.*(?:告訴|跟.*講)|保密|會.*(?:告訴|知道|看到)|不想.*(?:老師|爸媽|班導|同學).*知道", message))
+    # Bounded gaps: an unbounded 「不想.*知道」 matched across a 1,650-character story (2026-10-23 simulation).
+    state["privacy_concern"] = bool(re.search(
+        r"不能.{0,12}(?:講|說)|不要.{0,8}(?:告訴|跟.{0,6}講)|保密|會.{0,12}(?:告訴|知道|看到)"
+        r"|不想.{0,10}(?:老師|爸媽|班導|同學).{0,8}知道|(?:會|要)(?:不會)?.{0,6}通報", message))
     state["confidentiality_limit_needed"] = state["privacy_concern"] or state["safety_override"]
     state["advice_request"] = wants_practical_help(message)
     correction = bool(re.search(r"^(?:不是|不對)|你誤會|你聽錯|不是那個意思|我不是.{0,6}[，,].*(?:是|而是)", message)) and not state["safety_denied"]

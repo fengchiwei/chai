@@ -69,7 +69,8 @@ ORANGE_PATTERNS = [
 # 黃色：持續困擾、失眠、拒學、人際孤立、飲食困擾
 YELLOW_PATTERNS = [
     r"(不想上學|拒學|請假|逃避學校|不想起床)",
-    r"(睡不著|連續.*失眠|凌晨.*醒|惡夢)",
+    # 「開心到睡不著」是好消息，不是失眠（2026-10-23 模擬測試誤判）。
+    r"((?<!開心到)(?<!興奮到)(?<!期待到)(?<!高興到)(?<!開心得)(?<!興奮得)睡不著|連續.*失眠|凌晨.*醒|惡夢)",
     r"(比不上別人|沒用|廢物|被排擠|被笑|被嘲諷)",
     r"(吵架|離婚|爸媽吵|家庭壓力|透不過氣)",
     r"(催吐|容貌焦慮|厭食)",
@@ -120,6 +121,9 @@ def analyze_crisis_rules(text: str) -> dict:
                 and not re.search(r"我(也|自己|現在|已經|準備)", clause):
             return True
         if re.search(r"(沒有|並未|從未|不會|不打算|不是|不想|別|不要).{0,3}$", before):
+            return True
+        # Explicitly quoted lyrics, lines or texts (「歌詞說我想死在你懷裡」) are not the student's own words.
+        if re.search(r"(?:歌詞|歌名|台詞|課文|書上|小說裡|新聞標題)(?:說|寫|是|唱)?[：:「『]?\s*(?:我)?$", before):
             return True
         if re.search(r"^(我)?(沒有|並未|從未|不會|不打算|不是|不想).{0,8}$", before):
             return True

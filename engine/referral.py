@@ -54,6 +54,15 @@ def set_student_profile(context_id, email_hash, profile):
         conn.close()
 
 
+def _has_evidence(triage):
+    """Whether this triage carries its own reasons (rule hits, a questionnaire score or a dialogue safety cue)."""
+    rules = triage.get("rule_details") or {}
+    safety = triage.get("dialogue_safety") or {}
+    return bool(rules.get("red_flags") or rules.get("orange_flags") or rules.get("yellow_flags")
+                or (triage.get("bsrs_details") or {}).get("total_score") is not None
+                or (safety.get("risk_signal", "none") != "none" and safety.get("risk_evidence")))
+
+
 def stage_student_summary(context_id, email_hash, triage, fields, message=None):
     conn = get_connection()
     try:
@@ -65,7 +74,10 @@ def stage_student_summary(context_id, email_hash, triage, fields, message=None):
             previous = context["draft"]
             previous_triage = previous.get("triage", {})
             # 即使兩個分頁同時送出，也沿用原有「可升不可降」結果。
-            if RISK_LEVEL_WEIGHTS[previous_triage.get("level", "green")] > RISK_LEVEL_WEIGHTS[triage["level"]]:
+            before, now = RISK_LEVEL_WEIGHTS[previous_triage.get("level", "green")], RISK_LEVEL_WEIGHTS[triage["level"]]
+            # 同一燈號的後續訊息若只是沿用先前燈號（沒有自己的證據），保留最危險那一輪的證據；
+            # 否則紅燈個案會在工作臺顯示「目前輸入未檢出相關訊號」（2026-10-23 模擬測試）。
+            if before > now or (before == now and _has_evidence(previous_triage) and not _has_evidence(triage)):
                 triage = previous_triage
             draft = {
                 "category": "想找老師聊聊最近的困擾", "duration": "尚未提及",

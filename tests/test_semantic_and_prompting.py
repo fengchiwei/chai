@@ -55,7 +55,8 @@ class SemanticAndPromptingTests(unittest.TestCase):
         response = generate_youth_response(first, perform_triage(first))['reply']
         second = generate_youth_response('媽媽已經在旁邊陪我', perform_triage('媽媽已經在旁邊陪我', previous_level='red'),
             [{'role': 'user', 'text': first}, {'role': 'assistant', 'text': response}])['reply']
-        self.assertIn('媽媽已經在旁邊陪我', second)
+        # v2.5.4: acknowledged without echoing the student's words back (counselling review, 2026-10-23).
+        self.assertIn('媽媽陪著你', second)
         self.assertNotIn('現在有人能到你身邊陪你嗎', second)
         for phone in ['119', '110', '1925']:
             self.assertIn(phone, second)
