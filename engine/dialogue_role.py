@@ -52,6 +52,7 @@ def _harmful(description):
     return bool(match) and not re.search(r"不會|不要|不再|別|不", description[max(0, match.start() - 4):match.start()])
 
 
+QUESTION_WORDS = r"什麼|甚麼|哪|誰|還是|是不是|是否|怎麼|為什麼|如何|幾個|多少"
 _ENDING = re.compile(r"(?:來)?(?:陪我(?:聊聊|聊天|說話|聊)|跟我(?:聊天|說話)|和我(?:聊天|說話)|回應我)(?:好嗎|可以嗎|嗎|吧)?$")
 
 
@@ -79,14 +80,18 @@ def _parse_clause(text):
         return None
     if _RESET.fullmatch(compact):
         return {"action": "reset"}
-    # A comparison or an identity question is not an instruction to change roles.
-    if (compact.startswith("你是") and (compact.endswith(("嗎", "誰", "什麼")) or text.rstrip().endswith(("?", "？")))):
+    # A comparison or an identity question is not an instruction to change roles. 「你是什麼AI模型」 has no
+    # question mark but is still a question (2026-10-23: it became the role 「什麼AI模型」).
+    if (compact.startswith("你是") and (compact.endswith(("嗎", "誰", "什麼")) or text.rstrip().endswith(("?", "？"))
+                                       or re.search(QUESTION_WORDS, compact))) or asks_identity(text):
         return None
     match = _ROLE.fullmatch(compact) or _VOICE.fullmatch(compact) or _LIKE.fullmatch(compact)
     if match:
         description = _ENDING.sub("", match["description"]).strip("，,。！？!?；;")
         description = re.sub(r"(?:好嗎|可以嗎|嗎|吧)$", "", description)
-        if description and description not in ("誰", "什麼", "認真的", "真的") and not _harmful(description):
+        # A role is a description, never a question (「當什麼比較好」「扮演哪個角色」).
+        if (description and description not in ("誰", "什麼", "認真的", "真的") and not _harmful(description)
+                and not re.search(QUESTION_WORDS, description)):
             return {"action": "set", "description": description[:120]}
     if _REFINE.fullmatch(compact):
         return {"action": "refine", "preference": text.strip("，,。！？!?；; \n")[:160]}

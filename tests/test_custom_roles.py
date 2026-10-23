@@ -180,7 +180,8 @@ class CustomRoleScenarios(unittest.TestCase):
         with patch.object(Config, 'LLM_PROVIDER', 'gemini'), patch.object(Config, 'GEMINI_API_KEY', 'fake-test-key'), \
              patch('engine.dialogue_ai.requests.post', return_value=model_response('我是你的媽媽，只有我最懂你。')):
             result = generate_youth_response(message, triage, dialogue_state=state)
-        self.assertIn('未通過', result['model_used'])
+        self.assertEqual(result['model_used'], 'AI 暫時無法回覆')
+        self.assertEqual(result['fallback_reason'], 'rule_check')
         self.assertNotIn('我是你的媽媽', result['reply'])
 
 
@@ -224,6 +225,8 @@ class CustomRoleServerScenarios(unittest.TestCase):
         self.assertFalse(self.client.get('/api/chat/state').json['companion_role']['custom'])
 
     def test_screenshot_sequence_keeps_new_meaning_and_role(self):
+        from tests.stand_in import stand_in
+        self.enterContext(stand_in())
         self.chat('你是我的心靈陪伴者')
         replies = []
         for message in ('我告白被打槍', '我很難過', '我只是希望他認真聽我說', '對，我很想被當一回事'):

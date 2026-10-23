@@ -100,23 +100,22 @@ class RationalStyleTests(unittest.TestCase):
         self.assertEqual(result["reply"], GOOD)
         self.assertNotIn("fallback_reason", result)
 
-    def test_plan_request_without_the_three_lines_is_rejected(self):
+    def test_plan_request_without_the_three_lines_is_flagged_but_sent(self):
         state, _ = self.reply_for(GOOD)
         self.assertIn("rational_structure", response_violations("可以先列出三科的範圍，再挑最沒把握的開始。", state, PLAN))
         _, result = self.reply_for("可以先列出三科的範圍，再挑最沒把握的開始。")
-        self.assertEqual(result["fallback_reason"], "rule_check")
-        self.assertIn("3. 下一步", result["reply"])  # local three-line plan instead
+        self.assertIn("Gemini", result["model_used"])  # v2.5.9: a style slip is logged, the AI reply is sent
 
     def test_extra_question_at_the_end_is_trimmed_instead_of_discarding_the_reply(self):
         _, result = self.reply_for(GOOD + "你覺得這樣可行嗎？")
         self.assertEqual(result["reply"], GOOD)
         self.assertIn("Gemini", result["model_used"])
 
-    def test_a_next_step_written_as_a_question_is_not_salvaged(self):
+    def test_a_next_step_written_as_a_question_is_not_cut_off(self):
         reply = GOOD.split("3. 下一步")[0] + "3. 下一步：要不要今晚先列出三科剩下的範圍？"
         self.assertIsNone(drop_trailing_questions("你想怎麼做？"))
         _, result = self.reply_for(reply)
-        self.assertEqual(result["fallback_reason"], "rule_check")
+        self.assertEqual(result["reply"], reply)  # trimming would remove the step itself, so it is kept whole
 
     def test_casual_chat_in_rational_style_does_not_need_the_three_lines(self):
         state, _ = self.reply_for("今天天氣很好。", message="今天天氣很好")

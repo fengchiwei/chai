@@ -35,7 +35,8 @@ class SemanticAndPromptingTests(unittest.TestCase):
 
     def test_rejection_then_low_mood_gets_contextual_companionship_and_question_pause(self):
         history, responses = [], []
-        with patch.object(Config, 'LLM_PROVIDER', 'builtin'):
+        from tests.stand_in import stand_in
+        with patch.object(Config, 'LLM_PROVIDER', 'builtin'), stand_in():
             for message in ['我告白被打槍', '我最近心情不好', '他說只把我當朋友']:
                 result = generate_youth_response(message, perform_triage(message), history)
                 response = result['reply']

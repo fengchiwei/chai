@@ -95,15 +95,14 @@ class StyleTests(unittest.TestCase):
             out=generate_youth_response(msg,triage,dialogue_state=state)
         self.assertEqual(out['model_used'],'Google Gemini (test stub)')
 
-    def test_rejected_model_uses_natural_local(self):
+    def test_rejected_model_reply_is_not_sent(self):
         msg=C14
         triage,state=decision(msg)
         invalid={'reply':'你很棒，全部都會好起來。','model_used':'Mock Gemini'}
         with patch('engine.dialogue_ai._call_model',return_value=(invalid,'ok')):
             out=generate_youth_response(msg,triage,dialogue_state=state)
-        self.assertIn('本機備援', out['model_used'])
-        self.assertIn('想走自己喜歡的方向',out['reply'])
-        self.assertNotIn('你說「',out['reply'])
+        self.assertEqual(out['model_used'], 'AI 暫時無法回覆')
+        self.assertNotIn('你很棒',out['reply'])
 
     def test_prompt_respects_real_world_uncertainty(self):
         self.assertIn('不要替家人、老師',SYSTEM_PROMPT)

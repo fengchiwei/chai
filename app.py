@@ -29,7 +29,7 @@ from engine.ai_agent import (
     prepare_dialogue,
 )
 from engine import model_router, providers
-from engine.dialogue_ai import _provider, model_status, reset_provider_cooldown
+from engine.dialogue_ai import UNAVAILABLE_LABEL, _provider, model_status, reset_provider_cooldown
 from engine.dialogue_policy import POLICY_VERSION, REPLY_STYLES, build_state, remember_turn
 from engine.dialogue_reply import TOPIC_PATTERN
 from engine.dialogue_role import public_role
@@ -415,6 +415,8 @@ def reply_source(model_used):
     """Coarse origin of a reply for the student page, without provider or model names."""
     if model_used.startswith(providers.LABELS):
         return "ai"
+    if model_used == UNAVAILABLE_LABEL:
+        return "unavailable"  # an honest outage notice, not a conversation reply
     return "safety" if model_used in ("安全回覆", "安全確認") else "rules" if model_used == "對話規則回覆" else "local"
 
 
@@ -547,9 +549,10 @@ def process_chat_turn(message):
         session.pop("referral_offer_level", None)
     # Always decide the offer from the final state (hints may have raised risk since the draft was written).
     offer, offer_state = choose_support_offer(message, level, session.get("support_offer_state"), dialogue_state)
-    if chosen and dialogue_state.get("_prepared_reply") and (
-            chosen["offer"][0] != offer or dialogue_state.get("safety_check_required")):
-        dialogue_state.pop("_prepared_reply")  # the draft was written for a different offer or situation
+    if chosen and dialogue_state.get("_prepared_reply") and chosen["offer"][0] != offer:
+        dialogue_state.pop("_prepared_reply")  # the draft was written for a different offer
+    # (A draft written before the model's own analysis changed the safety situation is dropped in
+    # generate_youth_response, which then sends the reviewed safety text.)
     reply = generate_youth_response(message, triage, history, support_offer=offer, dialogue_state=dialogue_state)
     sent_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     exchange = [{"role": "user", "text": message, "at": sent_at},

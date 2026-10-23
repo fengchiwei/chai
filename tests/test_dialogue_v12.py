@@ -110,13 +110,13 @@ class DialoguePolicyTests(unittest.TestCase):
         concrete = '我知道你不想再吵。可以先挑平靜的時候，用一句話說明你希望先被聽完。'
         self.assertNotIn('missing_next_step', response_violations(concrete, state, C14[-1]))
 
-    def test_model_empathy_only_falls_back_to_real_step(self):
+    def test_model_empathy_only_is_flagged_but_sent(self):
+        # v2.5.9: missing a concrete step is a style slip: logged, the model's reply is still sent.
         _, state = run_four_turns()[-1]
         empathy = {'reply': '你只是希望能被聽見，卻常常感到不被尊重，這真的很不容易。', 'model_used': 'mock-model'}
         with patch('engine.dialogue_ai._call_model', return_value=(empathy,'ok')):
             reply = generate_youth_response(C14[-1], perform_triage(C14[-1]), dialogue_state=state)
-        self.assertIn('本機備援', reply['model_used'])
-        self.assertIn('可以先', reply['reply'])
+        self.assertEqual(reply['model_used'], 'mock-model')
 
     def test_classmates_not_mistaken_for_family(self):
         msg = '我不知道怎麼跟他們講分組的事，才不會吵起來。'

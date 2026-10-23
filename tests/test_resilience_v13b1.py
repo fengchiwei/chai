@@ -55,7 +55,7 @@ class ResilienceTests(unittest.TestCase):
         with patch("engine.dialogue_ai.requests.post", side_effect=requests.Timeout()) as post:
             result = self.turn()
         self.assertEqual(post.call_count, 1)
-        self.assertEqual(result["model_used"], "本機備援回覆")
+        self.assertEqual(result["model_used"], "AI 暫時無法回覆")
         self.assertEqual(result["fallback_reason"], "timeout")
         self.assertTrue(result["reply"].strip())
 
@@ -66,7 +66,7 @@ class ResilienceTests(unittest.TestCase):
                          Mock(status_code=200, json=Mock(return_value={"candidates": [{"content": {"parts": "文字"}}]}))):
             with self.subTest(response=response), patch("engine.dialogue_ai.requests.post", return_value=response):
                 result = self.turn()
-            self.assertEqual(result["model_used"], "本機備援回覆")
+            self.assertEqual(result["model_used"], "AI 暫時無法回覆")
             self.assertTrue(result["reply"].strip())
             dialogue_ai.reset_model_health()
 
@@ -149,7 +149,7 @@ class ResilienceTests(unittest.TestCase):
             result = self.turn()
         self.assertEqual(post.call_count, 1)
         self.assertEqual(result["fallback_reason"], "budget_exceeded")
-        self.assertEqual(result["model_used"], "本機備援回覆")
+        self.assertEqual(result["model_used"], "AI 暫時無法回覆")
 
     def test_cooldown_never_blocks_safety_reply(self):
         with patch("engine.dialogue_ai.requests.post", return_value=status(429)):

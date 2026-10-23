@@ -56,7 +56,8 @@ class SupportTimingTests(unittest.TestCase):
     def test_same_offer_is_in_fallback_and_model_reply_without_extra_question(self):
         message = '說出來好像有比較輕鬆一點'
         offer, _ = choose_support_offer(message, 'green', {'turns': 3, 'has_concern': True})
-        with patch.object(Config, 'LLM_PROVIDER', 'builtin'):
+        from tests.stand_in import stand_in
+        with patch.object(Config, 'LLM_PROVIDER', 'builtin'), stand_in():
             local = generate_youth_response(message, {'level': 'green'}, support_offer=offer)
         self.assertEqual(local['reply'].count(offer['text']), 1)
         self.assertLessEqual(local['reply'].count('？'), 1)

@@ -31,7 +31,8 @@ class ContextConsistencyTests(unittest.TestCase):
         self.assertFalse(state["safety_check_required"])
         self.assertIn("羽球", local_reply(BADMINTON, state))
 
-    def test_model_reply_adding_strain_to_good_news_is_rejected(self):
+    def test_model_reply_adding_strain_to_good_news_is_flagged_but_sent(self):
+        # v2.5.9: a style slip is logged, not replaced by canned text (only serious problems block a reply).
         triage, state = decision(BADMINTON)
         bad = "能和爸爸一起打球，或許是你喘息的空間，也能放下最近的緊繃感。"
         self.assertIn("invented_distress", response_violations(bad, state, BADMINTON))
@@ -39,8 +40,7 @@ class ContextConsistencyTests(unittest.TestCase):
         self.assertNotIn("invented_distress", response_violations(good, state, BADMINTON))
         with patch("engine.dialogue_ai._call_model", return_value=({"reply": bad, "model_used": "stub"}, "ok")):
             out = generate_youth_response(BADMINTON, triage, dialogue_state=state)
-        self.assertIn("本機備援", out["model_used"])
-        self.assertNotIn("緊繃", out["reply"])
+        self.assertEqual(out["model_used"], "stub")
 
     def test_student_named_stress_is_not_flagged(self):
         message = "段考壓力很大，但今天打球很開心"

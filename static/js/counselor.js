@@ -181,7 +181,7 @@ async function printCase() {
   if (stamp) stamp.textContent = new Date().toLocaleString("zh-TW", {hour12: false});
   window.print();
 }
-const SOURCE_LABELS = {ai: "AI 回覆", safety: "安全回覆", rules: "對話規則", local: "本機回覆"};
+const SOURCE_LABELS = {ai: "AI 回覆", safety: "固定安全文字", rules: "對話規則", local: "本機回覆", unavailable: "AI 無法回覆的說明"};
 function renderTranscript(c, E) {
   const transcript = (c.summary || {}).transcript;
   if (!Array.isArray(transcript)) {

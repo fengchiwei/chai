@@ -33,7 +33,8 @@ class CompanionDialogueTests(unittest.TestCase):
                     self.assertNotIn(banned, reply)
 
     def test_two_turn_fallback_answers_meaning_and_remembers_low_mood(self):
-        with patch.object(Config, 'LLM_PROVIDER', 'builtin'), \
+        from tests.stand_in import stand_in  # v2.5.9: the conversation pipeline is tested with an offline stand-in
+        with patch.object(Config, 'LLM_PROVIDER', 'builtin'), stand_in(), \
              patch('engine.ai_agent.requests.post') as post:
             first = generate_youth_response('我最近心情不好', {'level': 'green'})
             history = [{'role': 'user', 'text': '我最近心情不好'},
@@ -45,7 +46,7 @@ class CompanionDialogueTests(unittest.TestCase):
         self.assertIn('活著的意義未必', second['reply'])
         self.assertLessEqual(second['reply'].count('？'), 1)
         self.assertNotIn('你提到想傷害自己', second['reply'])
-        self.assertEqual(second['model_used'], '本機備援回覆')
+        self.assertNotEqual(second['model_used'], 'AI 暫時無法回覆')
 
     def test_pure_reactions_are_short_and_numeric_choices_follow_context(self):
         for word in ['嗯', '不是', '1', '沒有', '好喔']:
@@ -97,7 +98,9 @@ class CompanionDialogueTests(unittest.TestCase):
              patch.object(Config, 'OPENAI_API_KEY', ''), \
              patch('engine.ai_agent.requests.post', return_value=response):
             result = generate_youth_response('我最近心情不好', {'level': 'green'})
-        self.assertEqual(result['model_used'], '本機備援回覆')
+        # v2.5.9: no canned conversation reply; an honest notice with the hotlines instead of a blank bubble.
+        self.assertEqual(result['model_used'], 'AI 暫時無法回覆')
+        self.assertIn('119', result['reply'])
         self.assertTrue(10 <= chinese_length(result['reply']) <= 220)
 
     def test_crisis_replies_keep_hotlines_and_never_call_cloud(self):

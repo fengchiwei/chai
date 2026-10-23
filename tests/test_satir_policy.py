@@ -181,8 +181,7 @@ class PolicyScenarios(unittest.TestCase):
             self.assertFalse(state['known_yearning'])
             post.reset_mock()
             triage, state = prepare_dialogue('沒有啦', perform_triage('沒有啦', previous_level='red'))
-            post.assert_not_called()
-            self.assertEqual(state['risk_level'], 'red')
+            self.assertEqual(state['risk_level'], 'red')  # the model is asked (v2.5.9) but cannot lower the level
 
     def test_model_semantic_signal_can_raise_urgency_with_exact_evidence(self):
         text = '我想把自己的人生關機，這次不是比喻'
@@ -202,7 +201,7 @@ class PolicyScenarios(unittest.TestCase):
              patch.object(Config, 'LLM_PROVIDER', 'gemini'), patch.object(Config, 'GEMINI_API_KEY', 'fake-test-key'), \
              patch('engine.dialogue_ai.requests.post', side_effect=[gemini_response('{}'), gemini_response('你其實就是缺乏安全感。你為什麼哭？你希望什麼？')]):
             result = generate_youth_response('我告白被打槍', perform_triage('我告白被打槍'))
-        self.assertIn('未通過', result['model_used'])
+        self.assertEqual(result['fallback_reason'], 'rule_check')
         self.assertNotIn('缺乏安全感', result['reply'])
 
     def test_network_failure_is_labelled_and_not_repeated_in_same_turn(self):
@@ -210,7 +209,7 @@ class PolicyScenarios(unittest.TestCase):
              patch('engine.dialogue_ai.requests.post', side_effect=TimeoutError()) as post:
             result = generate_youth_response('我告白被打槍', perform_triage('我告白被打槍'))
         self.assertEqual(post.call_count, 1)
-        self.assertEqual(result['model_used'], '本機備援回覆')
+        self.assertEqual(result['model_used'], 'AI 暫時無法回覆')
 
 
 class Daytime(datetime):
@@ -225,6 +224,8 @@ class ServerMemoryScenarios(unittest.TestCase):
         self.db = patch.object(database, 'DB_PATH', str(Path(self.tmp.name) / 'test.db'))
         self.provider = patch.object(Config, 'LLM_PROVIDER', 'builtin')
         self.db.start(); self.provider.start()
+        from tests.stand_in import stand_in  # v2.5.9: conversation memory is tested with the offline stand-in
+        self.enterContext(stand_in())
         # The chat route passes the real send hour (DYN-04 late-night rule, 01–05); pin it to daytime
         # so these scenarios do not change meaning when the suite runs at night.
         self.enterContext(patch('app.datetime', Daytime))

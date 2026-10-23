@@ -38,6 +38,7 @@ Config.DATABASE_PATH = os.environ["DATABASE_PATH"]
 from app import app  # noqa: E402
 from engine import crypto_store, dialogue_ai  # noqa: E402
 from engine.dialogue_ai import SYSTEM_PROMPT  # noqa: E402
+from engine.dialogue_reply import local_reply  # noqa: E402  (offline stand-in model for the gate)
 from engine.referral import get_student_context  # noqa: E402
 from models import database  # noqa: E402
 
@@ -99,9 +100,13 @@ class Session:
 
 
 def run_persona(pid, scenario, provider="builtin", post=None):
+    """provider "builtin" runs the offline stand-in model (the rule engine; see tests/stand_in.py): since v2.5.9
+    students only get model replies, so the gate measures the rule-owned pipeline — triage, safety replies and
+    fallbacks, memory, style checks — with a deterministic stand-in, not a real model's wording."""
     dialogue_ai.reset_model_health()
     turns, session = [], Session()
     with patch.object(Config, "LLM_PROVIDER", provider), patch.object(Config, "GEMINI_API_KEY", "eval-fake-key"), \
+            patch.object(dialogue_ai, "MODEL_STAND_IN", local_reply if provider == "builtin" else None), \
             patch("engine.dialogue_ai.requests.post", **(post or {"side_effect": AssertionError("no network in eval")})) as mock_post:
         for index, message in enumerate(scenario["turns"]):
             status, data, elapsed = session.say(message, scenario.get("reply_style") if index == 0 else None)

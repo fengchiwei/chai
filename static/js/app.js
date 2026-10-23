@@ -540,7 +540,7 @@ function speakMessage(elementOrText) {
 }
 
 // ---------- AI 連線狀態燈：讓使用者看得出雲端 AI 是否正常運作 ----------
-// 安全提醒與求助資訊由本機規則產生，不受 AI 狀態影響；這裡只顯示「回覆是否來自雲端 AI」。
+// 回覆都來自雲端 AI；AI 無法回覆時，學生會看到誠實的說明與求助電話（危險時改用審過的固定安全文字）。
 const AI_REASON_TEXT = {
   timeout: "回應逾時", rate_limited: "額度或流量已用完", auth_error: "API 金鑰無效", api_error: "服務發生錯誤",
   cooldown: "暫停重試中", global_budget: "使用量達上限", model_not_found: "可用的模型都暫停中",
@@ -560,13 +560,13 @@ function setAiStatus(state, label, detail) {
 function renderAiStatus(ai) {
   if (!ai) return;
   if (ai.state === "not_configured") {
-    setAiStatus("off", "本機回覆模式（未設定 AI）", "沒有設定雲端 AI 金鑰，回覆由本機規則產生。");
+    setAiStatus("off", "尚未接上 AI", "網站還沒有設定 AI 服務，目前無法聊天；需要協助可直接撥 1925 或 119。");
   } else if (ai.state === "ok") {
     setAiStatus("ok", "AI 連線正常", "雲端 AI 可以正常回覆。");
   } else if (ai.state === "degraded") {
     const reason = AI_REASON_TEXT[ai.reason] || "暫時無法使用";
     const retry = ai.retry_in ? `，約 ${ai.retry_in} 秒後自動重試` : "";
-    setAiStatus("warn", `AI 暫時無法使用：${reason}`, `這段時間改用本機回覆${retry}；安全提醒與求助資訊不受影響。`);
+    setAiStatus("warn", `AI 暫時無法使用：${reason}`, `這段時間 AI 沒辦法回覆${retry}；需要協助可直接撥 1925 或 119。`);
   } else {
     setAiStatus("checking", "已設定雲端 AI，尚未連線", "傳出第一則訊息後會更新。");
   }
@@ -596,9 +596,9 @@ function updateAiStatusFromReply(data) {
   if (data.reply_source === "ai") {
     setAiStatus("ok", "AI 連線正常", "這一則由雲端 AI 回覆。");
   } else if (reason === "rule_check") {
-    setAiStatus("ok", "AI 連線正常", "這一則改用本機回覆，因為 AI 的回覆沒有通過安全檢查。");
+    setAiStatus("ok", "AI 連線正常", "AI 這一則的回覆沒有通過安全檢查，所以沒有送出。");
   } else if (reason === "builtin" || reason === "no_key") {
-    setAiStatus("off", "本機回覆模式（未設定 AI）", "沒有設定雲端 AI 金鑰，回覆由本機規則產生。");
+    setAiStatus("off", "尚未接上 AI", "網站還沒有設定 AI 服務，目前無法聊天；需要協助可直接撥 1925 或 119。");
   } else if (reason === "cooldown") {
     // Calls are paused; ask the server for the underlying cause (e.g. quota used up) instead of "paused".
     fetch("/api/status", { cache: "no-store" })
@@ -606,9 +606,8 @@ function updateAiStatusFromReply(data) {
       .then(body => body && renderAiStatus(body.ai))
       .catch(() => setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT.cooldown}`, ""));
   } else if (reason && AI_REASON_TEXT[reason]) {
-    setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT[reason]}`, "這一則改用本機回覆；安全提醒與求助資訊不受影響。");
+    setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT[reason]}`, "這一則 AI 沒辦法回覆；需要協助可直接撥 1925 或 119。");
   }
-  // 安全回覆、規則回覆這一輪沒有呼叫 AI，維持原本的狀態。
 }
 
 document.addEventListener("DOMContentLoaded", () => {
