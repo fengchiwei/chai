@@ -138,12 +138,13 @@ function renderCasesTable(cases) {
     return;
   }
   const levels = {red: "🚨 紅色", orange: "⚠️ 橙色", yellow: "📋 黃色", green: "🌱 綠色"};
-  const statuses = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", auto_safety_alert: "系統安全通報，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
+  const statuses = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", auto_safety_alert: "系統安全通報，待覆核", student_requested_help: "學生主動請求協助，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
   $("casesTableBody").innerHTML = cases.map(c => {
     const done = hasCompleteBsrs(c.bsrs5);
     const bsrs = done ? `${bsrsScore(c.bsrs5)} / 20；附加題 ${c.bsrs5.suicide} 分` : "未施測";
     const consent = c.summary?.student_consent;
     const consentLabel = consent?.kind === "referral" ? "學生同意轉介" : consent?.kind === "summary" ? "學生同意分享摘要"
+      : consent?.kind === "request" ? "學生主動請求協助"
       : c.summary?.auto_alert ? "未經同意的必要安全資訊" : "";
     const raised = c.summary?.raised_after_consent;
     return `<tr>
@@ -263,7 +264,7 @@ function renderOnePageSummary(c) {
   const rule = c.triage?.rule_details || {};
   const done = hasCompleteBsrs(c.bsrs5);
   const E = escapeHtml;
-  const statusLabels = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", auto_safety_alert: "系統安全通報，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
+  const statusLabels = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", auto_safety_alert: "系統安全通報，待覆核", student_requested_help: "學生主動請求協助，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
   const consent = sum.student_consent;
   const fields = done ? ["sleep", "anxiety", "anger", "depression", "inferiority", "suicide"]
     .map((key, i) => `<span>${["睡眠", "緊張", "易怒", "低落", "自我價值", "自殺想法"][i]}：${c.bsrs5[key]}</span>`).join("　") : "未施測（自然對話不等於正式 BSRS-5）";
@@ -287,7 +288,8 @@ function renderOnePageSummary(c) {
       <b>處理狀態：</b>${E(statusLabels[c.status] || "待覆核")}</p>
       <p><b>暱稱：</b>${E(c.student_alias)}　<b>鄉鎮：</b>${E(c.township)}<br>
       <b>填寫信箱：</b>${E(c.student_email || "未提供")}（未驗證，也未自動通知）</p>
-      ${consent ? `<p><b>${consent.kind === "referral" ? "學生同意轉介" : "學生同意分享摘要"}</b>：${E(localTime(consent.consented_at))}<br>
+      ${consent?.note ? `<p class="help-note" style="background:#eff6ff;padding:.6rem .8rem;border-radius:8px"><b>學生想先讓老師知道的事：</b>${E(consent.note)}</p>` : ""}
+      ${consent ? `<p><b>${consent.kind === "referral" ? "學生同意轉介" : consent.kind === "request" ? "學生主動請求協助" : "學生同意分享摘要"}</b>：${E(localTime(consent.consented_at))}<br>
       <b>學校：</b>${E(sum.student_profile?.student_school || "尚未填寫")}；本次為學生同意的摘要快照，尚未對外轉介。</p>` : ""}
       <h3>對話資訊</h3>
       <p><b>使用者原話節錄：</b><span style="white-space:pre-wrap">${E(c.dialogue_snippet || "無")}</span></p>

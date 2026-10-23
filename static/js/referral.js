@@ -122,7 +122,7 @@
           status("資料已儲存；對話也有更新，請查看最新摘要後再決定是否分享。");
           return;
         }
-        if (afterSave && data.next_steps?.consent_kind === "summary") afterSave(data.next_steps);
+        if (afterSave && data.next_steps?.consent_kind !== "referral") afterSave(data.next_steps);
         else render(data.next_steps, true);
         if (name !== undefined && byId("referralPreferredName")) byId("referralPreferredName").value = name;
         status("選填資料已儲存，尚未分享摘要。請查看更新後的摘要，再決定是否同意。");
@@ -182,15 +182,17 @@
     }
     return data;
   }
-  async function consent(agreed) {
+  async function consent(agreed, kind = null) {
     if (busy || !current) return;
     const snapshot = current;
     const preferredName = byId("referralPreferredName")?.value.trim() || snapshot.preferred_name;
+    const note = byId("helpNote")?.value.trim() || "";
     setBusy(true);
     try {
       const data = await post("/api/referral/consent", {
         consent: agreed, preferred_name: preferredName,
-        revision: snapshot.revision, consent_kind: snapshot.consent_kind
+        revision: snapshot.revision, consent_kind: kind || snapshot.consent_kind,
+        ...(note ? {note} : {})
       });
       if (current !== snapshot) return; // 較新的對話選項不被舊請求覆蓋。
       const output = byId("choiceOutput");
@@ -264,7 +266,6 @@
     if (!steps) return;
     current = steps;
     const needsReferral = steps.consent_kind === "referral";
-    byId("headerReferralButton").hidden = !needsReferral;
     byId("urgentReferralButton").hidden = !needsReferral;
     byId("headerDraftButton").hidden = needsReferral;
     // 一般陪伴不顯示固定選單；需要時把單一建議放進回覆裡。
@@ -321,6 +322,62 @@
     host.appendChild(note);
     host.scrollTop = host.scrollHeight;
   }
+  // 「找真人幫忙」：任何燈號都能用。橙紅色時打開原本的轉介選項；綠色、黃色時由學生自己決定分享摘要、請人聯絡。
+  function renderHelp(steps) {
+    current = steps;
+    byId("nextStepChoices")?.remove();
+    byId("choiceStatus")?.remove();
+    const panel = node("section", "", "next-step-panel");
+    panel.id = "nextStepChoices";
+    panel.setAttribute("aria-label", "找真人幫忙");
+    panel.appendChild(node("h3", "想找真人一起想辦法嗎？"));
+    panel.appendChild(node("p", "按下同意後，這次的摘要、你和安啦的完整對話（到按下同意為止），以及你選填的資料，會存入本網站的真人工作臺，由受過訓練的人員查看。目前不會自動通知學校或家人；沒有留下聯絡方式的話，工作人員沒辦法主動聯絡你。"));
+    panel.appendChild(node("p", "如果現在有立即危險，請直接打 119；想馬上找人談，可以打 1925（24 小時）。", "choice-note"));
+    preview(panel, steps);
+    const noteLabel = node("label", "想先讓老師知道的事（選填）");
+    noteLabel.htmlFor = "helpNote";
+    const note = document.createElement("textarea");
+    note.id = "helpNote";
+    note.rows = 3;
+    note.maxLength = 300;
+    note.className = "choice-text";
+    note.placeholder = "例如：想聊最近跟家人吵架的事、希望下課時間聯絡我";
+    panel.append(noteLabel, note);
+    optionalContact(panel, steps, latest => renderHelp(latest));
+    const nameLabel = node("label", "希望被稱呼的名字（選填）");
+    nameLabel.htmlFor = "referralPreferredName";
+    const name = document.createElement("input");
+    name.id = "referralPreferredName";
+    name.type = "text";
+    name.maxLength = 30;
+    name.value = steps.preferred_name || "";
+    panel.append(nameLabel, name);
+    if (steps.recorded) panel.appendChild(node("p", "這一版摘要已經記錄你的同意，尚未對外轉介。"));
+    const chips = node("div", "", "choice-chips");
+    chips.append(button("我同意分享，請人聯絡我", () => consent(true, "request"), true),
+                 button("先不要", () => consent(false)));
+    const message = node("p", "", "choice-note");
+    message.id = "choiceStatus";
+    message.setAttribute("role", "status");
+    const output = node("div", "");
+    output.id = "choiceOutput";
+    panel.append(chips, message, output);
+    byId("chatMessages").appendChild(panel);
+    placeChoices();
+    note.focus();
+  }
+  function openHelp() {
+    if (typeof studentOnboarded !== "undefined" && !studentOnboarded) {
+      openOnboardingModal(false);
+      return;
+    }
+    if (!current) {
+      status("請先跟安啦說幾句話，或直接撥 1925 找人談。");
+      return;
+    }
+    if (current.consent_kind === "referral") render(current, true);
+    else renderHelp(current);
+  }
   function suggestInReply(bubble, offer) {
     if (!current || current.consent_kind === "referral" || !offer) return;
     const {kind, label} = offer;
@@ -362,6 +419,7 @@
   }
   window.AnlaNextSteps = {
     suggestInReply,
+    openHelp,
     safetyNotice,
     openReferral() {
       if (current?.consent_kind === "referral") render(current, true);

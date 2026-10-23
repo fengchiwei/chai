@@ -218,16 +218,21 @@ def consent_kind(context):
     return "referral" if level in ("orange", "red") else "summary" if level == "yellow" else None
 
 
-def record_student_consent(context_id, email_hash, revision, kind, preferred_name):
-    """同意與案件快照在同一交易內完成；同一版重送不重建案件或覆蓋真人處理。"""
+def record_student_consent(context_id, email_hash, revision, kind, preferred_name, note=""):
+    """同意與案件快照在同一交易內完成；同一版重送不重建案件或覆蓋真人處理。
+
+    kind "request" is the student's own 「找真人幫忙」 at any level (green and yellow included); on an orange or
+    red conversation it becomes the referral the student was offered. `note` is what they want staff to know."""
     conn = get_connection()
     try:
         with conn:
             conn.execute("BEGIN IMMEDIATE")
             context = _read(conn, context_id, email_hash)
-            if not context or not consent_kind(context):
+            if context and kind == "request" and consent_kind(context) == "referral":
+                kind = "referral"
+            if not context or not (consent_kind(context) or kind == "request"):
                 raise ValueError("目前沒有可分享的摘要；可以繼續聊或查看資源")
-            if revision != context["revision"] or kind != consent_kind(context):
+            if revision != context["revision"] or kind not in (consent_kind(context), "request"):
                 raise ValueError("對話已有更新，請查看最新摘要後再決定是否同意")
             existing = get_case_by_id(context["case_id"])
             if existing and context.get("consented_revision") == revision:
@@ -235,7 +240,8 @@ def record_student_consent(context_id, email_hash, revision, kind, preferred_nam
             profile = context["profile"]
             draft = context["draft"]
             now = datetime.now(timezone.utc).isoformat()
-            status = "student_requested_referral" if kind == "referral" else "student_shared_summary"
+            status = {"referral": "student_requested_referral", "request": "student_requested_help"}.get(
+                kind, "student_shared_summary")
             if existing and existing["summary"].get("student_consent", {}).get("kind") == kind:
                 if RISK_LEVEL_WEIGHTS[draft["risk_level"]] <= RISK_LEVEL_WEIGHTS[existing["risk_level"]]:
                     status = existing["status"]
@@ -255,7 +261,7 @@ def record_student_consent(context_id, email_hash, revision, kind, preferred_nam
             payload["summary"]["student_consent"] = {
                 "kind": kind, "consented_at": now, "revision": revision,
                 "preferred_name": payload["student_alias"], "external_referral_sent": False,
-                "includes_transcript": True,
+                "includes_transcript": True, **({"note": note} if note else {}),
             }
             # The whole conversation up to this consent (the student was told it would be shared); nothing later.
             payload["summary"]["transcript"] = list(context.get("transcript", []))
@@ -265,8 +271,9 @@ def record_student_consent(context_id, email_hash, revision, kind, preferred_nam
             save_case(payload, connection=conn)
             context["consented_revision"] = revision
             _write(conn, context_id, email_hash, context)
-            append_audit(conn, "student", "student_requested_referral" if kind == "referral" else "student_shared_summary",
-                         payload["case_id"], "學生明確同意分享當前摘要；尚未對外轉介", timestamp=now)
+            append_audit(conn, "student", status, payload["case_id"],
+                         "學生主動請求真人協助並同意分享摘要；尚未對外轉介" if kind == "request"
+                         else "學生明確同意分享當前摘要；尚未對外轉介", timestamp=now)
         return payload
     finally:
         conn.close()

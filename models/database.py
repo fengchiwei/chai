@@ -375,7 +375,8 @@ def get_all_cases(risk_filter=None, township_filter=None, status_filter=None):
 
     if status_filter == "pending":
         # 「待覆核」 includes cases a student just shared or asked to be referred (2026-10-23 simulation: always 0).
-        query += " AND status IN ('pending', 'student_requested_referral', 'student_shared_summary', 'auto_safety_alert')"
+        query += (" AND status IN ('pending', 'student_requested_referral', 'student_shared_summary',"
+                  " 'auto_safety_alert', 'student_requested_help')")
     elif status_filter and status_filter != "all":
         query += " AND status = ?"
         params.append(status_filter)
@@ -431,7 +432,7 @@ def get_case_by_id(case_id: str):
 
 STATUS_LABELS = {"pending": "待覆核", "reviewing": "審查中", "contacted": "已聯絡", "referred": "已轉介", "completed": "已結案",
                  "student_requested_referral": "學生提出轉介", "student_shared_summary": "學生分享摘要",
-                 "auto_safety_alert": "系統安全通報"}
+                 "auto_safety_alert": "系統安全通報", "student_requested_help": "學生主動請求協助"}
 STAFF_STATUSES = {"reviewing", "contacted", "referred", "completed"}
 RISK_ORDER = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
 

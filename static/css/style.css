@@ -231,6 +231,8 @@ body {
 .stats-breakdown .stats-row { display: flex; justify-content: space-between; gap: .5rem; font-size: .88rem; }
 .reply-sources { margin-top: .5rem; font-size: .8rem; line-height: 1.6; opacity: .85; }
 .reply-sources a { color: inherit; text-decoration: underline; }
+.help-request-button { font-weight: 700; }
+.next-step-panel textarea.choice-text { width: 100%; box-sizing: border-box; font: inherit; }
 .btn-stop-voice {
   margin-left: .4rem;
   background: transparent;

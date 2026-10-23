@@ -245,19 +245,18 @@ def student_next_steps(context):
         "red": [("consent", "願意留稱呼請人看摘要"), ("call", "我先打電話")],
     }
     profile = context["profile"]
-    preview = None
-    if consent_kind(context):
-        preview = (
-            f"學校：{profile.get('student_school') or '尚未填寫'}\n"
-            f"信箱：{profile['student_email'] + '（未驗證）' if profile['student_email'] else '未提供'}\n鄉鎮：{profile['township']}\n"
-            f"目前對話節錄：\n{context['draft'].get('dialogue_snippet') or '尚無對話文字'}\n"
-            f"也會一起分享：這次的完整對話紀錄（你說的話和安啦的回覆，共 {len(context.get('transcript', []))} 則，"
-            "到你按下同意為止；之後再聊的內容不會自動分享）"
-        )
+    # 「找真人幫忙」 is available at every level, so the student can always see what would be shared.
+    preview = (
+        f"學校：{profile.get('student_school') or '尚未填寫'}\n"
+        f"信箱：{profile['student_email'] + '（未驗證）' if profile['student_email'] else '未提供'}\n鄉鎮：{profile['township']}\n"
+        f"目前對話節錄：\n{context['draft'].get('dialogue_snippet') or '尚無對話文字'}\n"
+        f"也會一起分享：這次的完整對話紀錄（你說的話和安啦的回覆，共 {len(context.get('transcript', []))} 則，"
+        "到你按下同意為止；之後再聊的內容不會自動分享）"
+    )
     return {
         "choices": [{"action": action, "label": label} for action, label in choices[level]],
         "revision": context["revision"], "consent_kind": consent_kind(context),
-        "prompt_referral": prompt_referral,
+        "prompt_referral": prompt_referral, "can_request_help": True,
         "preferred_name": profile["student_alias"], "summary_preview": preview,
         "contact": {"student_email": profile["student_email"], "student_school": profile.get("student_school", "")},
         "township": profile["township"], "resources": referral_resources(profile["township"]),
@@ -487,7 +486,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.8.4"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.8.5"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -781,23 +780,26 @@ def api_referral_consent():
     if context is None:
         return jsonify({"error": "請先確認登錄資料"}), 403
     data = request.get_json(silent=True)
-    allowed = {"consent", "preferred_name", "revision", "consent_kind"}
+    allowed = {"consent", "preferred_name", "revision", "consent_kind", "note"}
     if not isinstance(data, dict) or set(data) - allowed or type(data.get("consent")) is not bool:
         return jsonify({"error": "請提供同意布林值；身分與鄉鎮由本次登錄帶入"}), 400
     name = data.get("preferred_name", "")
     if not isinstance(name, str) or len(name) > 30 or any(ord(c) < 32 for c in name):
         return jsonify({"error": "稱呼請填 30 字以內的單行文字，也可以留白"}), 400
+    note = data.get("note", "")
+    if not isinstance(note, str) or len(note) > 300 or any(ord(c) < 32 and c != "\n" for c in note):
+        return jsonify({"error": "想讓老師知道的事請在 300 字以內，也可以留白"}), 400
     resources = referral_resources(context["profile"]["township"])
     if data["consent"] is False:
         return jsonify({"recorded": False, "resources": resources,
                         "message": "這次沒有新增分享摘要，你可以先打電話，也可以繼續說。",
                         "notification_connected": False, "external_referral_sent": False})
-    if type(data.get("revision")) is not int or data.get("consent_kind") not in ("summary", "referral"):
+    if type(data.get("revision")) is not int or data.get("consent_kind") not in ("summary", "referral", "request"):
         return jsonify({"error": "請先查看目前的下一步選擇與摘要"}), 400
     try:
         case = record_student_consent(
             session["student_context_id"], session["student_email_hash"],
-            data["revision"], data["consent_kind"], name.strip(),
+            data["revision"], data["consent_kind"], name.strip(), note.strip(),
         )
     except ValueError as exc:
         latest = current_student_context()
@@ -808,7 +810,8 @@ def api_referral_consent():
     response = {
         "recorded": True, "case_id": case["case_id"], "resources": resources,
         "message": "你同意分享的摘要已存入本網站的真人工作臺，等待授權人員查看。"
-                   "目前沒有自動通知學校，也沒有接通或送交南投輔導中心；需要立即協助請直接打電話。",
+                   + ("" if case["student_email"] else "你沒有留下聯絡方式，工作人員無法主動聯絡你；想被聯絡可以補填信箱後再送一次。")
+                   + "目前沒有自動通知學校，也沒有接通或送交南投輔導中心；需要立即協助請直接打電話。",
         "notification_connected": False, "external_referral_sent": False,
     }
     if is_referral:
@@ -1028,7 +1031,8 @@ def api_stats():
         "total": len(cases),
         # Level counts are open cases only: a closed red case is no longer waiting for anyone.
         **{level: sum(c["risk_level"] == level for c in open_cases) for level in RISK_LEVEL_WEIGHTS},
-        "pending": sum(c["status"] in ("pending", "student_requested_referral", "student_shared_summary", "auto_safety_alert")
+        "pending": sum(c["status"] in ("pending", "student_requested_referral", "student_shared_summary", "auto_safety_alert",
+                                       "student_requested_help")
                        for c in cases),
         "in_progress": sum(c["status"] in ("reviewing", "contacted") for c in cases),
         "completed": sum(c["status"] in ("referred", "completed") for c in cases),

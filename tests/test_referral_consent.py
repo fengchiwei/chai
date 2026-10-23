@@ -59,10 +59,12 @@ class ReferralConsentTests(unittest.TestCase):
     def consent(self, **extra):
         return self.client.post("/api/referral/consent", headers=self.headers, json=self.consent_body(**extra))
 
-    def test_green_never_enters_workbench_or_gets_referral_form(self):
+    def test_green_never_enters_workbench_unless_the_student_asks(self):
         result = self.chat("今天放學後想去打球。")
         self.assertEqual([c["action"] for c in result["next_steps"]["choices"]], ["continue", "school", "resources"])
-        self.assertIsNone(result["next_steps"]["summary_preview"])
+        # v2.8.5: 「找真人幫忙」 is open at every level, so the student can always see what would be shared.
+        self.assertTrue(result["next_steps"]["can_request_help"])
+        self.assertIn("今天放學後想去打球", result["next_steps"]["summary_preview"])
         self.assertNotIn("referral_form", result)
         forged = self.consent(consent_kind="referral")
         self.assertEqual(forged.status_code, 409)
