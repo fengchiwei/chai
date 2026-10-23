@@ -120,6 +120,21 @@ def _valid_observations(hints, message):
     return valid
 
 
+# Everyday distress is not a safety cue on its own. The model's analysis once quoted 「睡不著」 from 「睡不著怎麼辦」
+# as a suicide signal, and the student was asked about ending their life instead of getting help to sleep
+# (2026-10-23 live test). A model risk hint whose quote holds nothing beyond these words is ignored.
+EVERYDAY_DISTRESS = (r"睡不著|睡不好|失眠|熬夜|起不來|好累|很累|累|壓力|心情不好|低落|好煩|很煩|煩|焦慮|緊張|擔心|害怕"
+                     r"|考試|段考|作業|讀書|頭痛|胃痛|肚子痛|吃不下|提不起勁|沒動力|空虛|難過|想哭|哭|孤單|寂寞|無聊"
+                     r"|生氣|吵架|不開心|心累|好悶|悶")
+FILLER = (r"怎麼辦|怎麼|該怎麼|要怎麼|有點|一直|最近|每天|晚上|今天|常常|一點|真的|好像|覺得|感覺|是不是"
+          r"|[我你他她好很太超都也就了的啊喔欸呢嗎吧該要會是這那樣又還]")
+
+
+def everyday_distress_only(evidence):
+    rest = re.sub(FILLER, "", re.sub(EVERYDAY_DISTRESS, "", evidence or ""))
+    return len(re.sub(r"[^㐀-鿿A-Za-z]", "", rest)) <= 1
+
+
 def _affirmative_matches(pattern, text):
     for clause in re.split(r"[。！？!?；;\n]|但是|可是|不過|但", text):
         for match in re.finditer(pattern, clause):
@@ -447,6 +462,8 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
     # Grounding alone is insufficient: a quote can explicitly deny a harmful intention.
     if re.search(r"(?:沒有|並未|從未|不會|不打算|不是).{0,5}(?:想|要|打算)?(?:自傷|自殺|傷害自己|想死|不想活)", observation.get("evidence", "")):
         observation = {}
+    if observation and everyday_distress_only(observation.get("evidence", "")):
+        observation = {}  # 「睡不著」「好累」 alone are not a risk signal, whatever the model labels them
     if observation.get("affirmed") is True and not (pending and denied and not candidates):
         kind, signal, danger = observation.get("type"), observation.get("signal"), observation.get("danger")
         if kind in RISK_TYPES[1:] and signal in ("ambiguous", "indirect", "direct") and danger in ("none", "possible", "imminent"):
