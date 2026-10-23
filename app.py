@@ -45,7 +45,7 @@ from engine.referral import (
     save_dialogue_state,
 )
 from models.database import (
-    STATUS_LABELS, STAFF_ROLES, authenticate_staff, count_active_admins, create_staff_user, list_staff_users, recent_audit_logs,
+    STATUS_LABELS, STAFF_ROLES, authenticate_staff, backup_snapshot, count_active_admins, create_staff_user, list_staff_users, recent_audit_logs,
     update_staff_user, verify_audit_chain,
     get_all_cases,
     flag_risk_after_consent,
@@ -486,7 +486,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.8.8"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.8.9"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -1000,6 +1000,24 @@ def api_staff_change_password():
     update_staff_user(user, password=new)
     log_audit(staff_actor(), "staff_password_changed", "", "本人修改密碼")
     return jsonify({"ok": True})
+
+
+@app.route("/api/admin/backup", methods=["POST"])
+@admin_only
+def api_admin_backup():
+    """Download a backup of the database (administrators only, logged). On Render's free plan the database is
+    wiped on every redeploy, so this is the way to keep cases, accounts and the audit log."""
+    error = require_csrf()
+    if error:
+        return error
+    if not limiter.hit("backup:" + (session.get("staff_user") or BUILTIN_ADMIN), 10, 3600):
+        return jsonify({"error": "備份下載太頻繁，請一小時後再試"}), 429
+    data = backup_snapshot()
+    name = datetime.now().strftime("anla_backup_%Y%m%d_%H%M.db")
+    log_audit(staff_actor(), "admin_backup_downloaded", "",
+              f"下載資料庫備份 {name}（{max(1, len(data) // 1024)} KB；不含未分享的對話暫存與加密金鑰）")
+    return Response(data, mimetype="application/x-sqlite3",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
 
 
 @app.route("/api/audit")

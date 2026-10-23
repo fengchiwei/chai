@@ -54,3 +54,27 @@ git push origin v2.5.12
 - 安裝檔都**沒有程式碼簽章**。Windows 會跳出 SmartScreen 警告（按「其他資訊 → 仍要執行」），macOS 要按右鍵「打開」。
 - 桌面版在使用者自己的電腦上跑伺服器，AI 金鑰要在那台電腦上設定。
 - Android App 只是外殼，會開啟 repository 變數 `ANLA_SERVER_URL` 指定的網址。Render 網址確定後，到 GitHub repository 的 **Settings → Secrets and variables → Actions → Variables** 新增 `ANLA_SERVER_URL`，再推下一個標籤，APK 才會連到線上網站。
+
+## 三、資料備份與還原
+
+資料庫由兩樣東西組成：資料庫檔與加密金鑰。少了金鑰，備份打不開；兩者請分開保存，只放在授權的人打得開的地方，用不到的舊備份要刪除。
+
+| 環境 | 金鑰在哪裡 |
+|---|---|
+| Render | 服務的 **Environment** 裡的 `ANLA_DB_KEY`（建立服務時自動產生，請另外抄下來保存） |
+| 本機（start.bat） | 資料庫旁的 `anla_youth.db.key`；有設定 `ANLA_DB_KEY` 時就是那串文字 |
+
+**備份**
+- 線上版：用管理員帳號登入工作臺，在「💾 資料備份」按「下載備份」。Render 免費方案每次重新部署都會清空資料庫，部署前請先下載一份。
+- 本機：工作臺按鈕一樣可用；也可以在專案資料夾執行：
+  `.venv/Scripts/python.exe -c "import sqlite3,datetime; s=sqlite3.connect('anla_youth.db'); d=sqlite3.connect('backup_'+datetime.datetime.now().strftime('%Y%m%d_%H%M')+'.db'); s.backup(d); d.close(); s.close()"`
+- 工作臺下載的備份不含未分享的學生對話暫存（24 小時後本來就會失效），也不含金鑰。
+
+**在本機還原或查看**
+1. 關掉伺服器。
+2. 把備份檔改名成 `anla_youth.db`，放到專案資料夾取代原本的檔案；旁邊若有 `anla_youth.db-wal`、`anla_youth.db-shm` 一起刪掉。
+3. 備份來自本機：保留原本的 `anla_youth.db.key`。備份來自 Render：啟動前在同一個 PowerShell 視窗設定 `$env:ANLA_DB_KEY = "Render 上的那串值"`。
+4. 重新啟動 `start.bat`，用管理員帳號登入工作臺確認。
+
+目前線上版（Render 免費方案）還沒有上傳還原的功能；需要時可以在本機還原查看，或改用付費方案加永久磁碟。
+

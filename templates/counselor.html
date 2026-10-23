@@ -163,6 +163,18 @@
       <div id="auditBody" class="explain-meta">讀取中…</div>
     </section>
 
+    <!-- 資料備份（管理員） -->
+    <section class="panel-card" id="backupPanel" style="margin-top: 1.5rem;" aria-labelledby="backupPanelTitle">
+      <h3 id="backupPanelTitle" style="margin: 0;">💾 資料備份（管理員）</h3>
+      <p class="explain-meta">下載目前資料庫的備份：個案、處理紀錄、工作臺帳號、操作紀錄與設定。敏感欄位仍是加密的；
+        <b>未分享的學生對話暫存不會放進備份</b>（它們 24 小時後本來就會失效），<b>加密金鑰也不在裡面</b>。
+        Render 免費方案每次重新部署都會清空資料庫，部署前請先下載一份。每次下載都會記進操作紀錄。</p>
+      <p class="explain-meta">要打開備份，需要同一把金鑰：Render 上是服務設定裡的 <code>ANLA_DB_KEY</code>，本機是資料庫旁的 <code>anla_youth.db.key</code>。
+        請把備份和金鑰分開保存，只放在授權的人打得開的地方，用不到的舊備份要刪除。</p>
+      <button type="button" id="downloadBackup" class="btn-primary-action" style="width:auto;margin:0;padding:.5rem 1rem">下載備份</button>
+      <p id="backupMessage" class="explain-meta" role="status"></p>
+    </section>
+
     <!-- AI 模型：只在後台顯示，放在個案清單之後（給管理者看；輔導老師平常用不到） -->
     <section class="panel-card" id="modelPanel" style="margin-top: 1.5rem;" aria-labelledby="modelPanelTitle">
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">

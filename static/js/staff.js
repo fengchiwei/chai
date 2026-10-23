@@ -113,7 +113,34 @@
     } catch (error) { $("passwordMessage").textContent = error.message; }
   }
 
+  // ---------- 資料備份 ----------
+  async function downloadBackup() {
+    const button = $("downloadBackup");
+    button.disabled = true;
+    $("backupMessage").textContent = "正在產生備份…";
+    try {
+      const res = await fetch("/api/admin/backup", {
+        method: "POST", headers: {"Content-Type": "application/json", "X-CSRF-Token": window.ANLA_CSRF_TOKEN}, body: "{}",
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "備份失敗，請稍後再試");
+      const name = (res.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/)?.[1] || "anla_backup.db";
+      const url = URL.createObjectURL(await res.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = name;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      $("backupMessage").textContent = `已下載 ${name}。請和金鑰分開、妥善保存。`;
+      loadAudit();
+    } catch (error) {
+      $("backupMessage").textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
   window.addEventListener("DOMContentLoaded", () => {
+    $("downloadBackup")?.addEventListener("click", downloadBackup);
     loadBreakdown();
     loadUsers();
     loadAudit();

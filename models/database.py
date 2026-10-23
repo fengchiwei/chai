@@ -8,6 +8,7 @@ import hashlib
 import hmac
 import os
 import sqlite3
+import tempfile
 import json
 from uuid import uuid4
 from datetime import datetime
@@ -234,6 +235,30 @@ def count_active_admins() -> int:
         return conn.execute("SELECT COUNT(*) FROM staff_users WHERE role = 'admin' AND active = 1").fetchone()[0]
     finally:
         conn.close()
+
+
+def backup_snapshot() -> bytes:
+    """A consistent copy of the database for an administrator to keep (SQLite's online backup, safe while the
+    site is running). Unshared student conversations (student_contexts, which expire after 24 hours) are left
+    out, so a backup never keeps them longer than promised. Sensitive fields stay encrypted; the key is not
+    included."""
+    fd, path = tempfile.mkstemp(suffix=".db")
+    os.close(fd)
+    try:
+        source, copy = get_connection(), sqlite3.connect(path)
+        try:
+            source.backup(copy)
+            copy.execute("PRAGMA journal_mode=DELETE")
+            copy.execute("DELETE FROM student_contexts")
+            copy.commit()
+            copy.execute("VACUUM")  # rewrite the file so the deleted conversations are not left in free pages
+        finally:
+            copy.close()
+            source.close()
+        with open(path, "rb") as f:
+            return f.read()
+    finally:
+        os.remove(path)
 
 
 def recent_audit_logs(limit: int = 100):
