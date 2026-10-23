@@ -121,6 +121,29 @@ def _affirmative_matches(pattern, text):
             yield clause, match.group()
 
 
+def _context_escalation(message, scan, previous):
+    """(kind, subject, evidence) when a follow-up adds timing, a place, ready means, final words or a
+    yes to the means question to a concern that is already orange; otherwise None."""
+    kind = previous.get("risk_type")
+    if WEIGHTS.get(previous.get("risk_level"), 1) < WEIGHTS["orange"] or kind not in ("suicide", "self_harm", "abuse"):
+        return None
+    if re.search(CLARIFIED, message):
+        return None
+    subject = previous.get("risk_subject") if previous.get("risk_subject") in ("self", "other") else "self"
+    patterns = ([ESCALATION_ABUSE] if kind == "abuse"
+                else [ESCALATION_SUICIDE, FINAL_WORDS] + ([ESCALATION_OTHER] if subject == "other" else []))
+    for pattern in patterns:
+        for _, evidence in _affirmative_matches(pattern, scan):
+            return kind, subject, evidence
+    if kind != "abuse" and re.search("藥", scan + previous.get("risk_evidence", "")):
+        for _, evidence in _affirmative_matches(PILL_PLAN, scan):
+            return kind, subject, evidence
+    # 「有」 answers the means-and-timing question only if that was the question just asked.
+    if "工具或打算行動的時間" in previous.get("last_reply", "") and re.search(YES_ANSWER, message.strip()):
+        return kind, subject, message[:120]
+    return None
+
+
 def _reaffirms_after_denial(message):
     """A denial followed by new affirmative safety information is NOT a full denial.
 
@@ -162,7 +185,34 @@ FAREWELL = r"(?:(?:算了|謝謝你?(?:陪我)?|再見|掰掰|拜拜|bye|就這�
 THIRD_PARTY = (r"(?:朋友|同學|閨蜜|好友|室友|網友|學長|學姊|學姐|弟弟|妹妹|哥哥|姊姊|姐姐|表[哥姊姐弟妹]|他|她)"
                r".{0,20}(?:說|表示|提到|傳|告訴我).{0,20}"
                r"(?:不想活|想死|自殺|傷害自己|吞藥|吞了.{0,10}(?:藥|安眠藥)|吃了.{0,8}(?:很多|好多|一堆|整瓶|整包|全部).{0,4}藥"
-               r"|割(?:腕|手)|跳樓|燒炭|上吊)")
+               r"|割(?:腕|手)|跳樓|燒炭|上吊|(?:頂樓|樓頂|天台|陽台|橋|高樓|窗戶).{0,6}跳下去)")
+# 2026-10-23 simulation: abuse by relatives, sextortion, leaked images and physical bullying went undetected.
+ABUSE = (r"(?:爸|媽|家人|大人|老師|教練|叔叔|阿姨|繼父|繼母|舅舅|舅媽|伯伯|伯父|伯母|姑姑|姑丈|姨丈|阿公|爺爺|外公"
+         r"|鄰居|乾爹|男友|男朋友|同居人).{0,18}"
+         r"(?:打我(?!(?:最)?(?:喜歡|愛)?的?(?:羽球|籃球|桌球|排球|網球|棒球|電動|遊戲|球))|揍我"
+         r"|摸我(?!的?(?:頭|頭髮|額頭|肩膀|臉頰))|逼我脫|性侵)"
+         r"|(?:我|同學).{0,6}(?:被虐待|被性侵|被強暴|被家暴|被打(?!槍|敗|爆|球|工|卡|電話|針|招呼))")
+DIGITAL_SEXUAL_VIOLENCE = (r"(?:威脅|恐嚇|逼我|強迫).{0,25}(?:私密照|裸照|性影像|性愛影片|私密影片|不雅照)"
+                           r"|(?:私密照|裸照|性影像|私密影片|不雅照|性愛影片).{0,25}"
+                           r"(?:外流|威脅|散布|散佈|公開|PO|po|貼|傳(?:出去|給|到)|上傳|流出)")
+# Physical bullying only; verbal teasing stays with PEER_REJECTION. 「被打敗／打爆」 are games, not violence.
+PEER_VIOLENCE = (r"(?:同學|他們|學長|學姊|學姐|班上的人|一群人|那群人|有人).{0,12}(?:打我(?!一下)|揍我|踹我|圍毆我|堵我)"
+                 r"|被(?:同學|學長|學姊|學姐|他們|一群人|那群人)?(?:圍毆|毆打|揍)"
+                 r"|被(?:同學|學長|學姊|學姐|他們|一群人|那群人)打(?!敗|爆|槍|球|工|卡|電話|針|字|掃|招呼|成|平)")
+# PSY-01 passive death wish: one gentle check (yellow); the late-night rule raises it for human review.
+PASSIVE_DEATH_WISH = (r"(?:覺得|乾脆|我)消失(?:了)?(?:也|就)?(?:沒差|沒關係|比較好|算了)|(?:^|乾脆)消失算了"
+                      r"|我不在了?(?:也|就)(?:沒差|沒關係|比較好)|睡著(?:了)?就(?:不要|不再|別)醒來")
+# Follow-up details that make an existing orange concern imminent (red).
+ESCALATION_SUICIDE = (r"(?:今晚|今天晚上|明天晚上|明晚|等一下|待會|馬上|現在就).{0,10}"
+                      r"(?:吞|割|跳下|結束|動手|行動|去死|吃掉|吃完|全部吃|吃下去)"
+                      r"|(?:已經|現在|正)?(?:在|到|站在|坐在|爬上)(?:了)?(?:頂樓|樓頂|天台|橋上|河邊|海邊|鐵軌|月台邊|陽台外)"
+                      r"|(?:刀片|美工刀|刀子|刀|藥|安眠藥|繩子|繩|木炭|炭).{0,6}(?:準備好|藏好|存好|買好|藏起來|存起來|拿出來)"
+                      r"|(?:準備好|藏好|存好|買好)了?.{0,4}(?:刀片|美工刀|刀子|藥|繩|炭)")
+ESCALATION_OTHER = r"已讀不回|聯絡不到|不接(?:電話)?|找不到(?:他|她|人)|關機了"
+ESCALATION_ABUSE = r"(?:還在|在)(?:家|客廳|旁邊|身邊|門外|門口|房間外)|又(?:打|揍|來了)|(?:現在|正在).{0,6}(?:打|揍|摔|砸)|喝醉(?:了)?回來"
+# 「五十顆」「今晚吃」 mean an overdose plan only when pills are already part of the conversation.
+PILL_PLAN = r"(?:\d+|[一二三四五六七八九十兩幾半百]+)(?:顆|錠|排|瓶|盒)|(?:今晚|今天晚上|明天晚上|明晚|等一下|待會|馬上|現在就).{0,6}吃"
+YES_ANSWER = r"^(?:有|有啊|有喔|有耶|有的|對|對啊|嗯|是|是啊|都有|有準備)(?:$|[，,。!！\s])"
 CLARIFIED = r"只是(?:在)?(?:抱怨|開玩笑|說說|講講|誇張|形容|比喻|發牢騷)|開玩笑的|講好玩的|形容(?:詞|一下)?(?:啦|而已)"
 # PSY-01 preparatory acts. Alone → orange (gentle check); with final-goodbye wording → red.
 # Acts only: "last chat" or "won't need it" are final words, not acts, so they cannot make a red alone.
@@ -172,7 +222,7 @@ PREPARATORY = (r"(?:把|將).{0,14}(?:帳號|裝備|收藏|寵物|心愛的|最�
                r"|以後(?:就)?(?:麻煩|拜託)?(?:你|你們)?(?:幫我|替我)?照顧(?:好)?(?:我的)?(?:貓|狗|寵物|妹妹|弟弟)"
                r"|寫好.{0,4}(?:遺書|給大家的信)")
 PREPARATORY_EXCLUDE = r"保管|借給|借我|幫我收|代收|作業|報告|講義"
-FINAL_WORDS = r"最後一次(?:聊天|見面|說話|跟你)|再見了|永別|不用再|不會再見|以後都不|以後(?:都)?用不到了|告別|不在了|離開這個世界"
+FINAL_WORDS = r"最後一次(?:聊天|見面|說話|跟你)|再見了|永別|不用再|不會再見|以後都不|以後(?:都|也)?用不到了|告別|不在了|離開這個世界"
 # PSY-03 volitional moderator: means available to a person who feels trapped.
 MEANS = r"美工刀|刀片|刀子|安眠藥|一整瓶藥|一整罐藥|藥(?:都)?(?:存|準備|收集)好|繩子|頂樓|跳下去|燒炭|農藥|模仿.{0,6}(?:自殺|跳樓)"
 # In later turns a means only counts with an access/readiness verb (「站在頂樓」, not 「在頂樓曬衣服」).
@@ -228,14 +278,18 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
     if current in ("orange", "red"):
         evidence = "；".join(rules.get("red_flags", []) or rules.get("orange_flags", []))
         kind = "abuse" if re.search(r"被打(?!槍)|家暴", evidence) else "suicide" if re.search(
-            r"想死|自殺|自傷|不想活|活不下去|活著|死亡|遺書|吞藥|跳樓|跳橋|燒炭|上吊|不想醒|不要醒|結束(?:生命|自己)|工具", evidence) else "self_harm"
+            r"想死|自殺|自傷|不想活|活不下去|活著|死亡|遺書|吞|藥|跳樓|跳橋|燒炭|上吊|不想醒|不要醒|結束(?:生命|自己|這一切)"
+            r"|離開這個世界|不在了|消失|工具", evidence) else "self_harm"
         add(kind, "direct", "imminent" if current == "red" else "possible", evidence, current,
             basis=triage.get("theoretical_basis") or ("PSY-01",))
 
     specs = [
-        (r"(?:威脅|恐嚇|逼我|強迫).{0,25}(?:私密照|裸照|性影像|性愛影片)|(?:私密照|裸照|性影像).{0,25}(?:外流|威脅|散布|散佈|公開)", "digital_sexual_violence", "orange"),
-        (r"(?:爸|媽|家人|大人|老師|教練|叔叔|阿姨|繼父).{0,18}(?:打我(?!(?:最)?(?:喜歡|愛)?的?(?:羽球|籃球|桌球|排球|網球|棒球|電動|遊戲|球))|揍我|摸我|逼我脫|性侵)|(?:我|同學).{0,6}(?:被虐待|被性侵|被強暴|被家暴|被打(?!槍))", "abuse", "orange"),
-        (r"(?:我|他|她|有人).{0,16}(?:拿刀|帶刀|持刀).{0,18}(?:殺|砍|捅|堵|門外|門口)|(?:我|他|她).{0,14}(?:要殺|想殺|要砍|要捅).{0,6}(?:人|他|她|同學|我)", "violence", "orange"),
+        (DIGITAL_SEXUAL_VIOLENCE, "digital_sexual_violence", "orange"),
+        (ABUSE, "abuse", "orange"),
+        # Physical bullying shares the protection reply (get away from the person, 110/119).
+        (PEER_VIOLENCE, "abuse", "orange"),
+        (r"(?:我|他|她|有人).{0,16}(?:拿刀|帶刀|持刀).{0,18}(?:殺|砍|捅|堵|門外|門口|付出代價|報仇|算帳|教訓)"
+         r"|(?:我|他|她).{0,14}(?:要殺|想殺|要砍|要捅).{0,6}(?:人|他|她|同學|我)", "violence", "orange"),
         (r"(?:我今晚|我現在|我等一下|我今天).{0,12}(?:打算|要).{0,12}(?:這些藥|全部.*藥|整瓶.*藥).{0,8}(?:吃掉|吞|吃完)", "suicide", "red"),
     ]
     for pattern, kind, floor in specs:
@@ -244,6 +298,12 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
                 floor = "red"
             add(kind, "direct", "imminent" if floor == "red" else "possible", evidence, floor, basis=("PSY-01",))
 
+    # Follow-up details turn an existing orange concern red (2026-10-23 simulation: these stayed orange/green).
+    escalation = _context_escalation(message, scan, previous)
+    if escalation:
+        kind, subject, evidence = escalation
+        add(kind, "direct", "imminent", evidence, "red", subject, ("PSY-01",))
+
     # SOC-05: third-party disclosure stays third-party; it is still a reason to pause and help connect.
     for clause, evidence in _affirmative_matches(THIRD_PARTY, scan):
         danger = "imminent" if re.search(r"今晚|現在|正在|已經|等一下|剛剛|剛才|吞了|吃了|頭很暈|昏", clause) else "possible"
@@ -251,7 +311,8 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
         risk["secondary_trauma_risk"] = True
 
     ambiguous = r"撐不下去|受不了了|不想撐了|快撐不住"
-    indirect = r"少了我.{0,4}也沒差|沒有我.{0,8}(?:更好|沒差)|(?:如果|希望).{0,5}(?:不要|不再)醒來|希望睡了就不醒|不想醒來"
+    indirect = (r"少了我.{0,4}也沒差|沒有我.{0,8}(?:更好|沒差)|(?:如果|希望).{0,5}(?:不要|不再)醒來|希望睡了就不醒|不想醒來"
+                r"|" + PASSIVE_DEATH_WISH)
     for pattern, signal in ((ambiguous, "ambiguous"), (indirect, "indirect")):
         for _, evidence in _affirmative_matches(pattern, scan):
             add("suicide", signal, "possible", evidence, "yellow", basis=("PSY-01",))
