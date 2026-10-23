@@ -556,7 +556,9 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
         r"|刪(?:掉|除).{0,6}(?:紀錄|記錄|對話|資料)|關掉.{0,6}(?:就)?(?:沒了|消失)", message))
     state["confidentiality_limit_needed"] = state["privacy_concern"] or state["safety_override"]
     state["advice_request"] = wants_practical_help(message)
-    correction = bool(re.search(r"^(?:不是|不對)|你誤會|你聽錯|不是那個意思|我不是.{0,6}[，,].*(?:是|而是)", message)) and not state["safety_denied"]
+    # 「我說的是未來3天之後」 corrects the last reply just like 「不是啦」 (2026-10-23 live test).
+    correction = bool(re.search(r"^(?:不是|不對)|你誤會|你聽錯|你搞錯|不是那個意思|我不是.{0,6}[，,].*(?:是|而是)"
+                                r"|^.{0,4}(?:我(?:剛剛|剛才)?(?:說|講|指)的是|我是說|我的意思是)", message)) and not state["safety_denied"]
     # 「真的嗎」「為什麼」right after a reply react to that reply; they are not a new event to explore.
     replied = any(t["role"] == "assistant" for t in turns)
     stripped = re.sub(r"[～~…]+", "", text)
@@ -605,10 +607,11 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
         goal, strategy, ask = "integrate", "reflect_only", False
     elif state["advice_request"]:
         goal, strategy, ask = "support_choice", "support_next_step", False
+    elif correction:
+        # Own the misreading, answer the corrected meaning, and ask once if it is still unclear what they mean.
+        goal, strategy, ask = "repair_understanding", "reflect_then_ask", True
     elif state["known_yearning"] or "self" in found or re.search(r"原來我|明白自己|比較平靜|輕鬆一點", message):
         goal, strategy, ask = "integrate", "summarize", False
-    elif correction:
-        goal, strategy, ask = "integrate", "reflect_only", False
     elif state["reaction"]:
         goal, strategy, ask = "respond_to_reaction", "reflect_only", False
     elif short:
@@ -620,7 +623,8 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
                 goal, strategy = next_goal, "reflect_then_ask"
                 break
     recent = [t["text"] for t in turns if t["role"] == "assistant"][-2:]
-    if goal != "safety_support" and len(recent) == 2 and all(re.search(r"[？?]", r) for r in recent):
+    # The rest after two questioning turns does not apply when the student is correcting a misreading.
+    if goal not in ("safety_support", "repair_understanding") and len(recent) == 2 and all(re.search(r"[？?]", r) for r in recent):
         ask, strategy = False, "reflect_only"
     # v2.3 reply styles are the student's choice; any safety check takes the tone back (safety override).
     style = reply_style if reply_style in REPLY_STYLES else old.get("reply_style") if old.get("reply_style") in REPLY_STYLES else "warm"
@@ -638,7 +642,8 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
     banned = ["ask_multiple_questions", "diagnose", "interpret_for_user", "force_positive", "promise_absolute_confidentiality", "minimize_risk"]
     if goal != "support_choice" or no_advice:
         banned.append("give_advice")
-    if goal in ("safety_support", "stabilize", "respect_boundary", "establish_safety", "integrate", "respond_to_reaction"):
+    if goal in ("safety_support", "stabilize", "respect_boundary", "establish_safety", "integrate", "respond_to_reaction",
+                "repair_understanding"):
         banned.extend(("explore_yearning", "deep_reflection", "continue_drilling"))
     state["forbidden_actions"] = banned
     return state

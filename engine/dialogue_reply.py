@@ -424,12 +424,15 @@ def tidy_surface(reply, message, state=None):
 
 def drop_trailing_questions(reply):
     """Models often append one more question after an otherwise good reply ("…你覺得呢？").
-    Remove only question sentences at the very end; None if nothing would remain."""
+    Remove only question sentences at the very end; None if nothing substantial would remain: 「抱歉，我剛才誤會了你的
+    意思。」 alone, with the clarifying question cut off, read as a broken reply (2026-10-23 live test)."""
     sentences = re.findall(r"[^。！？!?\n]+[。！？!?]?\n?", reply)
     while sentences and re.search(r"[？?]", sentences[-1]):
         sentences.pop()
     kept = "".join(sentences).strip()
-    return kept if kept and kept != reply.strip() else None
+    if len(kept) < max(20, len(reply.strip()) // 3):
+        return None
+    return kept if kept != reply.strip() else None
 
 
 def response_violations(reply, state, message="", offer=None):
