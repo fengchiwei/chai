@@ -140,21 +140,82 @@ def wanted(state):
             and not state.get("safety_check_required") and not state.get("safety_override"))
 
 
+RESOURCES = os.path.join(os.path.dirname(BASE), "nantou_resources.json")
+TOWNSHIPS = ("南投市", "埔里鎮", "草屯鎮", "竹山鎮", "集集鎮", "名間鄉", "鹿谷鄉", "中寮鄉", "魚池鄉", "國姓鄉", "水里鄉",
+             "信義鄉", "仁愛鄉")
+# 「南投哪裡可以諮商」「埔里附近有衛生所嗎」: a question about where to go, answered from the verified resource list.
+LOCAL_INTENT = r"南投|附近|在地|哪裡|去哪|哪邊|找誰|衛生所|心衛中心|社區心理|諮商所|治療所|身心科|精神科|看醫生|掛號"
+PLACE_KINDS = ((r"身心科|精神科|看醫生|醫院|掛號", ("醫院", "身心科診所", "地區醫院")),
+               (r"衛生所", ("鄉鎮市衛生所",)),
+               (r"諮商|心理|輔導|聊|談", ("社區心衛中心", "心理及聯合治療所", "校園輔導主管機構", "鄉鎮市衛生所")))
+PUBLISHERS = (("data.gov.tw", "南投縣政府（政府資料開放平臺）"), ("ntshb.gov.tw", "南投縣政府衛生局"),
+              ("mohw.gov.tw", "衛生福利部"), ("ntct.edu.tw", "南投縣政府教育處"), ("life1995.org.tw", "生命線協會"),
+              ("1980.org.tw", "張老師基金會"))
+
+
+def _publisher(url):
+    host = urlparse(url).hostname or ""
+    return next((name for domain, name in PUBLISHERS if host == domain or host.endswith("." + domain)), host)
+
+
+def _township(message, state):
+    for name in TOWNSHIPS:
+        if name in message or name[:-1] in message:
+            return name
+    return (state or {}).get("township") or "南投市"
+
+
+def local_resource_cards(message, state, limit=3):
+    """Cards made from data/nantou_resources.json (phone, address, hours, source) for a 「where can I go」
+    question about Nantou. Only entries with a recorded source; nearest township first."""
+    topics = matched_topics(message)
+    if not re.search(LOCAL_INTENT, message) or not (topics & {"counseling_access", "hotlines", "talking"}
+                                                     or re.search(r"南投|" + "|".join(t[:-1] for t in TOWNSHIPS), message)):
+        return []
+    try:
+        with open(RESOURCES, encoding="utf-8") as f:
+            resources = json.load(f)
+    except (OSError, ValueError):
+        return []
+    town = _township(message, state)
+    kinds = next((k for pattern, k in PLACE_KINDS if re.search(pattern, message)), PLACE_KINDS[-1][1])
+    nearby = [r for r in resources if r.get("source_url", "").startswith("https://") and any(k in r.get("category", "") for k in kinds)
+              and (r.get("township") == town or town in (r.get("suggested_townships") or []))]
+    nearby.sort(key=lambda r: next(i for i, k in enumerate(kinds) if k in r.get("category", "")))
+    cards = []
+    for r in nearby[:limit]:
+        publisher = _publisher(r["source_url"])
+        steps = [f"電話：{r['phone']}", f"地址：{r.get('address', '請先打電話詢問')}",
+                 f"服務時間：{r['service_hours']}" if r.get("service_hours") else "第一次去之前，先打電話問怎麼預約、要帶什麼"]
+        cards.append({"id": "resource-" + r["id"], "topic": "local_resources", "title": r["name"],
+                      "summary": f"{r.get('category', '')}，在{r.get('township', town)}。", "steps": steps,
+                      "when_to_seek_help": "有立即危險請直接撥 119；想馬上找人談可以打 1925（24 小時）。",
+                      "sources": [{"publisher": publisher, "name": f"{r['name']}（{publisher}資料）", "url": r["source_url"],
+                                   "supports": "名稱、電話、地址與服務時間"}]})
+    return cards
+
+
 def select(message, state):
-    return search(message) if wanted(state) else []
+    if not wanted(state):
+        return []
+    local = local_resource_cards(message, state)
+    return (local + search(message, limit=1))[:MAX_CARDS + 1] if local else search(message)
 
 
 def publishers(card):
     return [s.get("publisher") or s.get("name", "") for s in card.get("sources", [])]
 
 
+REFERENCE_HEADER = "【本輪參考資料卡"
+
+
 def prompt_block(selected):
     """Reference cards for the reply prompt; the student's words never go into card selection elsewhere."""
     if not selected:
         return ""
-    lines = ["【本輪參考資料卡（來源已核對；學生在問方法或資訊）】",
+    lines = [REFERENCE_HEADER + "（來源已核對；學生在問方法或資訊）】",
              "請從下面挑最合適的一張，用自己的話回答學生的問題，或給一個做得到的小步驟（最多兩個選項），不要整張照念。"
-             "卡片沒寫到的數字、日期、法規細節不要自己補。",
+             "卡片沒寫到的數字、日期、法規細節不要自己補；電話、地址照卡片原樣寫，不要改動。",
              "每張卡的來源各自支持不同重點（見「來源」）。句尾用「（資料來源：機構名稱）」標出你實際用到的那個重點的來源機構，"
              "用到兩個來源的重點就標兩個；只能寫下面列出的機構，不要提到其他研究或機構，也不要加入用藥建議。"]
     for i, card in enumerate(selected, 1):

@@ -113,6 +113,67 @@
     } catch (error) { $("passwordMessage").textContent = error.message; }
   }
 
+  // ---------- 每輪診斷 ----------
+  const ORIGINS = {ai: "AI", safety: "固定安全文字", unavailable: "AI 無法回覆的說明", rules: "規則", local: "本機"};
+  async function loadDiagnostics() {
+    const host = $("diagnosticsBody");
+    if (!host) return;
+    try {
+      const data = await call("/api/admin/diagnostics");
+      const rows = data.turns.map(t => `<tr><td>${E(t.at)}</td><td>${E(ORIGINS[t.response_origin] || t.response_origin)}</td>
+        <td>${E(t.model_used)}${t.fallback_reason ? `<br><span style="color:#b45309">${E(t.fallback_reason)}</span>` : ""}</td>
+        <td>${E(t.risk_level)}${t.safety_action && t.safety_action !== "none" ? "／" + E(t.safety_action) : ""}</td>
+        <td>${E(t.latency_ms)} ms</td><td>${E((t.issues || []).join("、") || "—")}${t.rewritten ? "<br>已重寫一次" : ""}</td>
+        <td>${E((t.sources || []).join("、") || (t.cards ? t.cards + " 張卡" : "—"))}</td></tr>`).join("");
+      host.innerHTML = (data.demo_mode ? "<p>🧪 公開示範模式開啟中：不會建立正式個案。</p>" : "") + (rows
+        ? `<table class="audit-table"><thead><tr><th>時間</th><th>來源</th><th>模型／原因</th><th>燈號</th><th>耗時</th><th>檢查</th><th>引用</th></tr></thead><tbody>${rows}</tbody></table>`
+        : "還沒有對話紀錄。");
+    } catch (error) { host.textContent = error.message; }
+  }
+
+  // ---------- 來源檢查 ----------
+  const SOURCE_ERRORS = {tls_error: "憑證驗證失敗（網站憑證鏈不完整）", timeout: "逾時", network_error: "連不上",
+    not_text: "不是網頁", too_large: "太大", url_not_approved: "不在核准清單", domain_not_approved: "網域未核准",
+    private_address: "內部位址，已阻擋", not_https: "不是 HTTPS", dns_failed: "網域查不到", too_many_redirects: "轉址太多次"};
+  function renderSourceRuns(runs) {
+    const rows = runs.map(r => `<tr><td>${E((r.ran_at || r.retrieved_at || "").replace("T", " "))}</td>
+      <td>${r.ok ? "✅" : "⚠"} ${E(r.ok ? (r.http_status || "") + (r.content_type === "application/pdf" ? "（PDF，只確認連得到）" : "") : (SOURCE_ERRORS[r.error_type] || r.error_type))}</td>
+      <td>${E(r.elapsed_ms)} ms</td><td><a href="${E(r.url || r.source_url)}" target="_blank" rel="noopener noreferrer">${E(r.title || r.url || r.source_url)}</a>
+      ${r.injection_suspected ? '<br><span style="color:#b45309">頁面含疑似指令文字（只當資料）</span>' : ""}</td></tr>`).join("");
+    $("sourceResults").innerHTML = rows ? `<table class="audit-table"><thead><tr><th>時間</th><th>結果</th><th>耗時</th><th>頁面</th></tr></thead><tbody>${rows}</tbody></table>` : "";
+  }
+  async function runSourceCheck() {
+    const button = $("runSourceCheck");
+    button.disabled = true;
+    const results = [];
+    try {
+      let next = 0, total = 1;
+      while (next < total) {
+        $("sourceMessage").textContent = `檢查中… ${next} / ${total === 1 ? "?" : total}`;
+        const data = await call("/api/admin/sources", {offset: next});
+        results.push(...data.results);
+        total = data.total;
+        next = data.next;
+        renderSourceRuns([...results].reverse());
+      }
+      const ok = results.filter(r => r.ok).length;
+      $("sourceMessage").textContent = `完成：${results.length} 個網址，${ok} 個正常、${results.length - ok} 個有問題。紀錄已保存。`;
+      loadAudit();
+    } catch (error) {
+      $("sourceMessage").textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  }
+  async function loadSourceRuns() {
+    if (!$("sourcePanel")) return;
+    try {
+      const data = await call("/api/admin/sources");
+      $("sourceMessage").textContent = `核准網址共 ${data.total} 個。` + (data.runs.length ? "以下是最近的檢查紀錄。" : "還沒有檢查紀錄。");
+      renderSourceRuns(data.runs.slice(0, 60));
+    } catch (error) { $("sourceMessage").textContent = error.message; }
+  }
+
   // ---------- 資料備份 ----------
   async function downloadBackup() {
     const button = $("downloadBackup");
@@ -141,6 +202,10 @@
 
   window.addEventListener("DOMContentLoaded", () => {
     $("downloadBackup")?.addEventListener("click", downloadBackup);
+    $("runSourceCheck")?.addEventListener("click", runSourceCheck);
+    $("reloadDiagnostics")?.addEventListener("click", loadDiagnostics);
+    loadDiagnostics();
+    loadSourceRuns();
     loadBreakdown();
     loadUsers();
     loadAudit();

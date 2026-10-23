@@ -104,6 +104,15 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_student_contexts_updated ON student_contexts(updated_at)")
     # Operator settings made in the workbench (e.g. the chosen model); no student data.
     cursor.execute("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+    # Execution record of the restricted page fetcher (engine/webfetch.py): evidence of real fetches.
+    # Metadata only (no page text, no student data).
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tool_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ran_at TEXT, tool TEXT, url TEXT, final_url TEXT, ok INTEGER, http_status INTEGER,
+            error_type TEXT, elapsed_ms INTEGER, title TEXT, injection_suspected INTEGER, actor TEXT
+        )
+    """)
     # Personal workbench accounts (proposal: 角色權限). Passwords are stored only as salted PBKDF2 hashes.
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS staff_users (
@@ -259,6 +268,27 @@ def backup_snapshot() -> bytes:
             return f.read()
     finally:
         os.remove(path)
+
+
+def log_tool_run(result: dict, actor: str, tool: str = "fetch_official_resource"):
+    conn = get_connection()
+    try:
+        with conn:
+            conn.execute("INSERT INTO tool_runs (ran_at, tool, url, final_url, ok, http_status, error_type, elapsed_ms,"
+                         " title, injection_suspected, actor) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                         (result["retrieved_at"], tool, result["source_url"], result["final_url"], int(result["ok"]),
+                          result["http_status"], result["error_type"], result["elapsed_ms"], result["title"][:200],
+                          int(result["injection_suspected"]), actor))
+    finally:
+        conn.close()
+
+
+def recent_tool_runs(limit: int = 300):
+    conn = get_connection()
+    try:
+        return [dict(r) for r in conn.execute("SELECT * FROM tool_runs ORDER BY id DESC LIMIT ?", (limit,))]
+    finally:
+        conn.close()
 
 
 def recent_audit_logs(limit: int = 100):

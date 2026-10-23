@@ -19,8 +19,12 @@ class SafetyBoundaryRegressions(unittest.TestCase):
         self.case("我沒有說謊，朋友說他想死", "orange")
 
     def test_hyperbole_review_only(self):
-        """v2.3 LIN-01: yellow + one soft check (not silence, not red). Still needs counsellor review."""
-        self.case("同學說他熱到想死", "yellow")
+        """v2.3 LIN-01: the student's own hyperbole gets one soft check (not silence, not red).
+        v2.9 (spec case S01): a classmate's everyday hyperbole gets no question about them dying; the rule layer
+        still marks the turn yellow for counsellor review."""
+        self.case("熱到想死", "yellow")
+        self.case("同學說他熱到想死", "green")
+        self.assertEqual(perform_triage(text="同學說他熱到想死")["level"], "yellow")
 
     def test_sports_not_abuse(self):
         self.case("爸爸說要帶我去打我最喜歡的羽球", "green")

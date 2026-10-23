@@ -28,7 +28,7 @@ from engine.ai_agent import (
     generate_youth_response,
     prepare_dialogue,
 )
-from engine import model_router, providers, tts
+from engine import model_router, providers, school_referral, tts, webfetch
 from engine.dialogue_ai import UNAVAILABLE_LABEL, _provider, model_status, reset_provider_cooldown
 from engine.dialogue_policy import POLICY_VERSION, REPLY_STYLES, build_state, remember_turn
 from engine.dialogue_reply import TOPIC_PATTERN
@@ -45,7 +45,8 @@ from engine.referral import (
     save_dialogue_state,
 )
 from models.database import (
-    STATUS_LABELS, STAFF_ROLES, authenticate_staff, backup_snapshot, count_active_admins, create_staff_user, list_staff_users, recent_audit_logs,
+    STATUS_LABELS, STAFF_ROLES, authenticate_staff, backup_snapshot, count_active_admins, log_tool_run,
+    recent_tool_runs, create_staff_user, list_staff_users, recent_audit_logs,
     update_staff_user, verify_audit_chain,
     get_all_cases,
     flag_risk_after_consent,
@@ -310,7 +311,8 @@ def database_busy(exc):
 def index():
     context = current_student_context()
     urgent = session.get("highest_risk") == "red" or (context or {}).get("draft", {}).get("risk_level") == "red"
-    return render_template("index.html", csrf_token=csrf_token(), show_urgent_help=urgent)
+    return render_template("index.html", csrf_token=csrf_token(), show_urgent_help=urgent,
+                           demo_mode=Config.PUBLIC_DEMO_MODE)
 
 
 @app.route("/resources")
@@ -445,6 +447,25 @@ def api_status():
     return jsonify({"server": "ok", "ai": {k: ai[k] for k in ("configured", "state", "reason", "retry_in") if k in ai}})
 
 
+# Staff-only per-turn diagnostics (external spec 5): no student words, no reply text, no keys. Kept in memory
+# (the last 200 turns) and lost on restart.
+from collections import deque  # noqa: E402
+TURN_DIAGNOSTICS = deque(maxlen=200)
+
+
+def record_diagnostics(reply, level, started, safety_action):
+    origin = reply_source(reply["model_used"])
+    TURN_DIAGNOSTICS.appendleft({
+        "request_id": secrets.token_hex(4), "at": datetime.now().strftime("%H:%M:%S"),
+        "provider": providers.name() if origin == "ai" else "",
+        "model_used": reply["model_used"], "response_origin": origin,
+        "fallback_reason": reply.get("fallback_reason") or "", "risk_level": level, "safety_action": safety_action,
+        "latency_ms": round((time.monotonic() - started) * 1000),
+        **{k: v for k, v in (reply.get("diagnostics") or {}).items()},
+        "sources": [s["publisher"] for s in reply.get("sources", [])],
+    })
+
+
 def reply_source(model_used):
     """Coarse origin of a reply for the student page, without provider or model names."""
     if model_used.startswith(providers.LABELS):
@@ -486,7 +507,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.8.9"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.9.0"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -549,12 +570,13 @@ def api_chat_state():
         "reply_style": session.get("reply_style", "warm"),
         "style_overridden_by_safety": bool((context or {}).get("dialogue_state", {}).get("style_overridden_by_safety")),
         "next_steps": student_next_steps(context),
+        "school_referral_available": bool(session.get("school_referral_topics")),
     })
 
 
 # Session keys that belong to one conversation; 「開始新對話」 clears them (the reply style is the student's choice).
 CONVERSATION_KEYS = ("student_context_id", "highest_risk", "safety_pending", "referral_offer_level",
-                     "support_offer_state", "case_id")
+                     "support_offer_state", "case_id", "school_referral_topics")
 
 
 @app.route("/api/chat/reset", methods=["POST"])
@@ -633,7 +655,8 @@ def process_chat_turn(message):
         return chosen["offer"][0]
 
     triage, dialogue_state = prepare_dialogue(message, triage, previous_state, history,
-                                              hour=datetime.now().hour, reply_style=style, offer_chooser=offer_chooser)
+                                              hour=datetime.now().hour, reply_style=style, offer_chooser=offer_chooser,
+                                              township=context["profile"].get("township"))
     context = stage_student_summary(session["student_context_id"], session["student_email_hash"], triage, {}, message)
     saved_triage = context["draft"]["triage"]
     if RISK_LEVEL_WEIGHTS[saved_triage["level"]] > RISK_LEVEL_WEIGHTS[triage["level"]]:
@@ -652,7 +675,9 @@ def process_chat_turn(message):
         dialogue_state.pop("_prepared_reply")  # the draft was written for a different offer
     # (A draft written before the model's own analysis changed the safety situation is dropped in
     # generate_youth_response, which then sends the reviewed safety text.)
+    started = time.monotonic()
     reply = generate_youth_response(message, triage, history, support_offer=offer, dialogue_state=dialogue_state)
+    record_diagnostics(reply, level, started, dialogue_state.get("safety_action", "none"))
     sent_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     exchange = [{"role": "user", "text": message, "at": sent_at},
                 {"role": "assistant", "text": reply["reply"], "at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -670,6 +695,11 @@ def process_chat_turn(message):
     if session.get("case_id"):
         flag_risk_after_consent(session["case_id"], level)
     alert = safety_alert(level)
+    # 性平／霸凌: point to the school counseling office at every risk level, once per new topic.
+    seen = session.get("school_referral_topics", [])
+    new_topics = [t for t in school_referral.detect_topics(message) if t not in seen]
+    if new_topics:
+        session["school_referral_topics"] = seen + new_topics
     return jsonify({
         "reply": reply["reply"],
         # Model names are backend-only; the student page only needs to know where the reply came from.
@@ -688,14 +718,36 @@ def process_chat_turn(message):
         "notification_connected": False,
         "safety_alert": alert,
         "next_steps": student_next_steps(context),
+        "school_referral": (school_referral.payload(seen + new_topics, context["profile"].get("student_school", ""))
+                            if new_topics else None),
+        "school_referral_available": bool(seen or new_topics),
     })
+
+
+@app.route("/api/school-referral", methods=["POST"])
+def api_school_referral():
+    """The counseling-office card again, optionally for a school the student names here. The name is only used
+    to look up the office; it is not saved and nothing is sent to the school."""
+    error = require_csrf()
+    if error:
+        return error
+    context = current_student_context()
+    if context is None:
+        return jsonify({"error": "請先閱讀資料使用說明"}), 403
+    data = request.get_json(silent=True) or {}
+    school = data.get("school") if isinstance(data, dict) else None
+    if school is None:
+        school = context["profile"].get("student_school", "")
+    if not isinstance(school, str) or len(school) > 100:
+        return jsonify({"error": "學校名稱需為 100 字以內的文字"}), 400
+    return jsonify({"school_referral": school_referral.payload(session.get("school_referral_topics", []), school.strip())})
 
 
 def safety_alert(level):
     """Orange/red: send the necessary safety information to the workbench (no identity, contact or full
     conversation) and tell the student exactly what was sent. None when nothing new was sent."""
-    if level not in ("orange", "red"):
-        return None
+    if level not in ("orange", "red") or Config.PUBLIC_DEMO_MODE:
+        return None  # a public demo never writes formal cases; the urgent-help panel still shows
     sent = auto_safety_handoff(session["student_context_id"], session["student_email_hash"])
     return STUDENT_ALERT_NOTICE if sent else None
 
@@ -795,6 +847,10 @@ def api_referral_consent():
         return jsonify({"recorded": False, "resources": resources,
                         "message": "這次沒有新增分享摘要，你可以先打電話，也可以繼續說。",
                         "notification_connected": False, "external_referral_sent": False})
+    if Config.PUBLIC_DEMO_MODE:
+        return jsonify({"recorded": False, "demo_mode": True, "resources": resources,
+                        "error": "這是公開示範網站，不會建立正式個案，也沒有人會收到。需要真人協助，請直接撥 1925（24 小時）"
+                                 "或找學校輔導室；有立即危險請撥 119。"}), 403
     if type(data.get("revision")) is not int or data.get("consent_kind") not in ("summary", "referral", "request"):
         return jsonify({"error": "請先查看目前的下一步選擇與摘要"}), 400
     try:
@@ -1018,6 +1074,44 @@ def api_admin_backup():
               f"下載資料庫備份 {name}（{max(1, len(data) // 1024)} KB；不含未分享的對話暫存與加密金鑰）")
     return Response(data, mimetype="application/x-sqlite3",
                     headers={"Content-Disposition": f'attachment; filename="{name}"', "Cache-Control": "no-store"})
+
+
+SOURCE_CHECK_BATCH = 12  # pages per request, so one request stays well under the server timeout
+
+
+@app.route("/api/admin/sources", methods=["GET", "POST"])
+@admin_only
+def api_admin_sources():
+    """「來源檢查」: really fetch approved official pages (engine/webfetch.py) and record each run.
+    GET lists the approved URLs and the latest recorded runs; POST {"offset": n} checks the next batch."""
+    urls = webfetch.approved_urls()
+    if request.method == "GET":
+        return jsonify({"total": len(urls), "runs": recent_tool_runs()})
+    error = require_csrf()
+    if error:
+        return error
+    offset = (request.get_json(silent=True) or {}).get("offset", 0)
+    if type(offset) is not int or not 0 <= offset < max(len(urls), 1):
+        return jsonify({"error": "範圍不正確"}), 400
+    if offset == 0 and not limiter.hit("sources:" + (session.get("staff_user") or BUILTIN_ADMIN), 5, 3600):
+        return jsonify({"error": "來源檢查太頻繁，請一小時後再試"}), 429
+    from concurrent.futures import ThreadPoolExecutor
+    batch = urls[offset:offset + SOURCE_CHECK_BATCH]
+    with ThreadPoolExecutor(6) as pool:
+        results = list(pool.map(webfetch.fetch_official_resource, batch))
+    for result in results:
+        log_tool_run(result, staff_actor())
+    if offset + len(batch) >= len(urls):
+        log_audit(staff_actor(), "source_check_finished", "", f"來源檢查完成：{len(urls)} 個核准網址")
+    return jsonify({"total": len(urls), "next": offset + len(batch), "results": results})
+
+
+@app.route("/api/admin/diagnostics")
+@admin_only
+def api_admin_diagnostics():
+    """The last turns' diagnostics: which model answered, where the reply came from, how long it took, what the
+    checks found. No conversation content."""
+    return jsonify({"turns": list(TURN_DIAGNOSTICS)[:50], "demo_mode": Config.PUBLIC_DEMO_MODE})
 
 
 @app.route("/api/audit")

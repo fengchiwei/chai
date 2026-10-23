@@ -125,9 +125,11 @@ class DigitalPhenotypeTests(unittest.TestCase):
 class ExplainabilityTests(unittest.TestCase):
     def test_theoretical_basis_is_reported(self):
         self.assertIn("PSY-01", perform_triage("我已經把工具準備好，今晚等家人睡著就行動")["theoretical_basis"])
-        safety = observe_safety("我的同學說他熱到想死", perform_triage("我的同學說他熱到想死"))
+        safety = observe_safety("我熱到想死", perform_triage("我熱到想死"))
         self.assertEqual(safety["minimum_level"], "yellow")
-        self.assertEqual(safety["risk_subject"], "other")
+        self.assertIn("LIN-01", safety["theoretical_basis"])
+        # v2.9 (spec S01): someone else's hyperbole is reviewed by staff, not asked about.
+        self.assertIn("LIN-01", perform_triage("我的同學說他熱到想死")["theoretical_basis"])
 
 
 if __name__ == "__main__":

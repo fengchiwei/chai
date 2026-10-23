@@ -44,7 +44,7 @@
     {"id": "substances", "area": "health", "label": "菸、電子煙、酒與檳榔", "hints": "電子煙|抽菸|香菸|喝酒|酒|檳榔|加熱菸"},
     {"id": "nutrition", "area": "health", "label": "吃早餐與飲食習慣", "hints": "早餐|吃飯|營養|零食|含糖飲料|宵夜"},
     {"id": "somatic", "area": "health", "label": "壓力引起的身體不適", "hints": "頭痛|胃痛|肚子痛|拉肚子|身體不舒服|吃不下"},
-    {"id": "counseling_access", "area": "rights", "label": "輔導室與心理諮商", "hints": "輔導室|輔導老師|心理諮商|心理師|諮商怎麼約|公費諮商|看心理|身心科"},
+    {"id": "counseling_access", "area": "rights", "label": "輔導室與心理諮商", "hints": "輔導室|輔導老師|諮商|心理師|看心理|身心科|精神科|心衛中心|治療所|衛生所"},
     {"id": "hotlines", "area": "rights", "label": "求助專線怎麼選", "hints": "專線|1925|1995|1980|113|打電話給誰|可以打給誰"},
     {"id": "part_time_work", "area": "rights", "label": "打工權益", "hints": "打工|工讀|兼職|時薪|基本工資|老闆|薪水"},
     {"id": "school_complaints", "area": "rights", "label": "在學校受委屈怎麼申訴", "hints": "申訴|檢舉|性平|校安|學生權益|被老師|不公平"}

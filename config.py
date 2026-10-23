@@ -66,6 +66,9 @@ class Config:
     TTS_OPENAI_MODEL = os.environ.get("TTS_OPENAI_MODEL", "gpt-4o-mini-tts")
     TTS_GEMINI_MODEL = os.environ.get("TTS_GEMINI_MODEL", "")  # 留白時自動找金鑰可用的語音模型
     TTS_CALLS_PER_MINUTE = int(os.environ.get("TTS_CALLS_PER_MINUTE", "60"))  # 全站上限，控制費用
+    # Public demo site (external spec 4): the server refuses to create formal cases (consent, help requests,
+    # automatic safety alerts) and the student page says so. The workbench stays password-protected.
+    PUBLIC_DEMO_MODE = os.environ.get("PUBLIC_DEMO_MODE", "false").lower() == "true"
     WORKBENCH_PASSWORD = os.environ.get("WORKBENCH_PASSWORD", "")
     
     DATABASE_PATH = os.environ.get("DATABASE_PATH") or os.path.join(os.path.dirname(__file__), "anla_youth.db")

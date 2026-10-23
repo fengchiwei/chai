@@ -51,6 +51,23 @@ class AssumedStateTests(Base):
         self.assertIn("不替學生加上他沒說過的狀態", SYSTEM_PROMPT)
 
 
+class PhrasingTests(Base):
+    """v2.8.10 (live test): 「我不在你家，沒辦法替你下答案……不用一直站在哥哥旁邊？」"""
+    ASK = "你覺得我真正難過的是什麼？"
+    ODD = "我不在你家，沒辦法替你下答案，只能說說我的猜測。會不會是很想被爸爸當成你自己來看，不用一直站在哥哥旁邊？"
+    PLAIN = "會不會不只是被比較，而是很希望爸爸看到的是你自己，不是拿來跟哥哥比的那個你？不知道我有沒有猜對。"
+
+    def test_a_disclaimer_opener_is_rewritten(self):
+        result, post, _ = self.turn(self.ASK, {"side_effect": [single(self.ODD), plain(self.PLAIN)]})
+        self.assertEqual(result["reply"], self.PLAIN)
+        note = post.call_args_list[1].kwargs["json"]["systemInstruction"]["parts"][0]["text"]
+        self.assertIn("我不在你家", note)
+
+    def test_prompt_asks_for_plain_wording(self):
+        self.assertIn("不自創比喻或畫面", SYSTEM_PROMPT)
+        self.assertIn("不要說出來", SYSTEM_PROMPT)
+
+
 class TypoTests(Base):
     def test_simplified_characters_are_converted(self):
         result, _, _ = self.turn(LOW, {"return_value": single("我们这样说吧，你还好吗？最近有发生什么事吗？")})

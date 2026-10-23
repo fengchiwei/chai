@@ -495,6 +495,10 @@ def assumed_state(reply, state, message):
     return False
 
 
+# Humility the prompt asks the model to hold, said out loud instead (2026-10-23 live test: 「我不在你家，沒辦法替你下答案」).
+DISCLAIMER = r"我(?:又)?不在(?:你家|現場|你身邊|那裡)|我沒辦法替你下(?:答案|結論|定論)|我不能替你下(?:答案|結論)"
+
+
 def presumptuous(reply):
     return bool(re.search(PRESUMPTUOUS, re.sub(QUOTED, "", reply or "")))
 
@@ -586,6 +590,8 @@ def response_violations(reply, state, message="", offer=None):
         issues.append("presumptuous")
     if assumed_state(body, state, message):
         issues.append("assumed_state")
+    if re.search(DISCLAIMER, body):
+        issues.append("disclaimer")
     old_questions = re.findall(r"[^。！？!?\n]*[？?]", previous)
     if any(q.strip() in [old.strip() for old in old_questions] for q in questions):
         issues.append("repeated_question")

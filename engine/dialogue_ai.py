@@ -13,7 +13,8 @@ import requests
 from config import Config
 from engine.dialogue_policy import (STAGES, build_state, history_clean, observe_safety,
                                     raise_triage, remember_turn)
-from engine.dialogue_reply import (assumed_state, drop_trailing_questions, local_reply, parroting, presumptuous,
+from engine.dialogue_reply import (DISCLAIMER, assumed_state, drop_trailing_questions, local_reply, parroting,
+                                   presumptuous,
                                    response_violations,
                                    safety_reply,
                                    tidy_surface)
@@ -48,7 +49,7 @@ max_questions=1 時不要只回一句感想就停，讓學生不知道怎麼接�
 【傾聽與回應技巧】（參考輔導的同理反映、動機式晤談 OARS、心理急救與 Gordon 的溝通絆腳石）
 不當鸚鵡：不要把學生的句子或一串關鍵詞搬回來。學生說「最近心情好低落，做什麼都提不起勁，覺得很空虛」，不要回「聽到你最近心情很低落、提不起勁、覺得空虛」；改說你聽出的意思，例如「好像連平常喜歡的事都變得沒什麼味道」。一則回覆最多沿用學生一個關鍵詞。
 反映可以多走半步（高層次同理），但只在學生的話裡有線索時才猜，而且要用可以被推翻的說法（「會不會有點……」「不知道我有沒有猜對」）；猜錯了就照學生的說法修正。
-不要自以為是：你不在現場，不知道全部的事。不替學生下定論（不說「一定很……」「肯定是……」「其實你……」「你只是……」「說穿了」），不說「我完全懂」「我知道你的感受」，不告訴學生他需要什麼、應該怎麼想，不總結他的人生或性格；學生自己最清楚，解釋權在他。
+不要自以為是：你不在現場，不知道全部的事（這是你心裡的分寸，不要說出來；不說「我不在你家」「我不在現場」「我沒辦法替你下答案」這類開場，直接用可以被推翻的說法回應）。不替學生下定論（不說「一定很……」「肯定是……」「其實你……」「你只是……」「說穿了」），不說「我完全懂」「我知道你的感受」，不告訴學生他需要什麼、應該怎麼想，不總結他的人生或性格；學生自己最清楚，解釋權在他。
 不替學生加上他沒說過的狀態：他沒提到累、疲憊、壓力、委屈、孤單，就不要說他很累、壓力很大或很委屈；想確認時用一句可以被否定的問題（「會不會有點累？」），而且整段最多一次。
 多反映、少發問：一則回覆以一個反映為主，問題最多一個而且放在反映之後；不要每則都用問句結尾，也不要連續用問題推著學生走。
 不急著給答案：學生沒有問方法時不主動給建議，想給時先問「要不要聽聽一個小方法？」；學生問了方法（support_choice）才直接給一個小步驟。
@@ -59,6 +60,7 @@ max_questions=1 時不要只回一句感想就停，讓學生不知道怎麼接�
 開頭要有變化：不要每輪用「聽起來」「聽到你」「我懂」「我能理解」「辛苦了」開頭，也不要連續兩輪換詞重述同一件事。
 【自然口語】
 用日常臺灣青少年能理解的短句，像一個可靠、謙虛的朋友，不要像諮商紀錄、老師訓話或機械摘要。
+用平常說話的說法，不自創比喻或畫面，也不要把前一句的比喻再延伸下去：學生說「爸爸拿我跟哥哥比較」，就說「被拿來跟哥哥比」，不要說成「站在哥哥旁邊」「被放在旁邊比」。不確定一個說法自不自然時，用最直白的那個。
 只用正確的臺灣繁體中文：不用簡體字（著不是着、們不是们、這不是这），注意同音錯字（在／再、的／得／地、做／作、已／以），送出前把整段讀一遍，有錯字就改掉。
 每輪優先接本輪新意思：事件、尚未被確認的情緒、對方的期待，或此刻希望得到的協助；沒有新訊息時可以簡短留白。
 情緒只能以輕微、可修正的方式推測，例如「這樣可能有點悶」，不說「一定很委屈」「難怪你心灰意冷」。
@@ -355,6 +357,18 @@ def _attempt_limit(provider, model, remaining, last):
     return min(remaining, max(8.0, known * 1.5)) if known else remaining * 0.65
 
 
+def _scrub_prompt(prompt):
+    """Mask personal identifiers in everything student-derived, but not in the reviewed reference cards: their
+    official phone numbers and addresses (a 衛生所's number) are the answer, not a student's data (v2.9: the masker
+    turned them into 「[電話已隱碼]」)."""
+    start = prompt.find(knowledge.REFERENCE_HEADER)
+    if start < 0:
+        return scrub_pii(prompt)
+    end = prompt.find("\n\n【", start + 1)
+    end = len(prompt) if end < 0 else end
+    return scrub_pii(prompt[:start]) + prompt[start:end] + scrub_pii(prompt[end:])
+
+
 def _call_model(prompt, message, history=None, analysis=False, timeout=None, structured=False, validate=None):
     """`validate(text)` rejects a reply that arrived but is unusable (e.g. broken JSON): it counts against
     that model and the next model is tried in the same turn."""
@@ -375,7 +389,7 @@ def _call_model(prompt, message, history=None, analysis=False, timeout=None, str
     # identifiers are masked in everything that leaves for the provider (prompt memory included).
     history = [{"role": t["role"], "text": scrub_pii(student_block(as_data(t["text"])) if t["role"] == "user" else t["text"])}
                for t in history_clean(history, message)]
-    prompt, message = scrub_pii(prompt), scrub_pii(message)
+    prompt, message = _scrub_prompt(prompt), scrub_pii(message)
     models = model_router.candidates(provider)
     if not models:
         return None, "cooldown"  # every model is paused; the student gets a local reply right away
@@ -626,7 +640,8 @@ REWRITE_NOTE = ("【改寫】你的草稿有這些問題：{problems}。草稿�
                 "只輸出改寫後要對學生說的話，不要 JSON 或其他文字。")
 REWRITE_PROBLEMS = {"parroting": "把學生的原話搬了回來，讀起來像鸚鵡",
                     "presumptuous": "替學生下定論或自以為懂他（例如「一定很…」「其實你…」「我完全懂」），讀起來自以為是",
-                    "assumed_state": "替學生加上他沒提過的狀態（例如他沒說累，你卻說他很累、很疲憊）"}
+                    "assumed_state": "替學生加上他沒提過的狀態（例如他沒說累，你卻說他很累、很疲憊）",
+                    "disclaimer": "用「我不在你家／我不在現場／我沒辦法替你下答案」這類話開場，讀起來很怪"}
 
 
 def _rewrite_echo(draft, state, offer, message, cards, deadline, problems=("parroting",)):
@@ -640,7 +655,8 @@ def _rewrite_echo(draft, state, offer, message, cards, deadline, problems=("parr
         return None
     parsed = _parse_single(model["reply"])
     text = tidy_surface((parsed[1] if parsed and parsed[1] else model["reply"]).strip(), message, state)
-    if not text or parroting(text, message) or presumptuous(text) or assumed_state(text, state, message):
+    if (not text or parroting(text, message) or presumptuous(text) or assumed_state(text, state, message)
+            or re.search(DISCLAIMER, text)):
         return None
     return text
 
@@ -684,7 +700,7 @@ def _parse_single(text):
 
 
 def prepare_dialogue(message, triage, previous=None, history=None, use_model=True, hour=None, reply_style=None,
-                     support_offer=None, offer_chooser=None):
+                     support_offer=None, offer_chooser=None, township=None):
     """`offer_chooser(state)` lets the chat route pick this turn's resource offer before the single call,
     so the model sees the same offer instruction that the route will append."""
     previous = previous or {}
@@ -694,6 +710,7 @@ def prepare_dialogue(message, triage, previous=None, history=None, use_model=Tru
     safety = observe_safety(message, triage, previous, hour=hour)
     updated = raise_triage(triage, safety)
     state = build_state(message, updated, previous, history=history, reply_style=reply_style)
+    state["township"] = township or previous.get("township") or "南投市"  # for local resource answers
     hints, status, prepared = None, "not_needed", None
     # Every turn is answered by the model, safety turns included (with the reviewed text as reference and as the
     # fallback). A safety turn waits at most SAFETY_TIMEOUT seconds.
@@ -739,6 +756,7 @@ def prepare_dialogue(message, triage, previous=None, history=None, use_model=Tru
         safety = observe_safety(message, triage, previous, hints, hour=hour)
         updated = raise_triage(triage, safety)
         state = build_state(message, updated, previous, hints, history, reply_style=reply_style)
+        state["township"] = township or previous.get("township") or "南投市"
     state["semantic_status"] = status
     state["_prepared_reply"] = prepared  # single-call draft; dropped in generate_youth_response / remember_turn
     state["_turn_deadline"] = deadline  # dropped in generate_youth_response / remember_turn
@@ -815,11 +833,12 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
             # the question must not be cut off).
             if "questions" not in after and set(after) <= set(issues):
                 model["reply"], issues = trimmed, after
-        problems = [p for p in ("parroting", "presumptuous", "assumed_state") if p in issues]
+        problems = [p for p in ("parroting", "presumptuous", "assumed_state", "disclaimer") if p in issues]
+        rewritten = False
         if problems and deadline - _clock() >= REWRITE_SECONDS:
             better = _rewrite_echo(model["reply"], state, offer, message, cards, deadline, problems)
             if better:
-                model["reply"] = better
+                model["reply"], rewritten = better, True
                 issues = response_violations(better, state, message, offer) + output_issues(better, SYSTEM_PROMPT)
         # Harness: a reply that names a source it was not given is not sent (docs/HARNESS_PLAN.md).
         if cards and knowledge.invented_source(model["reply"], cards):
@@ -830,6 +849,8 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
                 logging.info("對話回覆有小問題但照樣送出：%s", ",".join(issues))
             result = include_support_offer(model, offer)
             result["sources"] = knowledge.public_sources(model["reply"], cards)
+            # Staff-only diagnostics (no content): what was checked and changed this turn.
+            result["diagnostics"] = {"issues": sorted(set(issues)), "rewritten": rewritten, "cards": len(cards)}
             return result
         logging.info("對話回覆未通過規則檢查：%s", ",".join(hard))
         status = "rule_check"

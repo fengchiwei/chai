@@ -33,6 +33,7 @@
         <button type="button" class="nav-item header-tool" data-open-checkin>身心檢核</button>
         <button type="button" id="headerDraftButton" class="nav-item header-tool" onclick="quickSend('請幫我寫給輔導老師的字條')">寫求助字條</button>
         <button type="button" id="headerReferralButton" class="nav-item header-tool help-request-button" onclick="window.AnlaNextSteps.openHelp()" title="想找輔導老師或真人一起想辦法時按這裡">🙋 找真人幫忙</button>
+        <button type="button" id="headerSchoolReferralButton" class="nav-item header-tool" onclick="window.AnlaSchoolReferral.open()" title="給學校輔導室的轉介單" hidden>🏫 輔導室轉介單</button>
         <a href="/resources" target="_blank" rel="noopener" class="nav-item">看南投資源</a>
       </div>
       <div class="student-header-meta">
@@ -55,6 +56,9 @@
     </div>
   </nav>
 
+  {% if demo_mode %}
+  <div class="demo-banner" role="note">🧪 公開示範網站：不會建立正式個案，也沒有真人在線接案。需要協助請直接撥 1925（24 小時）或找學校輔導室，有立即危險請撥 119。</div>
+  {% endif %}
   <!-- 離線提示：網路斷線時仍可使用離線安心逃生艙與撥號 -->
   <div id="offlineBanner" class="offline-banner" role="status" hidden>
     <span>📶 目前沒有網路，訊息暫時送不出去。</span>
@@ -413,6 +417,7 @@
   <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
   <script src="{{ asset('js/app.js') }}"></script>
   <script src="{{ asset('js/referral.js') }}"></script>
+  <script src="{{ asset('js/school_referral.js') }}"></script>
   <script src="{{ asset('js/checkin.js') }}"></script>
   <script src="{{ asset('js/pwa.js') }}"></script>
 </body>

@@ -414,7 +414,10 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
     if hyperbole:
         own = any(not re.search(r"(?:朋友|同學|他|她|閨蜜|好友).{0,6}" + re.escape(span), message) for span in hyperbole)
         floor = "orange" if _concerning_priors(previous) >= 2 else "yellow"
-        add("suicide", "ambiguous", "possible", hyperbole[0], floor, "self" if own else "other", ("LIN-01", "SIG-02"))
+        # Someone else's everyday hyperbole (spec case S01 「同學說他熱到想死了，今天真的好熱」) is not a reason to
+        # ask about that person dying; the student's own hyperbole still gets one gentle check.
+        if own:
+            add("suicide", "ambiguous", "possible", hyperbole[0], floor, "self", ("LIN-01", "SIG-02"))
 
     # DYN-04: affect inertia and abrupt farewell raise one soft check per conversation.
     risk["negative_streak"] = previous.get("negative_streak", 0) + 1 if re.search(NEGATIVE_AFFECT, scan) else 0

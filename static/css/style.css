@@ -235,6 +235,16 @@ body {
 .next-step-panel textarea.choice-text { width: 100%; box-sizing: border-box; font: inherit; }
 .idle-reminder { margin: .5rem auto .5rem 3.25rem; max-width: 80%; padding: .45rem .8rem; border-radius: 12px;
   background: transparent; border: 1px dashed #d6c4b5; color: inherit; opacity: .8; font-size: .88rem; line-height: 1.6; }
+.school-referral-card { margin: .5rem auto .75rem 3.25rem; max-width: 80%; padding: .8rem 1rem; border-radius: 14px;
+  border: 1px solid #c7d7ea; background: rgba(239, 246, 255, .9); color: #1e293b; line-height: 1.7; font-size: .92rem; }
+.school-referral-card h3 { margin: 0 0 .35rem; font-size: 1rem; }
+.school-referral-card ul { margin: .35rem 0; padding-left: 1.2rem; }
+.school-referral-card a { color: #1d4ed8; }
+.school-referral-card textarea, .school-referral-card input { width: 100%; box-sizing: border-box; font: inherit; margin: .25rem 0; }
+.school-referral-card .choice-chip { display: inline-block; margin: .25rem .4rem .25rem 0; text-decoration: none; }
+.school-referral-hint { font-size: .82rem; opacity: .85; }
+@media (max-width: 640px) { .school-referral-card { margin-left: 0; max-width: 100%; } }
+.demo-banner { background: #fef3c7; color: #78350f; padding: .5rem 1rem; text-align: center; font-size: .9rem; line-height: 1.6; }
 .btn-stop-voice {
   margin-left: .4rem;
   background: transparent;

@@ -24,6 +24,9 @@ services:
       # Render 前面有一層負載平衡，登入鎖定才會依真實來源 IP 計算。
       - key: TRUSTED_PROXY_HOPS
         value: "1"
+      # true：公開示範網站，不建立正式個案（決賽現場要展示工作臺流程時維持 false）。
+      - key: PUBLIC_DEMO_MODE
+        value: "false"
       - key: WORKBENCH_PASSWORD
         sync: false
       - key: LLM_API_KEY

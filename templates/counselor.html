@@ -163,6 +163,26 @@
       <div id="auditBody" class="explain-meta">讀取中…</div>
     </section>
 
+    <!-- 每輪診斷（管理員）：不含對話內容 -->
+    <section class="panel-card" id="diagnosticsPanel" style="margin-top: 1.5rem;" aria-labelledby="diagnosticsPanelTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3 id="diagnosticsPanelTitle" style="margin: 0;">🩺 每輪診斷（管理員，最近 50 輪）</h3>
+        <button type="button" id="reloadDiagnostics" class="btn-primary-action" style="padding:.4rem .8rem;width:auto;margin:0">重新整理</button>
+      </div>
+      <p class="explain-meta">哪個模型回覆、回覆來自 AI 還是固定安全文字、花多久、送出前檢查發現什麼、有沒有重寫、引用哪些來源。不含學生的話與回覆內容；伺服器重新啟動後會清空。</p>
+      <div id="diagnosticsBody" class="explain-meta">讀取中…</div>
+    </section>
+
+    <!-- 來源檢查（管理員）：真的連上核准的官方網頁，留下執行紀錄 -->
+    <section class="panel-card" id="sourcePanel" style="margin-top: 1.5rem;" aria-labelledby="sourcePanelTitle">
+      <h3 id="sourcePanelTitle" style="margin: 0;">🔎 來源檢查（管理員）</h3>
+      <p class="explain-meta">逐一連上知識卡與南投資源裡已核准的官方網頁，確認還打得開、標題是什麼，並留下執行紀錄（時間、HTTP 狀態、耗時、失敗原因）。
+        只抓核准清單裡的網址，只用 HTTPS，會擋掉內網與本機位址；網頁內容只當資料，不會交給 AI。聊天時不會連網。</p>
+      <button type="button" id="runSourceCheck" class="btn-primary-action" style="width:auto;margin:0;padding:.5rem 1rem">開始檢查</button>
+      <p id="sourceMessage" class="explain-meta" role="status"></p>
+      <div id="sourceResults"></div>
+    </section>
+
     <!-- 資料備份（管理員） -->
     <section class="panel-card" id="backupPanel" style="margin-top: 1.5rem;" aria-labelledby="backupPanelTitle">
       <h3 id="backupPanelTitle" style="margin: 0;">💾 資料備份（管理員）</h3>
