@@ -1,7 +1,7 @@
 """Short local responses and final output checks. Local fallback is not a language model."""
 import re
 from difflib import SequenceMatcher
-from engine.dialogue_policy import CLARIFIED, PATTERNS
+from engine.dialogue_policy import CLARIFIED, PATTERNS, STAGES
 from engine.prompt_guard import detect_injection
 from engine.dialogue_role import relationship_violations, role_acknowledgement, role_notice
 
@@ -468,6 +468,33 @@ PRESUMPTUOUS = (r"一定(?:很|是|會|不太|超|非常)|肯定(?:很|是|會)|
                 r"|你應該要|你就是太")
 
 
+# States a reply may pin on the student, and the words that show the student did bring them up
+# (2026-10-23 live test: the student never said they were tired, the reply kept saying they were exhausted).
+ASSUMED_STATES = (
+    (r"疲憊|疲倦|累壞|很累|好累|太累|累了|累積了不少累|辛苦了|撐了|撐著|撐很久|沒電|耗盡|筋疲力盡|身心俱疲",
+     r"累|疲|倦|沒力|沒電|撐|辛苦|睏|想睡|熬夜|忙|操|爆肝|好想睡"),
+    (r"壓力(?:很大|好大|山大|不小)|壓得|緊繃|喘不過氣",
+     r"壓力|壓|緊繃|焦慮|緊張|喘|考|作業|報告|比賽|忙|趕"),
+    (r"委屈", r"委屈|不公平|冤|被罵|被誤會|針對|怪我"),
+    (r"孤單|寂寞", r"孤單|寂寞|一個人|沒朋友|沒有朋友|沒人|排擠|落單"),
+)
+TENTATIVE = r"[？?]|會不會|是不是|有沒有|如果|或許|也許|不知道我有沒有"
+
+
+def assumed_state(reply, state, message):
+    """The reply asserts a state (tired, stressed, wronged, lonely) the student never mentioned in this
+    conversation. A tentative question about it is allowed; telling them they feel it is not."""
+    said = " ".join([message, *(t.get("text", "") for t in (state or {}).get("history", []) if t.get("role") == "user"),
+                     *((state or {}).get(stage + "_summary", "") for stage in STAGES)])
+    for sentence in re.findall(r"[^。！？!?\n]+[。！？!?]?", re.sub(QUOTED, "", reply or "")):
+        if re.search(TENTATIVE, sentence):
+            continue
+        for pinned, mentioned in ASSUMED_STATES:
+            if re.search(pinned, sentence) and not re.search(mentioned, said):
+                return True
+    return False
+
+
 def presumptuous(reply):
     return bool(re.search(PRESUMPTUOUS, re.sub(QUOTED, "", reply or "")))
 
@@ -557,6 +584,8 @@ def response_violations(reply, state, message="", offer=None):
         issues.append("parroting")
     if presumptuous(body):
         issues.append("presumptuous")
+    if assumed_state(body, state, message):
+        issues.append("assumed_state")
     old_questions = re.findall(r"[^。！？!?\n]*[？?]", previous)
     if any(q.strip() in [old.strip() for old in old_questions] for q in questions):
         issues.append("repeated_question")

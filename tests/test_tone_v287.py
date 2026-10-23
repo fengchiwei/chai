@@ -31,6 +31,26 @@ class ToneTests(Base):
         self.assertIn("自以為是", note)
 
 
+class AssumedStateTests(Base):
+    """v2.8.8: the student never said they were tired, the reply kept saying they were exhausted."""
+    QUARREL = "我跟同學吵架了，他說我很自私"
+    TIRED = "被這樣說，你最近一定也很累，身心俱疲。"
+    OPEN = "被說自私，心裡應該不太舒服。那時候發生了什麼事？"
+
+    def test_states_the_student_never_mentioned_trigger_a_rewrite(self):
+        result, post, _ = self.turn(self.QUARREL, {"side_effect": [single(self.TIRED), plain(self.OPEN)]})
+        self.assertEqual(result["reply"], self.OPEN)
+        note = post.call_args_list[1].kwargs["json"]["systemInstruction"]["parts"][0]["text"]
+        self.assertIn("沒提過的狀態", note)
+
+    def test_mentioned_states_and_tentative_questions_are_fine(self):
+        from engine.dialogue_reply import assumed_state
+        self.assertFalse(assumed_state("熬了好幾天，身體應該很累。", {"history": []}, "我最近都熬夜"))
+        self.assertFalse(assumed_state("會不會有點累？", {"history": []}, self.QUARREL))
+        self.assertFalse(assumed_state("你很累。", {"history": [{"role": "user", "text": "最近好累"}]}, self.QUARREL))
+        self.assertIn("不替學生加上他沒說過的狀態", SYSTEM_PROMPT)
+
+
 class TypoTests(Base):
     def test_simplified_characters_are_converted(self):
         result, _, _ = self.turn(LOW, {"return_value": single("我们这样说吧，你还好吗？最近有发生什么事吗？")})

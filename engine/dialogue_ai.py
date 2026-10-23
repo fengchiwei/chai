@@ -13,7 +13,8 @@ import requests
 from config import Config
 from engine.dialogue_policy import (STAGES, build_state, history_clean, observe_safety,
                                     raise_triage, remember_turn)
-from engine.dialogue_reply import (drop_trailing_questions, local_reply, parroting, presumptuous, response_violations,
+from engine.dialogue_reply import (assumed_state, drop_trailing_questions, local_reply, parroting, presumptuous,
+                                   response_violations,
                                    safety_reply,
                                    tidy_surface)
 from engine.dialogue_role import ROLE_RULES, role_notice, role_user_message
@@ -48,6 +49,7 @@ max_questions=1 時不要只回一句感想就停，讓學生不知道怎麼接�
 不當鸚鵡：不要把學生的句子或一串關鍵詞搬回來。學生說「最近心情好低落，做什麼都提不起勁，覺得很空虛」，不要回「聽到你最近心情很低落、提不起勁、覺得空虛」；改說你聽出的意思，例如「好像連平常喜歡的事都變得沒什麼味道」。一則回覆最多沿用學生一個關鍵詞。
 反映可以多走半步（高層次同理），但只在學生的話裡有線索時才猜，而且要用可以被推翻的說法（「會不會有點……」「不知道我有沒有猜對」）；猜錯了就照學生的說法修正。
 不要自以為是：你不在現場，不知道全部的事。不替學生下定論（不說「一定很……」「肯定是……」「其實你……」「你只是……」「說穿了」），不說「我完全懂」「我知道你的感受」，不告訴學生他需要什麼、應該怎麼想，不總結他的人生或性格；學生自己最清楚，解釋權在他。
+不替學生加上他沒說過的狀態：他沒提到累、疲憊、壓力、委屈、孤單，就不要說他很累、壓力很大或很委屈；想確認時用一句可以被否定的問題（「會不會有點累？」），而且整段最多一次。
 多反映、少發問：一則回覆以一個反映為主，問題最多一個而且放在反映之後；不要每則都用問句結尾，也不要連續用問題推著學生走。
 不急著給答案：學生沒有問方法時不主動給建議，想給時先問「要不要聽聽一個小方法？」；學生問了方法（support_choice）才直接給一個小步驟。
 避開會讓人關上心門的回應：命令、警告、說教、講道理、評斷、分析他「其實是……」、空泛稱讚、「沒事啦」「想開一點」這類保證、急著轉移話題。
@@ -623,7 +625,8 @@ REWRITE_NOTE = ("【改寫】你的草稿有這些問題：{problems}。草稿�
                 "最多沿用學生一個關鍵詞；用可以被推翻的說法，不替學生下定論；長度相近，問題數不增加。"
                 "只輸出改寫後要對學生說的話，不要 JSON 或其他文字。")
 REWRITE_PROBLEMS = {"parroting": "把學生的原話搬了回來，讀起來像鸚鵡",
-                    "presumptuous": "替學生下定論或自以為懂他（例如「一定很…」「其實你…」「我完全懂」），讀起來自以為是"}
+                    "presumptuous": "替學生下定論或自以為懂他（例如「一定很…」「其實你…」「我完全懂」），讀起來自以為是",
+                    "assumed_state": "替學生加上他沒提過的狀態（例如他沒說累，你卻說他很累、很疲憊）"}
 
 
 def _rewrite_echo(draft, state, offer, message, cards, deadline, problems=("parroting",)):
@@ -637,7 +640,7 @@ def _rewrite_echo(draft, state, offer, message, cards, deadline, problems=("parr
         return None
     parsed = _parse_single(model["reply"])
     text = tidy_surface((parsed[1] if parsed and parsed[1] else model["reply"]).strip(), message, state)
-    if not text or parroting(text, message) or presumptuous(text):
+    if not text or parroting(text, message) or presumptuous(text) or assumed_state(text, state, message):
         return None
     return text
 
@@ -812,7 +815,7 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
             # the question must not be cut off).
             if "questions" not in after and set(after) <= set(issues):
                 model["reply"], issues = trimmed, after
-        problems = [p for p in ("parroting", "presumptuous") if p in issues]
+        problems = [p for p in ("parroting", "presumptuous", "assumed_state") if p in issues]
         if problems and deadline - _clock() >= REWRITE_SECONDS:
             better = _rewrite_echo(model["reply"], state, offer, message, cards, deadline, problems)
             if better:
