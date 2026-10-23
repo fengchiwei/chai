@@ -11,7 +11,7 @@ let isSending = false;
 let studentOnboarded = false;
 
 // ==================== AI 回覆風格（記在這台裝置，隨每則訊息送出） ====================
-const REPLY_STYLES = ["warm", "lively", "rational", "listen_only"];
+const REPLY_STYLES = ["warm", "lively", "humor", "rational", "listen_only"];
 const REPLY_STYLE_KEY = "anla_reply_style";
 const SAFETY_STYLE_NOTE = "🛟 目前先以安全為優先，暫時用穩定的語氣陪你。你選的風格會先幫你保留著。";
 let replyStyleChosen = false;
@@ -91,6 +91,25 @@ function applyStudentProfile(profile) {
     sessionStorage.setItem(`anla_student_${key}`, value);
   }
   document.getElementById("onboardingModal").style.display = "none";
+}
+
+// 紓壓知識卡：回覆引用的來源（機構與連結），點了用新分頁開啟。
+function appendSources(bubble, sources) {
+  if (!bubble || !Array.isArray(sources) || !sources.length) return;
+  const box = document.createElement("div");
+  box.className = "reply-sources";
+  box.append("📚 資料來源：");
+  sources.forEach((source, i) => {
+    if (!/^https:\/\//.test(source.url || "")) return;
+    const link = document.createElement("a");
+    link.href = source.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = `${source.publisher}〈${source.title}〉`;
+    if (i) box.append("、");
+    box.appendChild(link);
+  });
+  bubble.appendChild(box);
 }
 
 // ==================== 語音對答系統狀態 (Web Speech API) ====================
@@ -246,6 +265,7 @@ async function sendMessage() {
     if (data.reply) {
       // 純溫暖回覆，學生端不顯示任何燈號或評判結果 (燈號全數保留至後台由真人覆核)
       replyBubble = appendMessage("ai", data.reply);
+      appendSources(replyBubble, data.sources);
       conversationHistory.push({ role: "assistant", text: data.reply });
 
       updateAiStatusFromReply(data);
@@ -484,6 +504,7 @@ function speechText(elementOrText) {
     const bubble = elementOrText.closest(".bubble");
     if (bubble) {
       const clone = bubble.cloneNode(true);
+      clone.querySelectorAll(".reply-sources").forEach(el => el.remove());  // links are not read aloud
       clone.querySelectorAll("button").forEach(b => {
         if (b.classList.contains("inline-support-link")) b.replaceWith(document.createTextNode(b.textContent));
         else b.remove();

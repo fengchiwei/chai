@@ -106,6 +106,6 @@ class StyleTests(unittest.TestCase):
 
     def test_prompt_respects_real_world_uncertainty(self):
         self.assertIn('不要替家人、老師',SYSTEM_PROMPT)
-        self.assertIn('不需每輪以「聽起來」',SYSTEM_PROMPT)
+        self.assertIn('不要每輪用「聽起來」',SYSTEM_PROMPT)
 
 if __name__=='__main__': unittest.main()

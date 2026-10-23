@@ -6,12 +6,13 @@ Unconfirmed signals and confirmed high-water risk are intentionally separate.
 from copy import deepcopy
 import re
 from engine.dialogue_role import asks_identity, resolve_role
+from engine.knowledge import asks_information
 
 POLICY_VERSION = "satir-2026-10-19.2"
 WEIGHTS = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
 STAGES = ("event", "feeling", "perception", "expectation", "yearning", "self")
 RISK_TYPES = ("none", "self_harm", "suicide", "abuse", "violence", "digital_sexual_violence", "other")
-REPLY_STYLES = ("warm", "lively", "rational", "listen_only")
+REPLY_STYLES = ("warm", "lively", "humor", "rational", "listen_only")
 # Short reactions to the assistant's last sentence (punctuation already removed by compact()).
 REACTION_DOUBT = r"真的(?:嗎|假的|喔|哦)?|真假|是喔|是哦|是嗎|有嗎|會嗎|你確定(?:嗎)?|是這樣嗎|蛤|騙人|最好是"
 REACTION_ASK = r"為什麼|為啥|怎麼說|什麼意思|啥意思|然後呢|所以呢|例如呢|比如說呢?"
@@ -40,6 +41,10 @@ _EXPLICIT_HELP = re.compile(
     r"|(?:要|該|可以|才能)(?:怎麼|如何)(?:跟|和|對|向|做|回|補|讀|排|準備|處理|開口|說|講|溝通|規劃|安排|面對|道歉)"
     r"|幫我.{0,6}(?:排|規劃|安排|想想|看看)|有沒有.{0,8}(?:具體|實際|好)?的?(?:方法|辦法|建議|技巧)"
     r"|(?:我)?可以(?:先)?(?:找|去|跟|試|用|請).{0,12}嗎|你覺得(?:我)?(?:要|應該|該|可以).{0,14}嗎"
+    # v2.8 harness: coping questions 「有什麼方法可以放鬆」「睡不著怎麼辦」「怎麼紓壓」 ask for a way, not to be explored.
+    r"|有(?:什麼|甚麼|哪些|沒有).{0,6}(?:方法|辦法|技巧|撇步|建議)|(?:紓壓|舒壓|減壓|放鬆)(?:的)?(?:方法|技巧|撇步)"
+    r"|(?:怎麼|如何|要怎樣)(?:才能|才可以|可以)?(?:放鬆|紓壓|舒壓|減壓|冷靜|入睡|睡著|專心|不緊張|不焦慮|停下來|戒掉)"
+    r"|(?:睡不著|失眠|好緊張|好焦慮|一直擔心|停不下來|好生氣|好孤單|讀不下|拖延).{0,8}(?:怎麼辦|該怎麼做|要怎麼做)"
 )
 _IMPLICIT_HELP = re.compile(
     r"(?:不知道|不曉得|不清楚|想不到|不會|沒辦法|不確定|不太會)"
@@ -85,7 +90,7 @@ def initial_state():
         "safety_lifted": False, "safety_turns": 0, "fresh_safety": False, "ideation_confirmed": False,
         "risk_cue": "", "night_review": False, "fresh_level": "green",
         "emotion_intensity": "low", "conversation_willingness": "medium", "privacy_concern": False,
-        "confidentiality_limit_needed": False, "advice_request": False,
+        "confidentiality_limit_needed": False, "advice_request": False, "info_request": False,
         "iceberg_stage": "unknown", "current_goal": "clarify_event", "response_strategy": "clarify",
         "ask_question": True, "max_questions": 1, "forbidden_actions": [],
         "uncertainty_streak": 0, "boundary_active": False, "corrections": [],
@@ -556,6 +561,7 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
         r"|刪(?:掉|除).{0,6}(?:紀錄|記錄|對話|資料)|關掉.{0,6}(?:就)?(?:沒了|消失)", message))
     state["confidentiality_limit_needed"] = state["privacy_concern"] or state["safety_override"]
     state["advice_request"] = wants_practical_help(message)
+    state["info_request"] = asks_information(message)
     # 「我說的是未來3天之後」 corrects the last reply just like 「不是啦」 (2026-10-23 live test).
     correction = bool(re.search(r"^(?:不是|不對)|你誤會|你聽錯|你搞錯|不是那個意思|我不是.{0,6}[，,].*(?:是|而是)"
                                 r"|^.{0,4}(?:我(?:剛剛|剛才)?(?:說|講|指)的是|我是說|我的意思是)", message)) and not state["safety_denied"]
@@ -607,6 +613,9 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
         goal, strategy, ask = "integrate", "reflect_only", False
     elif state["advice_request"]:
         goal, strategy, ask = "support_choice", "support_next_step", False
+    elif state["info_request"]:
+        # v2.8 harness: a question about facts or ways (「電子煙有什麼影響」「15 歲可以打工嗎」) gets an answer.
+        goal, strategy, ask = "answer_question", "inform", True
     elif correction:
         # Own the misreading, answer the corrected meaning, and ask once if it is still unclear what they mean.
         goal, strategy, ask = "repair_understanding", "reflect_then_ask", True
@@ -640,7 +649,7 @@ def build_state(message, triage, previous=None, hints=None, history=None, reply_
                  effective_style="safety" if overridden else style)
     state.update(current_goal=goal, response_strategy=strategy, ask_question=ask, max_questions=int(ask))
     banned = ["ask_multiple_questions", "diagnose", "interpret_for_user", "force_positive", "promise_absolute_confidentiality", "minimize_risk"]
-    if goal != "support_choice" or no_advice:
+    if goal not in ("support_choice", "answer_question") or no_advice:
         banned.append("give_advice")
     if goal in ("safety_support", "stabilize", "respect_boundary", "establish_safety", "integrate", "respond_to_reaction",
                 "repair_understanding"):

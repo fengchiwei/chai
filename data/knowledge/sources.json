@@ -1,0 +1,218 @@
+{
+  "version": "2026-10-23",
+  "note": "知識卡只能引用這份白名單上的網域。tier 1：政府與公衛機關、國際衛生組織；tier 2：醫學會、學會、醫學中心、系統性回顧；tier 3：大學與研究機構的衛教頁。新增網域需經管理員同意並記在 CHANGELOG。 主題清單在 topics.json。",
+  "sources": [
+    {
+      "name": "衛生福利部（含心理健康司）",
+      "domains": [
+        "mohw.gov.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 90
+    },
+    {
+      "name": "衛生福利部國民健康署",
+      "domains": [
+        "hpa.gov.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 90
+    },
+    {
+      "name": "教育部",
+      "domains": [
+        "edu.tw",
+        "moe.gov.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 180
+    },
+    {
+      "name": "教育部國民及學前教育署",
+      "domains": [
+        "k12ea.gov.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 180
+    },
+    {
+      "name": "勞動部",
+      "domains": [
+        "mol.gov.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 180
+    },
+    {
+      "name": "內政部警政署（含 165 反詐騙）",
+      "domains": [
+        "npa.gov.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 90
+    },
+    {
+      "name": "iWIN 網路內容防護機構（政府委託）",
+      "domains": [
+        "win.org.tw"
+      ],
+      "tier": 2,
+      "language": "zh-TW",
+      "check_every_days": 180
+    },
+    {
+      "name": "南投縣政府衛生局",
+      "domains": [
+        "ntshb.gov.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 90
+    },
+    {
+      "name": "國家衛生研究院",
+      "domains": [
+        "nhri.edu.tw"
+      ],
+      "tier": 1,
+      "language": "zh-TW",
+      "check_every_days": 180
+    },
+    {
+      "name": "世界衛生組織 WHO",
+      "domains": [
+        "who.int"
+      ],
+      "tier": 1,
+      "language": "en",
+      "check_every_days": 180
+    },
+    {
+      "name": "聯合國兒童基金會 UNICEF",
+      "domains": [
+        "unicef.org"
+      ],
+      "tier": 1,
+      "language": "en",
+      "check_every_days": 180
+    },
+    {
+      "name": "美國國家心理衛生研究院 NIMH",
+      "domains": [
+        "nimh.nih.gov"
+      ],
+      "tier": 1,
+      "language": "en",
+      "check_every_days": 180
+    },
+    {
+      "name": "美國疾病管制與預防中心 CDC",
+      "domains": [
+        "cdc.gov"
+      ],
+      "tier": 1,
+      "language": "en",
+      "check_every_days": 180
+    },
+    {
+      "name": "英國國民保健署 NHS",
+      "domains": [
+        "nhs.uk"
+      ],
+      "tier": 1,
+      "language": "en",
+      "check_every_days": 180
+    },
+    {
+      "name": "Cochrane 系統性回顧",
+      "domains": [
+        "cochrane.org",
+        "cochranelibrary.com"
+      ],
+      "tier": 2,
+      "language": "en",
+      "check_every_days": 365
+    },
+    {
+      "name": "美國睡眠醫學會 AASM",
+      "domains": [
+        "aasm.org",
+        "sleepeducation.org"
+      ],
+      "tier": 2,
+      "language": "en",
+      "check_every_days": 365
+    },
+    {
+      "name": "美國兒科醫學會 AAP",
+      "domains": [
+        "aap.org",
+        "healthychildren.org"
+      ],
+      "tier": 2,
+      "language": "en",
+      "check_every_days": 365
+    },
+    {
+      "name": "台灣精神醫學會",
+      "domains": [
+        "sop.org.tw"
+      ],
+      "tier": 2,
+      "language": "zh-TW",
+      "check_every_days": 365
+    },
+    {
+      "name": "台灣臨床心理學會",
+      "domains": [
+        "twcpa.org.tw"
+      ],
+      "tier": 2,
+      "language": "zh-TW",
+      "check_every_days": 365
+    },
+    {
+      "name": "台灣諮商心理學會",
+      "domains": [
+        "twcpa.tw",
+        "twcpa.org"
+      ],
+      "tier": 2,
+      "language": "zh-TW",
+      "check_every_days": 365
+    },
+    {
+      "name": "國立臺灣大學醫學院附設醫院",
+      "domains": [
+        "ntuh.gov.tw"
+      ],
+      "tier": 2,
+      "language": "zh-TW",
+      "check_every_days": 365
+    },
+    {
+      "name": "臺北榮民總醫院",
+      "domains": [
+        "vghtpe.gov.tw"
+      ],
+      "tier": 2,
+      "language": "zh-TW",
+      "check_every_days": 365
+    },
+    {
+      "name": "董氏基金會（心理衛生）",
+      "domains": [
+        "jtf.org.tw"
+      ],
+      "tier": 3,
+      "language": "zh-TW",
+      "check_every_days": 365
+    }
+  ]
+}

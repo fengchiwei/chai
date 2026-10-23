@@ -41,7 +41,7 @@ GOAL_LABELS = {
     "support_choice": "提供可選的小步驟", "respect_boundary": "尊重界線", "stabilize": "先穩定情緒",
     "establish_safety": "說明隱私界線", "safety_support": "安全確認優先",
     "configure_role": "設定陪伴角色", "clarify_identity": "說明 AI 身分", "respond_to_reaction": "回應學生對上一句的反應",
-    "repair_understanding": "修正誤解",
+    "repair_understanding": "修正誤解", "answer_question": "回答資訊問題",
 }
 
 

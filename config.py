@@ -1,5 +1,17 @@
 import os
 import secrets
+import time
+
+# Every time the app records or reasons about (case times, the 01–05 late-night rule) is Taiwan time, even on a
+# cloud host whose clock is UTC (Render showed 12:50 as 04:50 and would treat 09–13 as late night).
+# APP_TIMEZONE takes a zone name; "CST-8" needs no timezone database. Windows (no tzset) uses the system zone.
+APP_TIMEZONE = os.environ.get("APP_TIMEZONE", "Asia/Taipei")
+if hasattr(time, "tzset"):
+    os.environ["TZ"] = APP_TIMEZONE
+    time.tzset()
+    if APP_TIMEZONE == "Asia/Taipei" and time.timezone != -8 * 3600:
+        os.environ["TZ"] = "CST-8"  # the host has no timezone database
+        time.tzset()
 
 class Config:
     # 未設定時，每次啟動產生新的本機祕鑰；正式部署請設定穩定且隨機的 SECRET_KEY。

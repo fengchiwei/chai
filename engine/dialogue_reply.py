@@ -401,7 +401,10 @@ EMBEDDED_QUESTION = (r"(?:不知道|不曉得|想知道|不確定|再來看|來�
                      r"(?:怎麼|如何|什麼|哪[個一裡種]|是不是|有沒有|是否)")
 # Proposal ethics 2: no medication or medical-treatment advice (what to take, how much, when to stop).
 MEDICAL_ADVICE = (r"(?:建議|可以|試試|不妨|記得|最好|先)(?:你)?.{0,6}(?:吃|服用|吞|加量|減量|停掉|停用|戒掉).{0,8}"
-                  r"(?:藥|安眠藥|褪黑激素|抗憂鬱|鎮定劑|止痛藥|保健食品)|\d+\s*(?:毫克|mg|顆|粒|錠)"
+                  r"(?:藥|安眠藥|褪黑激素|抗憂鬱|鎮定劑|止痛藥|保健食品)"
+                  # A dose is a number tied to a medicine; 「咖啡因每天不超過 100 毫克」 (a cited guideline) is not.
+                  r"|(?:吃|服用|吞)\s*(?:\d+|[一兩二三四五半])\s*(?:顆|粒|錠)|\d+\s*(?:毫克|mg|顆|粒|錠)\s*(?:的)?(?:藥|安眠藥|褪黑激素|鎮定劑|止痛藥)"
+                  r"|(?:藥|安眠藥|褪黑激素|鎮定劑|止痛藥).{0,6}\d+\s*(?:毫克|mg|顆|粒|錠)"
                   r"|(?:自己)?(?:停藥|減藥|加藥)(?:看看|試試|也可以|沒關係)")
 OVERPSYCHOLOGIZING = r"喘息空間|緊繃感|內在負荷|承接(?:情緒|你的情緒)|生命課題|內在小孩|療癒自己"
 
@@ -440,6 +443,20 @@ def drop_trailing_questions(reply, keep=0):
     if len(kept) < max(20, len(reply.strip()) // 3):
         return None
     return kept if kept != reply.strip() else None
+
+
+def parroting(reply, message):
+    """The reply carries the student's own wording back (「聽到你最近心情很低落、提不起勁、覺得空虛」).
+    Counselling calls this a simple reflection; strung together it reads as an echo (2026-10-23 live test).
+    True when a run of 8+ of the student's characters reappears, or 40% of their two-character phrases do."""
+    plain = lambda text: re.sub(r"[^㐀-鿿A-Za-z0-9]", "", re.sub(QUOTED, "", text or ""))
+    said, answer = plain(message), plain(reply)
+    if len(said) < 8:
+        return False
+    if any(said[i:i + 8] in answer for i in range(len(said) - 7)):
+        return True
+    grams = {said[i:i + 2] for i in range(len(said) - 1)}
+    return len(said) >= 12 and sum(g in answer for g in grams) / len(grams) >= 0.4
 
 
 def response_violations(reply, state, message="", offer=None):
@@ -495,6 +512,8 @@ def response_violations(reply, state, message="", offer=None):
     previous = state.get("last_reply", "")
     if previous and (reply == previous or (len(reply) > 35 and SequenceMatcher(None, reply, previous).ratio() > .92)):
         issues.append("repeat")
+    if parroting(body, message):
+        issues.append("parroting")
     old_questions = re.findall(r"[^。！？!?\n]*[？?]", previous)
     if any(q.strip() in [old.strip() for old in old_questions] for q in questions):
         issues.append("repeated_question")

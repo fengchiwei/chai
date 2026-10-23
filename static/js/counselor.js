@@ -196,7 +196,8 @@ function renderTranscript(c, E) {
     return `<div class="transcript-row ${student ? "student" : "assistant"}">
       <span class="transcript-time">${E((t.at || "").slice(11, 16))}</span>
       <span class="transcript-who">${E(who)}</span>
-      <span class="transcript-text">${E(t.text || "")}</span></div>`;
+      <span class="transcript-text">${E(t.text || "")}${Array.isArray(t.cards) && t.cards.length
+        ? `<br><span class="explain-meta">📚 引用知識卡：${E(t.cards.join("、"))}</span>` : ""}</span></div>`;
   }).join("");
   const first = (transcript[0].at || "").slice(0, 16), last = (transcript[transcript.length - 1].at || "").slice(0, 16);
   return `<p class="explain-meta">共 ${transcript.length} 則，${E(first)} 到 ${E(last)}；只包含學生按下同意之前的對話。</p>

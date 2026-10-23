@@ -130,7 +130,8 @@ def save_dialogue_state(context_id, email_hash, state, expected_turn, exchange=N
             context["dialogue_state"] = state
             if exchange:
                 entries = [{"role": e["role"], "text": str(e["text"])[:2000], "at": e.get("at", ""),
-                            **({"source": e["source"]} if e.get("source") else {})} for e in exchange]
+                            **({"source": e["source"]} if e.get("source") else {}),
+                            **({"cards": list(e["cards"])[:3]} if e.get("cards") else {})} for e in exchange]
                 context["transcript"] = (context.get("transcript", []) + entries)[-TRANSCRIPT_LIMIT:]
             _write(conn, context_id, email_hash, context)
         return context

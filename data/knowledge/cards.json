@@ -1,0 +1,4467 @@
+[
+  {
+    "id": "stress-healthy-coping-and-help",
+    "topic": "stress",
+    "title": "壓力大時的健康紓壓法，以及什麼時候該找人",
+    "keywords": [
+      "怎麼紓壓",
+      "壓力大怎麼辦",
+      "會考壓力",
+      "讀不下去",
+      "撐不住了",
+      "需要幫忙",
+      "要不要找輔導老師",
+      "想抽菸紓壓",
+      "滑手機停不下來"
+    ],
+    "summary": "用聽音樂、運動、找人聊聊、規律睡眠等健康方式紓壓，如果自己試了還是撐不住，就要找大人幫忙。",
+    "steps": [
+      "選一個健康的紓壓方式先試試看，例如聽音樂、出去走走或運動、跟朋友聊聊。",
+      "把大任務切成小步驟，一次只做一小塊，完成了就給自己一點肯定。",
+      "顧好基本功：盡量固定時間睡覺、三餐規律，少喝含咖啡因的飲料。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "抽菸、喝酒或暴飲暴食看起來能暫時放鬆，其實會讓壓力和身體狀況更糟。"
+    ],
+    "when_to_seek_help": "如果壓力讓你好幾天都沒辦法正常上課生活、自己試過方法也沒有改善，請告訴家人、導師或輔導老師，必要時由醫師協助。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "紓解壓力有許多正向選擇 吸菸（煙）無法減壓且傷害腦部",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4809&pid=18118",
+        "updated": "2024-05-13",
+        "supports": "青少年有壓力時可向家長或學校求助，用聽音樂、找朋友聊聊、運動等方式紓壓；吸菸無法減壓反而增加壓力",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "I'm So Stressed Out! Fact Sheet",
+        "publisher": "National Institute of Mental Health (NIMH)",
+        "url": "https://www.nimh.nih.gov/health/publications/so-stressed-out-fact-sheet",
+        "updated": null,
+        "supports": "規律睡眠、運動與正常飲食、減少咖啡因、找能支持你的親友；難以應付或症狀不消失、影響日常生活時要找專業協助",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Dealing with stress (Every Mind Matters)",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/",
+        "updated": null,
+        "supports": "把大任務拆成小步驟並肯定自己、多活動身體、和信任的人聊聊；壓力影響日常生活時要找醫師或專業協助",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "stress-what-is-stress",
+    "topic": "stress",
+    "title": "壓力是什麼？認識身體和心情的警訊",
+    "keywords": [
+      "壓力好大",
+      "壓力是什麼",
+      "好煩",
+      "睡不著",
+      "頭痛",
+      "肚子痛",
+      "一直想很多",
+      "容易生氣",
+      "考試壓力",
+      "快爆炸了"
+    ],
+    "summary": "壓力是身體面對挑戰時的正常反應，一點點可以讓人更有動力，但太多或太久就會影響心情、身體和人際關係。",
+    "steps": [
+      "先停下來想一想，最近讓你有壓力的是哪件事，例如考試、朋友、家裡或社群媒體。",
+      "檢查身體有沒有發出訊號，像是頭痛、肚子不舒服、睡不好、胃口變了，或很難專心。",
+      "注意心情和行為的變化，例如變得很煩躁、愛哭、想躲開大家，或不想做原本喜歡的事。",
+      "把觀察到的訊號寫下來，這樣比較容易看出壓力從哪裡來，也方便跟信任的人說明。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "有壓力不代表你很弱，每個人都會遇到。"
+    ],
+    "when_to_seek_help": "如果壓力的感覺一直不消失、已經影響上學、睡覺或吃飯，請找導師、輔導老師或醫師談談。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Stress (Questions and answers)",
+        "publisher": "World Health Organization (WHO)",
+        "url": "https://www.who.int/news-room/questions-and-answers/item/stress",
+        "updated": "2026-03-30",
+        "supports": "壓力是面對困難的自然反應、適量有幫助但過多會傷身心；常見訊號（難專心、煩躁、頭痛肚子不舒服、睡不好、胃口改變）；壓力持續且影響生活時要求助",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "What is stress?",
+        "publisher": "UNICEF Parenting",
+        "url": "https://www.unicef.org/parenting/mental-health/what-is-stress",
+        "updated": null,
+        "supports": "青少年常見壓力來源（課業、朋友、社群媒體、家庭變化）；身體與情緒的壓力訊號（煩躁、退縮、難專心）；找出壓力來源與模式",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Dealing with stress (Every Mind Matters)",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/",
+        "updated": null,
+        "supports": "壓力對心情、身體、行為的影響（易怒、想很多、頭痛、避開人或喜歡的活動）；一點壓力可以帶來動力",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "breathing-belly-breathing-basic",
+    "topic": "breathing",
+    "title": "腹式呼吸：讓呼吸慢下來",
+    "keywords": [
+      "喘不過氣",
+      "呼吸很急",
+      "心跳很快",
+      "好緊張",
+      "深呼吸",
+      "腹式呼吸",
+      "冷靜下來",
+      "放鬆方法",
+      "胸口悶悶的"
+    ],
+    "summary": "緊張時呼吸常會變淺變快，練習把氣慢慢吸進肚子再緩緩吐出，可以幫身體慢慢安定下來。",
+    "steps": [
+      "找個舒服的姿勢坐好或躺下，鬆開太緊的衣服，雙腳平放在地上，一隻手放在肚子上。",
+      "用鼻子慢慢吸氣，感覺肚子像氣球一樣鼓起來，不用勉強吸到很飽。",
+      "用嘴巴輕輕、慢慢地把氣吐出來，感覺肚子慢慢消下去；可以在吸氣和吐氣時各從1數到5。",
+      "這樣重複做，最好持續大約5分鐘，平常每天練習，緊張時會比較容易用上。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要用力猛吸，如果覺得頭暈，就停下來恢復平常的呼吸。",
+      "一開始數不到5也沒關係，照自己舒服的速度就好。"
+    ],
+    "when_to_seek_help": "如果常常覺得喘不過氣、心跳很快，練習呼吸也沒有改善，請告訴家人或輔導老師，並讓醫師檢查身體。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Breathing exercises for stress",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/self-help/guides-tools-and-activities/breathing-exercises-for-stress/",
+        "updated": "2026-06-12",
+        "supports": "坐、站、躺的姿勢與鬆開衣物；鼻子吸氣到腹部不勉強、嘴巴慢慢吐氣；可數1到5、數不到5也沒關係；至少練5分鐘並每天練習",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "What is anxiety?",
+        "publisher": "UNICEF Parenting",
+        "url": "https://www.unicef.org/parenting/mental-health/what-is-anxiety",
+        "updated": null,
+        "supports": "焦慮時呼吸會變淺；手放肚子上、吸氣讓肚子像氣球鼓起、約5秒吸5秒吐的腹式呼吸",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "breathing-quiet-breathing-anywhere",
+    "topic": "breathing",
+    "title": "在教室也能做的安靜慢呼吸",
+    "keywords": [
+      "上台好緊張",
+      "考試前緊張",
+      "手在發抖",
+      "靜不下來",
+      "很焦躁",
+      "上課很焦慮",
+      "快哭了",
+      "慢呼吸",
+      "怎麼冷靜"
+    ],
+    "summary": "不用躺下也不用離開座位，坐著把呼吸放慢幾次，就能在考試前、上台前幫自己穩住。",
+    "steps": [
+      "坐在椅子上，背靠著椅背，雙腳平踩地面、和屁股差不多寬，手輕放在大腿或桌上。",
+      "用鼻子慢慢吸一口氣，再用嘴巴輕輕慢慢吐出來，吐的時候讓肩膀跟著放鬆。",
+      "安靜地重複幾次，直到覺得比較平靜為止。",
+      "平常每天花幾分鐘練習，要上台或考試時就會比較熟練。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "呼吸要輕柔自然，不要憋氣；覺得頭暈就恢復平常呼吸。"
+    ],
+    "when_to_seek_help": "如果緊張到常常影響考試、上課或交朋友，請找輔導老師聊聊，一起想更多因應的方法。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Breathing exercises for stress",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/self-help/guides-tools-and-activities/breathing-exercises-for-stress/",
+        "updated": "2026-06-12",
+        "supports": "可以坐在有靠背的椅子上、雙腳平放與臀同寬；鼻子吸氣、嘴巴輕輕吐氣；每天規律練習",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Five tips for young people feeling anxious",
+        "publisher": "UNICEF Cambodia",
+        "url": "https://www.unicef.org/cambodia/stories/five-tips-young-people-feeling-anxious",
+        "updated": "2022-01-18",
+        "supports": "鼻子慢慢吸、嘴巴慢慢吐，重複幾次直到比較平靜；建議每天固定做呼吸練習",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "relaxation-mini-muscle-release",
+    "topic": "relaxation",
+    "title": "迷你版肌肉放鬆：拳頭和肩膀",
+    "keywords": [
+      "肩膀緊",
+      "手握很緊",
+      "沒時間放鬆",
+      "下課也能做",
+      "考前放鬆",
+      "身體繃緊",
+      "緊張到發抖",
+      "快速放鬆"
+    ],
+    "summary": "沒時間做完整版時，只挑拳頭和肩膀做「繃緊再放鬆」，幾分鐘就能幫身體鬆一點。",
+    "steps": [
+      "坐好，用力握緊拳頭數到5，再一口氣鬆開，停大約15秒，注意手掌鬆開的感覺。",
+      "把肩膀往後、胸口挺起來，停幾秒後讓肩膀自然垂下放鬆。",
+      "每個動作可以重複幾次，過程中照常呼吸，不要憋氣。",
+      "平常每天練習，身體熟悉「放鬆的感覺」後，緊張時會比較容易找回來。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不用用盡全力，覺得會痛就停下來。"
+    ],
+    "when_to_seek_help": "如果身體常常緊繃、痠痛或因為擔心而睡不好，請告訴家人或輔導老師，必要時請醫師檢查。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "舒活人生—談壓力反應與肌肉放鬆技巧",
+        "publisher": "國立臺灣師範大學 學生輔導中心",
+        "url": "https://counseling.sa.ntnu.edu.tw/en/%E8%88%92%E6%B4%BB%E4%BA%BA%E7%94%9F-%E8%AB%87%E5%A3%93%EF%A6%8A%E5%8F%8D%E6%87%89%E8%88%87%E8%82%8C%E8%82%89%E6%94%BE%E9%AC%86%E6%8A%80%E5%B7%A7/",
+        "updated": "2021-08-31",
+        "supports": "握拳約5秒後放鬆約15秒；肩膀往後挺胸的步驟；照常呼吸不要憋氣",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Five tips for young people feeling anxious",
+        "publisher": "UNICEF Cambodia",
+        "url": "https://www.unicef.org/cambodia/stories/five-tips-young-people-feeling-anxious",
+        "updated": "2022-01-18",
+        "supports": "漸進式肌肉放鬆是把特定肌肉群先繃緊再放鬆，可減輕身體緊繃、轉移擔心；建議每天練習",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "快失控發狂、快吸不到空氣--恐慌症（臺大醫院健康電子報）",
+        "publisher": "國立臺灣大學醫學院附設醫院 護理部",
+        "url": "https://epaper.ntuh.gov.tw/health/201512/health_2.html",
+        "updated": "2015-12",
+        "supports": "每天練習腹式呼吸與深度肌肉放鬆1到2次，可減輕緊張時的身體反應與預期性焦慮",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "relaxation-progressive-muscle-full",
+    "topic": "relaxation",
+    "title": "漸進式肌肉放鬆：先用力，再放鬆",
+    "keywords": [
+      "肩膀好緊",
+      "全身緊繃",
+      "放鬆不下來",
+      "肌肉放鬆",
+      "漸進式肌肉放鬆",
+      "睡前放鬆",
+      "身體僵硬",
+      "壓力大肩頸痠",
+      "咬牙"
+    ],
+    "summary": "依序讓身體各部位的肌肉先用力繃緊、再一下子放鬆，感受緊和鬆的差別，可以減少緊張和焦慮。",
+    "steps": [
+      "找安靜的地方坐在有靠背的椅子上，雙腳踩地、手放大腿上，輕輕閉上眼睛。",
+      "從手開始：用力握拳大約5秒，然後鬆開，停大約15秒感覺手變鬆的感覺。",
+      "接著依序做額頭（抬眉毛）、臉（皺眉皺鼻）、下巴（咬緊牙）、肩膀和胸口（肩膀往後挺胸）、腿和腳（腳跟踩地、腳趾往上翹），每個部位都是先繃緊再放鬆。",
+      "全部做完後，保持全身放鬆的狀態休息幾分鐘；每天練習1到2次，每次大約10到20分鐘。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "用力時記得照常呼吸，不要憋氣。",
+      "如果某個部位有受傷或用力會痛，就跳過那個部位或只輕輕出力。"
+    ],
+    "when_to_seek_help": "如果規律練習一段時間後，還是常常緊繃到睡不著或影響上課，請找輔導老師或醫師討論。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "放鬆訓練法",
+        "publisher": "中國醫藥大學附設醫院 精神醫學部",
+        "url": "https://www.cmuh.cmu.edu.tw/HealthEdus/Detail?no=5395",
+        "updated": "2026-04-08",
+        "supports": "安靜房間、有靠背椅子、雙腳平放、手放大腿、閉眼；手、額頭、臉、下巴、胸背、腿依序先繃緊再放鬆；最後全身放鬆5到10分鐘；每天1到2次、每次10到20分鐘；需反覆練習",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "舒活人生—談壓力反應與肌肉放鬆技巧",
+        "publisher": "國立臺灣師範大學 學生輔導中心",
+        "url": "https://counseling.sa.ntnu.edu.tw/en/%E8%88%92%E6%B4%BB%E4%BA%BA%E7%94%9F-%E8%AB%87%E5%A3%93%EF%A6%8A%E5%8F%8D%E6%87%89%E8%88%87%E8%82%8C%E8%82%89%E6%94%BE%E9%AC%86%E6%8A%80%E5%B7%A7/",
+        "updated": "2021-08-31",
+        "supports": "握拳約5秒、放鬆約15秒；額頭、臉、嘴、肩膀挺胸、腳跟踩地腳趾翹起等八個步驟；練習時照常呼吸不要憋氣",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "grounding-5-4-3-2-1-senses",
+    "topic": "grounding",
+    "title": "5-4-3-2-1 五感落地練習",
+    "keywords": [
+      "好焦慮",
+      "腦袋停不下來",
+      "一直胡思亂想",
+      "很慌",
+      "5-4-3-2-1",
+      "落地練習",
+      "回到現在",
+      "想太多睡不著",
+      "感覺不真實"
+    ],
+    "summary": "用眼睛、身體、耳朵、鼻子和嘴巴去注意身邊的東西，把注意力從擔心的念頭拉回到「現在、這裡」。",
+    "steps": [
+      "先坐好，慢慢吸氣、慢慢吐氣幾次。",
+      "說出（或在心裡想）5樣你看得到的東西，和4樣你摸得到或身體感覺得到的東西，例如衣服、椅子、桌面。",
+      "再找3種你聽得到的聲音、2種聞得到的味道、1種嘗得到的味道（例如剛刷牙的牙膏味）。",
+      "做完再慢慢呼吸一次，注意自己現在在哪裡、正在做什麼；找不到也沒關係，盡量就好。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "挑讓你覺得中性或舒服的東西來注意，避開會讓你更不舒服的東西。"
+    ],
+    "when_to_seek_help": "如果焦慮或不好的回憶常常突然冒出來、影響上課或睡覺，請找輔導老師或醫師談談。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Ground yourself (Oxford Health CAMHS)",
+        "publisher": "Oxford Health NHS Foundation Trust",
+        "url": "https://oxfordhealth.nhs.uk/camhs/self-care/sleep/relaxation/ground-yourself/",
+        "updated": "2024-02-07",
+        "supports": "落地練習是把注意力從不舒服的感覺和念頭轉到周遭環境；5看、4感覺、3聽、2聞、1嘗的具體步驟與例子（衣服、床、時鐘聲、牙膏味）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "What is anxiety?",
+        "publisher": "UNICEF Parenting",
+        "url": "https://www.unicef.org/parenting/mental-health/what-is-anxiety",
+        "updated": null,
+        "supports": "先坐好慢慢呼吸，再說出看得到、聽得到、聞得到、嘗得到的東西；選不會讓人不舒服的東西；影響日常生活時要尋求專業協助",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "grounding-feet-on-floor",
+    "topic": "grounding",
+    "title": "情緒風暴來時：踩穩地面，回到身邊",
+    "keywords": [
+      "情緒爆炸",
+      "好想哭",
+      "快崩潰",
+      "很生氣",
+      "心好亂",
+      "被情緒淹沒",
+      "冷靜不下來",
+      "穩住自己",
+      "落地"
+    ],
+    "summary": "當情緒像暴風雨一樣湧上來時，先注意到它、放慢動作並把腳踩穩，再把注意力放回身邊的人事物。",
+    "steps": [
+      "先在心裡跟自己說：「我注意到我現在很難過（或很生氣、很害怕）。」",
+      "放慢動作，把雙腳慢慢用力踩向地板，伸展一下身體，慢慢呼吸。",
+      "摸一摸身邊的東西，例如桌子、椅子或地板，感覺它的觸感和溫度。",
+      "看看四周：你在哪裡？身邊有誰？你正在做什麼？用好奇的心仔細觀察眼前的東西。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "平常心情還好時就先練習一兩分鐘，真的需要時會比較用得上。"
+    ],
+    "when_to_seek_help": "如果情緒風暴常常出現、讓你很難上學或跟人相處，請找導師、輔導老師或醫師幫忙。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Doing What Matters in Times of Stress: An Illustrated Guide",
+        "publisher": "World Health Organization (WHO)",
+        "url": "https://cdn.who.int/media/docs/default-source/thailand/doing-what-matters-in-times-of-stress-eng.pdf?sfvrsn=d166ad74_1",
+        "updated": "2020",
+        "supports": "落地技巧：注意自己的想法與感受、放慢並把腳慢慢踩向地板、伸展與呼吸，再重新投入周遭（看、聽、摸、嘗、聞，注意在哪裡、和誰、做什麼）；平常有一兩分鐘就可練習",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "快失控發狂、快吸不到空氣--恐慌症（臺大醫院健康電子報）",
+        "publisher": "國立臺灣大學醫學院附設醫院 護理部",
+        "url": "https://epaper.ntuh.gov.tw/health/201512/health_2.html",
+        "updated": "2015-12",
+        "supports": "觸摸地面或身邊物體來穩定自己",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "panic-after-and-prevention",
+    "topic": "panic",
+    "title": "恐慌過後：平常練習，讓下一次不那麼可怕",
+    "keywords": [
+      "怕又恐慌",
+      "恐慌症",
+      "不敢出門",
+      "擔心再發作",
+      "恐慌完很累",
+      "預防恐慌",
+      "心悸",
+      "為什麼會恐慌"
+    ],
+    "summary": "平常就練習慢呼吸和肌肉放鬆，可以減少恐慌時的身體反應，也讓「怕再發作」的擔心變小。",
+    "steps": [
+      "每天找1到2次時間練習腹式呼吸和肌肉放鬆，心情平穩時練最容易學會。",
+      "把恐慌發生的頻率、持續多久和當時的感覺記下來，之後跟大人或醫師說明時會更清楚。",
+      "少喝含咖啡因的飲料（例如咖啡、茶、能量飲料），也不要用菸酒來壓住緊張。",
+      "不要一直逃避讓你害怕的地方，可以在大人陪伴下慢慢、一點一點地重新接觸。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "恐慌很常見而且可以治療，不代表你「瘋了」或很脆弱。"
+    ],
+    "when_to_seek_help": "如果恐慌一再發生、讓你一直擔心，或開始不敢去學校或其他地方，請跟家人和輔導老師說，並請醫師評估。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "快失控發狂、快吸不到空氣--恐慌症（臺大醫院健康電子報）",
+        "publisher": "國立臺灣大學醫學院附設醫院 護理部",
+        "url": "https://epaper.ntuh.gov.tw/health/201512/health_2.html",
+        "updated": "2015-12",
+        "supports": "每天練習腹式呼吸和深度肌肉放鬆1到2次，可減少恐慌時的身體反應和預期性焦慮；恐慌症可以治療；頻繁發作或逃避場所應就醫",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Panic disorder",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/conditions/panic-disorder/",
+        "updated": "2023-08-22",
+        "supports": "避開害怕的情境會形成恐懼循環；減少咖啡因、含糖飲料、菸酒；有恐慌症狀應看醫師，醫師會詢問症狀、發生頻率與持續多久",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Anxiety, fear and panic",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/feelings-symptoms-behaviours/feelings-and-symptoms/anxiety-fear-panic/",
+        "updated": "2026-07-13",
+        "supports": "不要逃避讓你焦慮的情境而是逐步增加接觸；不要用菸酒來緩解焦慮；自己的方法沒效時要求助",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "panic-during-attack",
+    "topic": "panic",
+    "title": "恐慌來襲的當下：它會過去的",
+    "keywords": [
+      "恐慌",
+      "突然好害怕",
+      "心跳超快",
+      "快不能呼吸",
+      "覺得快死掉",
+      "手腳發麻",
+      "頭暈",
+      "發抖冒冷汗",
+      "恐慌發作",
+      "失控"
+    ],
+    "summary": "恐慌發作時身體反應很嚇人，但它通常幾分鐘到二十分鐘就會退去，慢慢呼吸、提醒自己會過去，可以幫你撐過這段時間。",
+    "steps": [
+      "如果可以，先待在原地或找個安全的地方坐下，不用急著跑走。",
+      "把呼吸放慢，用肚子慢慢吸、慢慢吐，持續幾分鐘。",
+      "在心裡對自己說：「這是恐慌，很難受但它會過去。」",
+      "把注意力移到別的地方，例如從100開始每次減3倒數、數地磚，或摸摸身邊的東西。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果是第一次出現，或有胸痛、昏倒等情況，請馬上告訴身邊的大人，讓醫師檢查排除身體疾病；有立即危險請撥119。"
+    ],
+    "when_to_seek_help": "如果恐慌常常發作，或開始因為怕再發作而不敢去某些地方，請告訴家人和輔導老師，並到醫院讓醫師評估。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Panic disorder",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/conditions/panic-disorder/",
+        "updated": "2023-08-22",
+        "supports": "恐慌發作症狀（心跳快、發抖、喘、頭暈、麻）；發作時盡量待在原地、慢慢深呼吸、提醒自己會過去且不會危及生命；多數發作5到20分鐘；症狀也可能來自其他疾病，需由醫師檢查",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "快失控發狂、快吸不到空氣--恐慌症（臺大醫院健康電子報）",
+        "publisher": "國立臺灣大學醫學院附設醫院 護理部",
+        "url": "https://epaper.ntuh.gov.tw/health/201512/health_2.html",
+        "updated": "2015-12",
+        "supports": "發作初期3到4分鐘的緩慢腹式呼吸；提醒自己發作會過去；用從100減3倒數、數地磚、觸摸物體轉移注意力；頻繁發作或開始逃避場所時要就醫",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "sleep-bedtime-habits",
+    "topic": "sleep",
+    "title": "睡前好習慣，讓自己比較好睡",
+    "keywords": [
+      "睡不著",
+      "失眠",
+      "睡前習慣",
+      "躺很久睡不著",
+      "作息亂掉",
+      "假日睡很晚",
+      "半夜醒來",
+      "怎樣比較好睡"
+    ],
+    "summary": "固定作息、睡前放下 3C、讓房間安靜舒服，是幫助入睡最基本的方法。",
+    "steps": [
+      "每天（包含週末）盡量在差不多的時間上床和起床。",
+      "睡前至少 30 分鐘把手機、平板、電視關掉，改做輕鬆的事，例如伸展、聽輕音樂或看紙本書。",
+      "讓房間安靜、燈光柔和、溫度不要太熱，下午和晚上不要喝含咖啡因的飲料。",
+      "白天想午睡的話，控制在 30 分鐘以內；激烈運動不要放在快睡覺前。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "睡前不要吃太飽，也不要一直躺著滑手機等睡意。"
+    ],
+    "when_to_seek_help": "如果已經調整作息和睡眠環境好幾週，還是常常睡不著或睡不好，請告訴家長、輔導老師，並找醫師評估。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "夜夜好眠",
+        "publisher": "衛生福利部（資料來源：食品藥物管理署）",
+        "url": "https://www.mohw.gov.tw/cp-4628-55275-1.html",
+        "updated": "2023-07-25",
+        "supports": "固定就寢起床時間、環境安靜舒適、午睡 30 分鐘內、睡前避免激烈運動、少喝含咖啡因飲料、睡前避免滑手機上網看電視、做放鬆活動、持續失眠應就醫",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "About Sleep",
+        "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+        "url": "https://www.cdc.gov/sleep/about/index.html",
+        "updated": "2024-05-15",
+        "supports": "每天同一時間睡和起床、房間安靜涼爽、睡前至少 30 分鐘關閉電子產品、睡前避免大餐、下午和晚上避免咖啡因",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "sleep-teen-how-many-hours",
+    "topic": "sleep",
+    "title": "青少年一天要睡多久？",
+    "keywords": [
+      "睡多久",
+      "睡不飽",
+      "熬夜",
+      "睡眠不足",
+      "早上爬不起來",
+      "上課想睡",
+      "幾點要睡",
+      "一直很累"
+    ],
+    "summary": "國中、高中生每天建議睡 8 到 10 小時，但台灣大多數國高中生都睡不到 8 小時。",
+    "steps": [
+      "先看明天幾點要起床，再往回推 8 到 10 小時，算出今晚大概幾點要上床。",
+      "連續記錄一週自己的上床和起床時間，看看平均有沒有睡到 8 小時。",
+      "如果差很多，先試著每天提早 15 到 30 分鐘上床，慢慢調整，不要一次改太多。",
+      "考試前也不要整晚熬夜念書，睡飽通常比熬夜多念幾小時更有幫助。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "每個人需要的睡眠量會有一點差別，8 到 10 小時是一般建議範圍。"
+    ],
+    "when_to_seek_help": "如果睡眠時間已經夠了，白天還是常常很累、打瞌睡，或已經好幾週睡不好、影響上課和心情，可以找輔導老師、校護或醫師聊聊。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "About Sleep",
+        "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+        "url": "https://www.cdc.gov/sleep/about/index.html",
+        "updated": "2024-05-15",
+        "supports": "13–17 歲青少年建議每天睡 8–10 小時",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Teen Sleep Duration Health Advisory",
+        "publisher": "American Academy of Sleep Medicine (AASM)",
+        "url": "https://aasm.org/advocacy/position-statements/teen-sleep-duration-health-advisory/",
+        "updated": "2016-04-03",
+        "supports": "13–18 歲青少年應規律睡 8–10 小時；長期睡太少與專注、行為、學習問題及情緒風險有關",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "孩子睡眠不足 近視風險增9倍",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/fp-16-44097-1.html",
+        "updated": "2018-09-26",
+        "supports": "國健署引用的建議：14–17 歲青少年睡 8–10 小時；調查顯示 89.5% 國高中生睡 8 小時以下",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "exam-calm-during-test",
+    "topic": "exam",
+    "title": "念書或考試時突然好緊張",
+    "keywords": [
+      "考試好緊張",
+      "腦袋一片空白",
+      "考試焦慮",
+      "手心冒汗",
+      "心跳好快",
+      "考不好怎麼辦",
+      "考試怕寫不完",
+      "念不下去"
+    ],
+    "summary": "緊張到念不下去或考場上腦袋空白時，可以先用慢呼吸讓自己穩下來，再一步一步處理眼前的題目。",
+    "steps": [
+      "覺得快慌掉時，用鼻子吸氣數 4 下、停 2 下、慢慢吐氣數 7 下，重複幾次。",
+      "念書時焦慮到念不下去，先起來走一走、聽音樂或散個步，再回來繼續。",
+      "考試時先仔細讀題目說明，卡在某一題就先跳過，留時間最後再回來寫。",
+      "考完一科就先放下，把注意力放到下一科，不要一直對答案。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "壓力有時會變成頭痛、肚子痛、睡不好、容易煩躁，這些是身體在提醒你需要休息和支持。"
+    ],
+    "when_to_seek_help": "如果緊張或心情低落很嚴重、持續很久，或已經影響上學和生活，請找家長、輔導老師或醫師幫忙。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Tips on preparing for exams",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/help-for-teenagers-young-adults-and-students/tips-on-preparing-for-exams/",
+        "updated": "2023-10-24",
+        "supports": "吸 4、停 2、吐 7 的呼吸法；考試時仔細讀題、卡住先跳過再回來、考完放下專心下一科；感到壓力時找信任的人談",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "考前生活小叮嚀 金榜題名好歡喜!",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-2623-19638-1.html",
+        "updated": "2016-01-19",
+        "supports": "焦慮影響讀書時起身走動、聽音樂、散步紓緩；情緒有異狀時與家長或學校輔導老師溝通",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Help your child beat exam stress",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/advice-for-parents/help-your-child-beat-exam-stress/",
+        "updated": "2023-03-08",
+        "supports": "壓力徵兆（頭痛、胃痛、睡不好、煩躁等）；焦慮或低落嚴重、持續且影響生活時應求助",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "exam-prep-plan",
+    "topic": "exam",
+    "title": "考前怎麼準備比較不慌",
+    "keywords": [
+      "考前好緊張",
+      "讀不完",
+      "段考",
+      "會考",
+      "學測",
+      "考前熬夜",
+      "抱佛腳",
+      "讀書計畫",
+      "考試壓力"
+    ],
+    "summary": "把要念的內容切成小份、排進計畫，讀書中間休息和動一動，並且睡飽，比考前一晚熬夜更有用。",
+    "steps": [
+      "把要考的範圍切成小塊，排一個做得到的讀書計畫，不同科目可以交錯念。",
+      "用考古題或練習卷在限時內練習，熟悉題型，也找出還不熟的地方。",
+      "念一段時間就短暫休息，每天找時間做至少 30 分鐘輕度運動，例如走路或伸展。",
+      "考前照常作息、不要熬夜，早餐要吃，少喝含糖飲料、咖啡和能量飲料，改帶開水。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "整晚熬夜抱佛腳通常效果不好，睡飽比多念幾小時更有幫助。"
+    ],
+    "when_to_seek_help": "如果考試壓力讓你長時間睡不好、吃不下、心情很低落，影響到日常生活，請找家長、導師或輔導老師談談。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Tips on preparing for exams",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/help-for-teenagers-young-adults-and-students/tips-on-preparing-for-exams/",
+        "updated": "2023-10-24",
+        "supports": "切成小塊的實際讀書計畫、混合科目、限時練習考古題、規律短暫休息、用走路或伸展紓壓",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Help your child beat exam stress",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/advice-for-parents/help-your-child-beat-exam-stress/",
+        "updated": "2023-03-08",
+        "supports": "多數青少年需睡 8–10 小時、考前整晚熬夜通常不好、壓力嚴重且持續影響生活時應求助",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "考前生活小叮嚀 金榜題名好歡喜!",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-2623-19638-1.html",
+        "updated": "2016-01-19",
+        "supports": "考前規律作息不熬夜、每天至少 30 分鐘輕度運動、吃早餐、帶溫開水並避免含糖飲料、茶、咖啡及能量飲料",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "time-beat-procrastination",
+    "topic": "time",
+    "title": "一直拖延，不想開始怎麼辦",
+    "keywords": [
+      "拖延",
+      "不想寫作業",
+      "一直拖",
+      "提不起勁",
+      "明天再說",
+      "最後一刻才做",
+      "開始不了",
+      "作業拖到最後"
+    ],
+    "summary": "拖延常常是因為那件事讓人有壓力，先只做 5 分鐘、把目標訂小一點，比較容易開始。",
+    "steps": [
+      "先想一想這件事讓你有壓力的地方是什麼，例如怕做不好、覺得太難、怕被批評。",
+      "跟自己約定只做 5 分鐘，計時開始，很多時候一開始就會發現沒那麼可怕。",
+      "把大工作拆成幾個小步驟，每天的目標訂得比平常少一點，做到就給自己一個小獎勵。",
+      "把工作平均分散到每一天做一點，不要全部擠到最後一週。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "偶爾沒做到很正常，不需要因此責怪自己，隔天再從小步驟開始就好。"
+    ],
+    "when_to_seek_help": "如果拖延已經持續很久、讓你很焦慮或影響成績和生活，可以找輔導老師一起找原因和方法。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "#不一樣的100種練習- 關於拖延",
+        "publisher": "國立清華大學學務處諮商中心（諮商心理師 林士傑）",
+        "url": "https://counsel.site.nthu.edu.tw/p/406-1250-221167,r9415.php",
+        "updated": null,
+        "supports": "拖延與壓力有關、覺察壓力來源、五分鐘法則、設定較小的每日目標、把工作分散到每天、長期拖延可尋求諮商",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Stress - Every Mind Matters",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/",
+        "updated": null,
+        "supports": "把大任務拆成小步驟、完成後獎勵自己",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "time-too-much-to-do",
+    "topic": "time",
+    "title": "事情太多做不完時",
+    "keywords": [
+      "事情太多",
+      "做不完",
+      "時間不夠",
+      "時間管理",
+      "作業太多",
+      "報告好多",
+      "忙不過來",
+      "不知道先做哪個",
+      "壓力好大"
+    ],
+    "summary": "事情多到喘不過氣時，先全部列出來、挑最重要的先做，並接受不可能每件事都做完。",
+    "steps": [
+      "把所有要做的事寫成一張待辦清單，讓腦袋不用一直記著。",
+      "挑出最重要、最有影響的事先做，最不重要的放到最後。",
+      "把每件事切成小塊，排進每天的時間表，不要想一次全部做完。",
+      "做不完時，找家人、老師或朋友說說看，一起想辦法調整。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "接受自己沒辦法每件事都做到，是減輕壓力的一部分，不代表你不夠努力。"
+    ],
+    "when_to_seek_help": "如果壓力大到應付不來、自己試過方法也沒用，或已經影響日常生活和上課，請找導師或輔導老師幫忙。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "10 stress busters",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/mental-health/self-help/guides-tools-and-activities/tips-to-reduce-stress/",
+        "updated": "2026-06-26",
+        "supports": "專注在最有影響的事、最不重要的留到最後、接受沒時間做完每件事",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Student stress",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/help-for-teenagers-young-adults-and-students/student-stress-self-help-tips/",
+        "updated": "2023-03-14",
+        "supports": "規劃時間並把工作切成小塊以趕上期限、找朋友家人談；壓力難以應付、自助無效或影響生活時求助",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Stress - Every Mind Matters",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/stress/",
+        "updated": null,
+        "supports": "事先規劃、寫待辦清單",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "exercise-60-minutes-a-day",
+    "topic": "exercise",
+    "title": "青少年一天要動多久？",
+    "keywords": [
+      "運動",
+      "要運動多久",
+      "沒時間運動",
+      "體育課",
+      "久坐",
+      "動一動",
+      "跑步",
+      "打球",
+      "運動量"
+    ],
+    "summary": "6 到 17 歲的學生每天建議累積至少 60 分鐘中等到較費力的身體活動，而且可以分段完成。",
+    "steps": [
+      "把 60 分鐘拆成幾段，例如走路或騎腳踏車上下學各 20 分鐘，加上下課活動 20 分鐘。",
+      "每週至少 3 天做比較喘的活動，例如跑步、打球、跳繩。",
+      "每週至少 3 天做強化肌肉和骨骼的活動，例如伏地挺身、爬、跳。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果平常很少運動，從短時間、輕鬆的活動開始，再慢慢增加。"
+    ],
+    "when_to_seek_help": "如果運動時出現胸痛、頭暈、呼吸非常困難，請立刻停下來並告訴老師或家長就醫；如果你連起床、出門都提不起勁，也可以找輔導老師聊聊。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Physical Activity Guidelines for Children and Adolescents (Ages 6-17)",
+        "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+        "url": "https://www.cdc.gov/physical-activity-basics/guidelines/children.html",
+        "updated": "2025-12-04",
+        "supports": "6–17 歲每天至少 60 分鐘中等到費力活動、每週至少 3 天費力有氧、3 天肌力、3 天骨骼強化，以及活動範例",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "動起來，學習效果更好！ 憂! 9成5以上學童身體活動量不足",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-2626-19261-1.html",
+        "updated": "2016-04-02",
+        "supports": "兒童及青少年每天至少 60 分鐘中度身體活動；可分段累積（例如騎車上下學各 20 分鐘加戶外遊戲 20 分鐘），效果與一次完成相同",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "exercise-move-for-mood",
+    "topic": "exercise",
+    "title": "心情差的時候，動一動",
+    "keywords": [
+      "心情不好",
+      "壓力大",
+      "好煩",
+      "悶悶的",
+      "想發洩",
+      "運動紓壓",
+      "散步",
+      "沒動力",
+      "焦慮"
+    ],
+    "summary": "身體活動可以讓人比較快覺得舒服一點、睡得比較好，規律運動也和較好的心理健康有關，而且動一點點也比完全不動好。",
+    "steps": [
+      "覺得很煩或很悶時，先出去快走或散步 10 分鐘，做多少都算數。",
+      "找一個你喜歡的活動，例如騎腳踏車、跳舞、游泳或打球，排進每週固定的時間。",
+      "可以約朋友或家人一起動，比較容易持續，也能順便聊聊天。",
+      "念書坐久了，起來伸展或走一走，減少一直坐著的時間。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "運動可以幫助心情，但不能取代找人談或專業協助。"
+    ],
+    "when_to_seek_help": "如果心情低落或焦慮一直沒有好轉、影響吃飯睡覺或上學，或有傷害自己的念頭，請馬上告訴輔導老師、家長或醫師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Benefits of Physical Activity",
+        "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+        "url": "https://www.cdc.gov/physical-activity-basics/benefits/index.html",
+        "updated": "2025-12-04",
+        "supports": "活動後可以馬上感覺比較好、睡得比較好；規律活動可能降低憂鬱和焦慮風險",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Physical activity (fact sheet)",
+        "publisher": "World Health Organization (WHO)",
+        "url": "https://www.who.int/news-room/fact-sheets/detail/physical-activity",
+        "updated": "2024-06-26",
+        "supports": "任何活動量都比不動好；規律活動與兒童青少年較好的心理健康有關；應減少久坐時間",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "10 stress busters",
+        "publisher": "NHS (UK National Health Service)",
+        "url": "https://www.nhs.uk/mental-health/self-help/guides-tools-and-activities/tips-to-reduce-stress/",
+        "updated": "2026-06-26",
+        "supports": "運動能平緩強烈情緒、幫助思緒變清楚；和他人連結有助放鬆",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "outdoors-bring-nature-indoors",
+    "topic": "outdoors",
+    "title": "出不去的時候，把大自然帶進來",
+    "keywords": [
+      "沒時間出門",
+      "被關在家",
+      "下雨不能出去",
+      "壓力大",
+      "很煩",
+      "靜不下來",
+      "想放鬆",
+      "大自然的聲音",
+      "看窗外",
+      "讀書好累"
+    ],
+    "summary": "就算沒辦法出門，看看自然的景色或聽聽自然的聲音，也能幫助身體從壓力的緊繃中比較快平靜下來。",
+    "steps": [
+      "讀書讀累時，走到窗邊看看天空、樹或盆栽 1 分鐘，仔細看它們的顏色和形狀。",
+      "戴上耳機聽幾分鐘的自然聲音，例如鳥叫、流水或雨聲，取代吵雜的聲音。",
+      "在書桌附近放一盆小植物，每天花一點時間照顧它、摸摸葉子、聞聞味道。",
+      "等有空的時候，再安排真正走到戶外的時間。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "聽自然聲音時音量不要太大，也不要拿來當作熬夜的理由。"
+    ],
+    "when_to_seek_help": "如果壓力大到吃不下、睡不著或常常想哭，而且持續好幾週，請告訴輔導老師或去看醫師。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "聽一聽自然環境，調一調身心壓力",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/nor/pstunt/1/1877",
+        "updated": "2022-01-21",
+        "supports": "自然景象與自然聲音（如鳥鳴、水聲）比城市噪音更能幫助人在壓力後恢復；沒辦法出門時可以看自然影像或聽自然聲音來放鬆。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "What is mindfulness? - Every Mind Matters",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/what-is-mindfulness/",
+        "updated": null,
+        "supports": "花一分鐘看看四周物品的形狀與顏色；挑一棵植物用多種感官去感受（看綠色的深淺、聞花、摸葉子）。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "outdoors-nature-walk-five-senses",
+    "topic": "outdoors",
+    "title": "到戶外走走，用五感看看大自然",
+    "keywords": [
+      "壓力好大",
+      "好悶",
+      "想出去走走",
+      "心情不好",
+      "喘不過氣",
+      "散步",
+      "公園",
+      "大自然",
+      "放鬆",
+      "讀書讀到很累"
+    ],
+    "summary": "到有樹、有草的地方走一小段路，並刻意用眼睛、耳朵、皮膚去感受周圍，可以幫身體和心情從壓力中慢慢回復。",
+    "steps": [
+      "找一個離你近的綠色地方，例如校園的樹下、社區公園或家附近的步道，走個 10 到 15 分鐘就好。",
+      "邊走邊試著說出 3 樣你看到的東西、2 種你聽到的聲音（像鳥叫、風聲），還有 1 種皮膚的感覺（像風吹或陽光的溫度）。",
+      "可以換一條沒走過的路線，或是約家人、朋友一起走，讓腦袋暫時離開課業的壓力。",
+      "走完後花幾秒鐘留意一下：現在的心情和出門前有沒有一點點不同。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "請選安全、有人經過的地方，天黑或天氣很差時不要一個人去偏僻的步道，出門前讓家人知道你去哪裡。",
+      "大自然能幫忙放鬆，但不能取代專業協助。"
+    ],
+    "when_to_seek_help": "如果常常走走、休息後心情還是持續低落或壓力大到影響上課和睡覺超過兩週，請找輔導老師或醫師聊聊。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "【幸福專欄】春風送暖：大自然環境與心理健康",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/nor/pstunt/3/3264",
+        "updated": "2025-03-01",
+        "supports": "接觸大自然有助於調節壓力、讓心情放鬆並從疲憊中恢復；忙碌或喘不過氣時可以走進自然。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Be active for your mental health - Every Mind Matters",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/be-active-for-your-mental-health/",
+        "updated": null,
+        "supports": "到戶外短程散步可能提振心情、減少擔心；換新路線並留意看到、聽到、摸到、聞到的東西；可和朋友家人一起走。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "For Teens: Creating Your Personal Stress-Management Plan",
+        "publisher": "American Academy of Pediatrics (HealthyChildren.org)",
+        "url": "https://www.healthychildren.org/English/healthy-living/emotional-wellness/Building-Resilience/Pages/For-Teens-Creating-Your-Personal-Stress-Management-Plan.aspx",
+        "updated": "2014-09-15",
+        "supports": "給青少年的建議：到戶外或附近公園走走當作「小假期」，留意身邊美好的小事。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "screen-phone-before-bed",
+    "topic": "screen",
+    "title": "睡前滑手機，越滑越晚睡",
+    "keywords": [
+      "睡前滑手機",
+      "滑到半夜",
+      "手機放床邊",
+      "短影音停不下來",
+      "熬夜追劇",
+      "玩手機睡不著",
+      "晚睡",
+      "藍光"
+    ],
+    "summary": "台灣研究發現手機用得越多，入睡越晚、睡得越少，而且睡前那段時間的影響特別大。",
+    "steps": [
+      "睡前大約 1 小時就把手機、平板放下，改做輕鬆的事。",
+      "晚上把手機放在房間外面充電，改用一般鬧鐘叫自己起床。",
+      "打開 App 或手機內建的就寢提醒、使用時間限制，讓它提醒你該休息了。",
+      "睡前避免玩刺激的遊戲或看緊張的影片，這類內容會讓心跳變快、更難睡著。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "睡前滑手機的時間雖然不長，對睡眠時間的影響卻特別大。"
+    ],
+    "when_to_seek_help": "如果你很想停但怎樣都停不下來，已經常常睡不夠、影響上課或心情，可以找輔導老師一起想辦法。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "睡前滑手機影響睡眠?國衛院發現使用手機會延遲睡眠周期、減少睡眠時間",
+        "publisher": "衛生福利部（研究單位：國家衛生研究院）",
+        "url": "https://www.mohw.gov.tw/cp-4258-47125-1.html",
+        "updated": "2019-04-01",
+        "supports": "每天每多用 1 小時手機，入睡約晚 4.9 分鐘、睡眠約少 5.5 分鐘；睡前使用只佔全天 14.3%，卻佔手機光照對睡眠時間延遲影響的 44%",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Screen Time Affecting Sleep",
+        "publisher": "American Academy of Pediatrics (AAP)",
+        "url": "https://www.aap.org/en/patient-care/media-and-children/center-of-excellence-on-social-media-and-youth-mental-health/qa-portal/qa-portal-library/qa-portal-library-questions/screen-time-affecting-sleep/",
+        "updated": "2023-10-18",
+        "supports": "睡前約 1 小時停止使用螢幕、晚上手機不放房間、固定睡前習慣、避免刺激的遊戲或影片",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Screen Time for Teenagers",
+        "publisher": "American Academy of Pediatrics (AAP)",
+        "url": "https://www.aap.org/en/patient-care/media-and-children/center-of-excellence-on-social-media-and-youth-mental-health/qa-portal/qa-portal-library/qa-portal-library-questions/screen-time-for-teenagers/",
+        "updated": "2024-05-07",
+        "supports": "使用 App 內建的使用時間限制、休息提醒和就寢提醒",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "screen-social-media-balance",
+    "topic": "screen",
+    "title": "社群和手機，怎麼用比較剛好",
+    "keywords": [
+      "滑IG",
+      "滑抖音",
+      "社群媒體",
+      "手機成癮",
+      "停不下來",
+      "一直看手機",
+      "滑完心情不好",
+      "網路成癮",
+      "螢幕時間太長",
+      "打電動"
+    ],
+    "summary": "重點不只是用多久，而是手機有沒有排擠到睡覺、運動、功課和跟家人朋友相處，以及你能不能自己控制。",
+    "steps": [
+      "看一下手機內建的螢幕使用時間，檢查是不是已經壓縮到睡眠、運動、功課或跟朋友家人的時間。",
+      "針對最停不下來的那一兩個 App 設定使用時間上限，而不是只訂一個籠統的總時數。",
+      "關掉通知和自動播放，並調整動態設定，讓自己多看到喜歡、讓你舒服的內容。",
+      "訂幾個不用手機的時段，例如吃飯、寫作業和睡前。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "很多青少年會低估自己用社群的時間，先實際看數據會比較準。",
+      "用很久不一定就是成癮，關鍵在於是否失去控制、影響到日常生活。"
+    ],
+    "when_to_seek_help": "如果你發現自己已經控制不住使用時間，影響到睡眠、上課或人際，或常常用手機逃避現實中的壓力，請找輔導老師或家長談談。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Screen Time for Teenagers",
+        "publisher": "American Academy of Pediatrics (AAP)",
+        "url": "https://www.aap.org/en/patient-care/media-and-children/center-of-excellence-on-social-media-and-youth-mental-health/qa-portal/qa-portal-library/qa-portal-library-questions/screen-time-for-teenagers/",
+        "updated": "2024-05-07",
+        "supports": "沒有固定的建議時數、重視使用品質；檢查是否影響睡眠、運動、功課和與親友相處；針對特定 App 設限；調整動態內容；設定無螢幕時段；青少年常低估社群使用時間",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "How to Make a Family Media Plan",
+        "publisher": "American Academy of Pediatrics (HealthyChildren.org)",
+        "url": "https://www.healthychildren.org/English/family-life/Media/Pages/How-to-Make-a-Family-Media-Use-Plan.aspx",
+        "updated": "2026-01-20",
+        "supports": "通知和自動播放是為了讓人一直用下去，關掉有助減少使用；吃飯、寫作業、睡前設為無螢幕時段",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "長時間使用=網路遊戲成癮? 揭開青少年網路遊戲成癮盛行率面紗",
+        "publisher": "衛生福利部（研究單位：國家衛生研究院）",
+        "url": "https://www.mohw.gov.tw/cp-16-43926-1.html",
+        "updated": "2023-07-05",
+        "supports": "判斷成癮的核心是失去控制並造成生活失能，而不是單看使用時間長短；問題常來自現實壓力",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "caffeine-coffee-energy-drinks",
+    "topic": "caffeine",
+    "title": "咖啡、能量飲料和睡眠心情",
+    "keywords": [
+      "咖啡",
+      "能量飲料",
+      "提神",
+      "喝咖啡睡不著",
+      "熬夜喝咖啡",
+      "心悸",
+      "喝完很焦躁",
+      "紅牛",
+      "咖啡因"
+    ],
+    "summary": "咖啡因會讓人睡不著、心情緊張不安；美國兒科醫學會建議青少年不要喝能量飲料，咖啡因一天不超過 100 毫克。",
+    "steps": [
+      "下午和晚上不要喝咖啡、能量飲料或其他含咖啡因的飲料，以免晚上睡不著。",
+      "想提神時，先試著起來走動、喝水、洗把臉，或檢查自己是不是睡不夠。",
+      "考試前和考試當天帶開水，不要靠咖啡或能量飲料撐。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "咖啡因攝取太多可能造成失眠、緊張發抖，甚至心跳不規律。",
+      "能量飲料一罐的咖啡因可能就超過青少年一天的建議上限。"
+    ],
+    "when_to_seek_help": "如果喝了含咖啡因飲料後出現心跳很快或不規則、胸悶、手抖不停，要馬上告訴家長或校護並就醫；如果發現自己每天都要靠咖啡撐，也可以找校護或輔導老師談談睡眠和壓力。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "The Buzz on Energy Drinks",
+        "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+        "url": "https://www.cdc.gov/school-nutrition/energy-drinks/index.html",
+        "updated": "2024-07-22",
+        "supports": "美國兒科醫學會建議青少年不喝能量飲料、咖啡因每天不超過 100 毫克；過量可能造成失眠、焦慮不安、心臟問題",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "About Sleep",
+        "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+        "url": "https://www.cdc.gov/sleep/about/index.html",
+        "updated": "2024-05-15",
+        "supports": "下午和晚上避免咖啡因以維持好睡眠",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "考前生活小叮嚀 金榜題名好歡喜!",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-2623-19638-1.html",
+        "updated": "2016-01-19",
+        "supports": "考試期間帶溫開水，避免含糖飲料、茶、咖啡及能量飲料，以免影響情緒和專注",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "caffeine-hand-shaken-drinks-labels",
+    "topic": "caffeine",
+    "title": "手搖飲也有咖啡因？學會看標示",
+    "keywords": [
+      "手搖飲",
+      "奶茶",
+      "紅茶",
+      "珍奶",
+      "茶飲料",
+      "咖啡因標示",
+      "紅黃綠標示",
+      "喝飲料睡不著",
+      "便利商店咖啡"
+    ],
+    "summary": "很多茶飲和咖啡都含咖啡因，連鎖飲料店和便利商店會標示每杯的總咖啡因，點之前先看一下。",
+    "steps": [
+      "點飲料前看店家的菜單、標籤或 QR code，找「總咖啡因」的數字。",
+      "現煮咖啡的紅黃綠標示：綠色是每杯 100 毫克以下、黃色 100 到 200 毫克、紅色 200 毫克以上，青少年就算綠色也要算進一天的量。",
+      "下午和晚上想喝飲料時，選不含咖啡因的，或直接喝白開水。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "政府建議兒童要避免或減少含咖啡因飲料；美國兒科醫學會建議青少年一天咖啡因不超過 100 毫克，一杯綠色標示的咖啡就可能接近這個量。"
+    ],
+    "when_to_seek_help": "如果發現自己一天要喝好幾杯含咖啡因的飲料才撐得下去，或喝完常心悸、睡不著，可以找校護、輔導老師或醫師談談。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "現場調製飲料、包裝果蔬汁標示怎麼看？",
+        "publisher": "衛生福利部（資料來源：食品藥物管理署）",
+        "url": "https://www.mohw.gov.tw/cp-16-79633-1.html",
+        "updated": "2024-08-14",
+        "supports": "連鎖飲料店、便利商店、速食業的現場調製飲料須標示總糖量、總熱量、總咖啡因，可用菜單、標籤、QR code 等方式呈現",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "購買現煮咖啡，認清紅黃綠標示",
+        "publisher": "衛生福利部（資料來源：食品藥物管理署）",
+        "url": "https://www.mohw.gov.tw/fp-3214-23212-1.html",
+        "updated": "2013-07-29",
+        "supports": "紅黃綠咖啡因分級（紅 200 毫克以上、黃 100–200 毫克、綠 100 毫克以下）；孩童應避免或減少含咖啡因飲料",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "The Buzz on Energy Drinks",
+        "publisher": "U.S. Centers for Disease Control and Prevention (CDC)",
+        "url": "https://www.cdc.gov/school-nutrition/energy-drinks/index.html",
+        "updated": "2024-07-22",
+        "supports": "美國兒科醫學會建議青少年咖啡因每天不超過 100 毫克",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "writing-feelings-journal-event-thought-feeling",
+    "topic": "writing",
+    "title": "情緒日記：寫下事情、想法和感受",
+    "keywords": [
+      "心情很亂",
+      "說不出口",
+      "不知道怎麼了",
+      "寫日記",
+      "情緒日記",
+      "好煩",
+      "想發洩",
+      "沒人可以講",
+      "很難過",
+      "壓抑"
+    ],
+    "summary": "把亂成一團的心情寫成文字，同時寫下發生什麼事、自己怎麼想、有什麼感覺，可以幫你整理經驗、比較不會一直悶在心裡。",
+    "steps": [
+      "找一本筆記本或手機備忘錄，選一個安靜的時間，例如睡前寫 10 分鐘。",
+      "用三行來寫：發生了什麼事？我當時心裡想了什麼？我的感覺是什麼（例如生氣、委屈、緊張）？",
+      "最後加一行：從這件事裡，我學到或發現了什麼？",
+      "不用寫得很漂亮，也不用每天寫，想整理心情的時候再寫就可以。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "剛開始寫的時候心情可能會先變得比較不舒服，這是常見的；如果寫完一直更難過，可以先停下來做別的事。",
+      "不要只一直寫負面的感覺、越寫越放大，記得也寫下事情的經過和自己的收穫。"
+    ],
+    "when_to_seek_help": "如果寫日記時發現自己常常很絕望，或出現傷害自己的念頭，請馬上告訴輔導老師或信任的大人。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "讓書寫幫助我們剪裁經驗與整合意義",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/nor/pstunt/1/1628",
+        "updated": "2018-01-01",
+        "supports": "表達性書寫可幫助整理經驗與情緒；短期可能較不舒服但長期有益；書寫時要包含事件、想法與情緒，並整理自己的成長，避免只放大負面情緒。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "For Teens: Creating Your Personal Stress-Management Plan",
+        "publisher": "American Academy of Pediatrics (HealthyChildren.org)",
+        "url": "https://www.healthychildren.org/English/healthy-living/emotional-wellness/Building-Resilience/Pages/For-Teens-Creating-Your-Personal-Stress-Management-Plan.aspx",
+        "updated": "2014-09-15",
+        "supports": "建議青少年把困擾自己的事寫下來，作為釋放情緒壓力的方法。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "writing-gratitude-list",
+    "topic": "writing",
+    "title": "感恩小清單：寫下這週值得感謝的事",
+    "keywords": [
+      "感恩日記",
+      "每天都很糟",
+      "沒有好事",
+      "心情低落",
+      "想變開心",
+      "正向",
+      "謝謝",
+      "負能量",
+      "覺得很倒楣"
+    ],
+    "summary": "回想最近一週，寫下幾件值得感謝的人事物，能幫你注意到生活中好的部分，也可能讓你和別人的關係更靠近。",
+    "steps": [
+      "每週挑一個固定時間（例如週日晚上），回想這一週發生的事。",
+      "寫下 5 件你感謝的事，大事小事都可以，例如同學借你筆記、今天的晚餐很好吃。",
+      "如果不知道怎麼開始，可以用句子開頭：「這週我最感謝的是＿＿，因為＿＿」。",
+      "想要的話，可以挑一個你感謝的人，寫張小卡片或傳訊息跟他說謝謝。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "感恩不是要你假裝沒事或否定難過的感覺，難過的時候也可以先寫下真實的心情。"
+    ],
+    "when_to_seek_help": "如果連續兩週以上都覺得什麼事都提不起勁、找不到任何開心的事，請找輔導老師或醫師談談。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "【心理治療】週一要來了怎麼辦？兩個擁抱快樂的睡前沈澱書寫",
+        "publisher": "國立臺灣大學 CASE 報科學",
+        "url": "https://case.ntu.edu.tw/blog/?p=19134",
+        "updated": "2017-07-25",
+        "supports": "感恩書寫做法：回想上一週寫下五件感謝的事，可用「這週我最感謝的事情是＿＿」句型開頭；持續練習感恩的人比對照組更快樂。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "感恩與人際互動：人際感恩的三項功能",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/pro/pstunt/1/619",
+        "updated": "2015-12-27",
+        "supports": "感恩與表達感謝有助建立、維持並加深人際關係；一項青少年研究中寫感恩信的組別與同儕有較強的支持性關係。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "worry-control-what-you-can",
+    "topic": "worry",
+    "title": "分清楚：哪些能掌控、哪些先放下",
+    "keywords": [
+      "一直擔心",
+      "如果怎麼辦",
+      "最壞的情況",
+      "擔心未來",
+      "不確定",
+      "怕失敗",
+      "焦慮",
+      "會考",
+      "學測",
+      "想太多"
+    ],
+    "summary": "把擔心寫下來，問問自己這個想法是不是真的，再把力氣放在現在做得到的小事上，對不能掌控的事練習接受不確定。",
+    "steps": [
+      "寫下你在擔心什麼，以及你最害怕的結果是什麼。",
+      "問自己三個問題：這個想法一定是真的嗎？最壞的情況真的會發生嗎？還有沒有其他可能？",
+      "把擔心分成「我現在做得到的」（例如排好讀書進度）和「我控制不了的」（例如別人怎麼想），先完成一件做得到的小事。",
+      "回想一次你以前成功度過類似挑戰的經驗，提醒自己其實有能力面對。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "有擔心是正常的，不需要責怪自己「不應該焦慮」，責怪自己反而可能讓焦慮更嚴重。"
+    ],
+    "when_to_seek_help": "如果焦慮大到影響生活，或出現心悸、失眠等身體不舒服的情況，請找輔導老師或醫師。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "熱鍋上的螞蟻：與焦慮的相處之道",
+        "publisher": "國立臺灣師範大學學生事務處學生輔導中心",
+        "url": "https://counseling.sa.ntnu.edu.tw/en/%E7%86%B1%E9%8D%8B%E4%B8%8A%E7%9A%84%E8%9E%9E%E8%9F%BB%EF%BC%9A%E8%88%87%E7%84%A6%E6%85%AE%E7%9A%84%E7%9B%B8%E8%99%95%E4%B9%8B%E9%81%93/",
+        "updated": "2021-08-26",
+        "supports": "記錄焦慮內容與最害怕的結果；檢視想法是否為真、最壞情況是否會發生、有無其他可能；練習忍受不確定；不責備自己焦慮；焦慮影響生活時找輔導老師。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "【謠言終結者】開學焦慮？淺談焦慮調適",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/nor/pstunt/3/3265",
+        "updated": "2025-03-01",
+        "supports": "回想過去成功應對的經驗；學習接受不確定性，把力氣放在當下能努力的部分（如做好課業規劃）。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "worry-scheduled-worry-time",
+    "topic": "worry",
+    "title": "擔心時間：把煩惱約到固定時段",
+    "keywords": [
+      "一直擔心",
+      "停不下來",
+      "想太多",
+      "睡不著",
+      "腦袋停不下來",
+      "焦慮",
+      "煩惱很多",
+      "胡思亂想",
+      "擔心考試",
+      "緊張"
+    ],
+    "summary": "每天安排一小段固定的「擔心時間」，其他時候冒出擔心就先記下來、留到那時再處理，可以讓擔心比較不會占滿一整天。",
+    "steps": [
+      "每天選一個固定時段當作「擔心時間」，大約 10 到 15 分鐘，例如晚餐後或睡前。",
+      "白天一冒出擔心，就簡單記在紙上或手機裡，然後告訴自己：「我晚點的擔心時間再來想。」再把注意力拉回手邊的事。",
+      "到了擔心時間，把記下的擔心一條條看過，想想有沒有可以做的事，能做的就寫下什麼時候做。",
+      "時間到就停止；剛開始可能不太習慣，多練習幾次通常會越來越容易。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "擔心時間不是要你壓抑感覺；如果擔心的是安全問題（例如被欺負、被威脅），請不要等，馬上告訴大人。"
+    ],
+    "when_to_seek_help": "如果擔心大到影響上課、睡眠或人際，或持續好幾週都停不下來，請找輔導老師或醫師幫忙。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Tackling your worries - Every Mind Matters",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/self-help-cbt-techniques/tackling-your-worries/",
+        "updated": null,
+        "supports": "每天安排約 10–15 分鐘的擔心時間寫下擔心並找解法；白天冒出的擔心先延到擔心時間處理；剛開始較難但會越來越容易。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Anxiety - Every Mind Matters",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-health-issues/anxiety/",
+        "updated": null,
+        "supports": "建議每天固定時間設定擔心時間，讓其他時間能專注在別的事；焦慮影響日常生活時應求助。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "mindfulness-breathing-anchor",
+    "topic": "mindfulness",
+    "title": "正念呼吸：把注意力帶回肚子的起伏",
+    "keywords": [
+      "正念",
+      "靜不下來",
+      "專心不了",
+      "分心",
+      "冥想",
+      "呼吸練習",
+      "心很亂",
+      "想放鬆",
+      "腦袋很吵",
+      "緊張"
+    ],
+    "summary": "正念就是刻意把注意力放在現在這一刻，而且不批評自己；最簡單的入門方法，是安靜感受呼吸時肚子的起伏。",
+    "steps": [
+      "找個舒服的姿勢坐好，背挺直但不要僵硬，肩膀放鬆，想閉眼或張眼都可以。",
+      "把注意力放在上腹部：吸氣時感覺肚子微微鼓起，吐氣時感覺它慢慢落下。",
+      "發現自己分心了很正常，先看看是什麼想法把你拉走，再溫和地把注意力帶回呼吸。",
+      "一開始每天練習幾分鐘就好，習慣後再慢慢拉長到 10 分鐘左右。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "正念不一定適合每個人，如果練習時越來越不舒服或想起很難受的事，可以先停下來，改用其他方法。",
+      "分心時不用罵自己，重點是持續練習，不是做得完美。"
+    ],
+    "when_to_seek_help": "如果練習後還是長期睡不好、很焦慮或情緒低落，請找輔導老師或醫師討論其他協助方式。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "正念減壓療法",
+        "publisher": "國立臺灣師範大學學生事務處學生輔導中心",
+        "url": "https://counseling.sa.ntnu.edu.tw/en/%E6%AD%A3%E5%BF%B5%E6%B8%9B%E5%A3%93%E7%99%82%E6%B3%95/",
+        "updated": "2021-09-01",
+        "supports": "橫膈式呼吸與覺察呼吸的步驟（坐姿、注意腹部起伏、分心時溫和帶回）；不評價、不強求、持續練習。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "一個促進心理健康的方法：正念的應用",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/pro/pstunt/1/1808",
+        "updated": "2018-02-09",
+        "supports": "正念的定義：刻意專注於當下並不加評價地覺察；不批判、接納、耐心等態度；適合一般人自行練習。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Mindfulness",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/self-help/tips-and-support/mindfulness/",
+        "updated": "2026-08-17",
+        "supports": "正念並不適合每個人，有些人可能覺得更不舒服。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "mindfulness-everyday-senses-name-thoughts",
+    "topic": "mindfulness",
+    "title": "生活中的正念：用感官回到當下、幫想法取名字",
+    "keywords": [
+      "一直想過去的事",
+      "擔心以後",
+      "停不下來",
+      "正念",
+      "活在當下",
+      "放空",
+      "腦袋很亂",
+      "專心",
+      "壓力大"
+    ],
+    "summary": "不用特別找時間，吃東西、走路時刻意感受當下的感覺，並在心裡為冒出來的想法「取名字」，可以幫你從反覆的念頭裡退一步。",
+    "steps": [
+      "每天選一個固定時刻練習，例如上學路上或午餐時，專心感受食物的味道、走路時風吹在皮膚上的感覺。",
+      "坐著時把雙腳平放在地上，感覺腳底的重量和地面的觸感。",
+      "當同一個念頭一直跑出來，在心裡為它取名字，例如「喔，那個『我一定會考不好』的想法又來了」，然後回到眼前的事。",
+      "如果發現自己已經想過去或擔心未來好幾分鐘了，就溫和地把注意力帶回此刻的感官。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "目的不是把想法趕走，而是看著它們來來去去；做不到也沒關係。"
+    ],
+    "when_to_seek_help": "如果反覆的負面念頭讓你每天都很痛苦，或出現傷害自己的想法，請馬上告訴輔導老師或信任的大人。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Mindfulness",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/self-help/tips-and-support/mindfulness/",
+        "updated": "2026-08-17",
+        "supports": "留意日常感受（食物、走路時的空氣）；選固定時間練習；把想法看成來去的心理事件；在心裡為想法和感受命名；從反覆想過去或擔心未來中回到當下。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "What is mindfulness? - Every Mind Matters",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/what-is-mindfulness/",
+        "updated": null,
+        "supports": "坐著時雙腳平放感受重量；為反覆出現的想法命名（如「我總是失敗」的想法）；每天留一點時間練習。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "anger-express-with-i-message",
+    "topic": "anger",
+    "title": "冷靜後再說：用「我訊息」表達生氣",
+    "keywords": [
+      "好生氣",
+      "被誤會",
+      "不知道怎麼說",
+      "跟爸媽吵架",
+      "跟同學吵架",
+      "委屈",
+      "不爽",
+      "想講清楚",
+      "溝通",
+      "被冒犯"
+    ],
+    "summary": "等自己冷靜下來，用「我」開頭說出對方的行為、你的感受和你的希望，比指責或大吼更容易讓對方聽進去。",
+    "steps": [
+      "先想清楚：我真正的感覺是什麼（生氣、受傷、丟臉、失望）？我希望對方怎麼做？",
+      "用這個句型說說看：「當你＿＿（具體行為）的時候，我覺得＿＿（感受），我希望＿＿。」",
+      "挑雙方都比較冷靜、不累的時間，最好私下談，不要在一大群人面前講。",
+      "避免說「都是你害的」「你總是這樣」這類指責或「永遠、總是」的極端說法，把焦點放在這件事上。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果對方正在傷害你或威脅你，先離開、確保安全，並告訴大人，不需要自己去溝通。",
+      "不要用罵人、威脅或冷戰來取代說出感受。"
+    ],
+    "when_to_seek_help": "如果和某個人一直無法好好溝通、衝突越來越多，可以請輔導老師陪你一起想辦法。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "•情緒表達的「是」與「非」",
+        "publisher": "國立臺北商業大學學生事務處（輔導專文，李彌丹老師）",
+        "url": "https://stud.ntub.edu.tw/p/404-1007-22626.php?Lang=en",
+        "updated": null,
+        "supports": "我訊息：說出對方的具體行為、對我的影響與感受；情緒極端時先暫停；選對方不疲倦的時機、避免人多場合；避免歸咎他人、指責、恐嚇或以沉默代替表達。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "深呼吸，在關係中用正念化解怒氣",
+        "publisher": "國立臺灣師範大學學生事務處學生輔導中心",
+        "url": "https://counseling.sa.ntnu.edu.tw/en/%E6%B7%B1%E5%91%BC%E5%90%B8%EF%BC%8C%E5%9C%A8%E9%97%9C%E4%BF%82%E4%B8%AD%E7%94%A8%E6%AD%A3%E5%BF%B5%E5%8C%96%E8%A7%A3%E6%80%92%E6%B0%A3/",
+        "updated": "2021-09-07",
+        "supports": "先深呼吸並覺察身體，再釐清自己想要與不想要什麼，用我訊息表達需求、避免指責對方。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "10個處理憤怒情緒的技巧（下）-呼喚自己和他人在憤怒下的平和感",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/kid/pstunt/1/3017",
+        "updated": "2023-12-04",
+        "supports": "避免使用「永遠」「總是」等極端詞彙，以免疏遠願意一起解決問題的人。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "anger-pause-and-calm-body",
+    "topic": "anger",
+    "title": "生氣時先按暫停：認出訊號、慢慢呼吸",
+    "keywords": [
+      "好生氣",
+      "氣炸了",
+      "想罵人",
+      "控制不了脾氣",
+      "很火大",
+      "抓狂",
+      "爆氣",
+      "想吵架",
+      "冷靜不下來",
+      "被惹毛"
+    ],
+    "summary": "生氣本身是正常的情緒，重點是在做出反應之前先停一下，讓身體冷靜下來，才不會說出或做出之後會後悔的事。",
+    "steps": [
+      "先認識自己生氣的訊號，例如握拳、心跳變快、臉發熱、講話變大聲，一發現就告訴自己「暫停」。",
+      "在心裡慢慢數到 10，同時用肚子慢慢吸氣、再更慢地吐氣，重複幾次。",
+      "如果還是很激動，可以先離開現場冷靜，但跟對方說好「我等一下再回來談」。",
+      "冷靜時可以去走走或做些運動，或找一個沒有牽涉在這件事裡的人聊聊。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要用打人、摔東西、罵人或傷害自己的方式發洩，這會讓事情和心情都更糟。",
+      "不要用菸、酒或其他物質來壓住怒氣。"
+    ],
+    "when_to_seek_help": "如果你常常很生氣、跟家人同學一直起衝突，或曾在生氣時想傷害別人或自己，請找輔導老師或醫師幫忙。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "10個處理憤怒情緒的技巧（上）-憤怒的暫停與自我瞭解契機",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/nor/pstunt/1/3016",
+        "updated": "2023-12-04",
+        "supports": "辨識開始煩躁的訊號（握拳、心跳加速、聲量提高）；反應前先停下；情緒太高漲可先離開現場，並和對方約定回來討論；接納憤怒情緒。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "10個處理憤怒情緒的技巧（下）-呼喚自己和他人在憤怒下的平和感",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/kid/pstunt/1/3017",
+        "updated": "2023-12-04",
+        "supports": "從腹部緩慢呼吸、規律運動等放鬆策略；常常生氣、與同儕不合或想攻擊他人時應尋求心理專業協助。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Get help with anger",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/feelings-symptoms-behaviours/feelings-and-symptoms/anger/",
+        "updated": "2026-08-04",
+        "supports": "反應前先數到 10、做平靜的呼吸；找不相關的人聊聊；運動；避免用菸酒或藥物處理怒氣；自助無效或有暴力行為時求助。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "emotion",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "loneliness-be-kind-to-yourself-alone",
+    "topic": "loneliness",
+    "title": "一個人的時候，也能好好陪自己",
+    "keywords": [
+      "好孤單",
+      "寂寞",
+      "一個人",
+      "大家都有朋友",
+      "看IG很難過",
+      "被忽略",
+      "沒人懂我",
+      "獨處",
+      "邊緣人",
+      "空虛"
+    ],
+    "summary": "覺得孤單時，少拿自己跟社群上別人的生活比較，用喜歡的事好好陪自己，也試著把感受說給信任的人聽。",
+    "steps": [
+      "提醒自己：社群上大多只放生活中好的一面，不要拿它來和自己的全部比較，必要時先暫停滑手機。",
+      "挑一件你喜歡的事一個人做，例如畫畫、聽 Podcast、看書、運動或到戶外走走，讓心情沉澱下來。",
+      "想想看自己現在真正想要什麼：是想找朋友相處，還是想留點時間給自己？沒有標準答案，了解自己的需要就好。",
+      "試著把孤單的感受說給一位信任的人聽，例如家人、老師或朋友。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "好好獨處不是要你把自己跟別人隔開；如果發現自己越來越不想跟任何人接觸，要多留意。"
+    ],
+    "when_to_seek_help": "如果孤單讓你長時間心情低落、焦慮，或覺得撐不下去，請主動找輔導老師或醫師聊聊。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Loneliness - Every Mind Matters",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/lifes-challenges/loneliness/",
+        "updated": null,
+        "supports": "做喜歡的事（戶外、運動、閱讀、Podcast）；說出自己的感受；不要和別人比較，因為社群上多只分享好的一面；長期嚴重孤單可能增加焦慮、憂鬱風險。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "孤獨，不孤單–練習健康獨處",
+        "publisher": "國立臺灣師範大學學生事務處學生輔導中心",
+        "url": "https://counseling.sa.ntnu.edu.tw/en/%E5%AD%A4%E7%8D%A8%EF%BC%8C%E4%B8%8D%E5%AD%A4%E5%96%AE-%E7%B7%B4%E7%BF%92%E5%81%A5%E5%BA%B7%E7%8D%A8%E8%99%95/",
+        "updated": "2023-03-22",
+        "supports": "從喜歡的事開始一個人做、讓心情沉澱；了解自己的需求；健康的獨處不是遠離朋友。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Social connection (Q&A)",
+        "publisher": "World Health Organization",
+        "url": "https://www.who.int/news-room/questions-and-answers/item/social-connection",
+        "updated": "2025-06-30",
+        "supports": "孤單是一種主觀、痛苦的感受，和實際有沒有人在身邊（社交孤立）不同；青少年孤單比例最高；過度或有害的數位媒體使用是孤單的因素之一。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "loneliness-small-steps-to-connect",
+    "topic": "loneliness",
+    "title": "從一小步開始和人連結",
+    "keywords": [
+      "沒有朋友",
+      "好孤單",
+      "寂寞",
+      "交不到朋友",
+      "沒人理我",
+      "一個人",
+      "融入不了",
+      "被排擠",
+      "想交朋友",
+      "社團"
+    ],
+    "summary": "孤單是很多人都有的感覺，可以從傳一則訊息、打個招呼或參加一個有興趣的活動開始，慢慢累積和人的連結。",
+    "steps": [
+      "傳訊息給一位好久沒聊的朋友、親戚或以前的同學，簡單問一句「最近好嗎？」。",
+      "在學校對常見到的同學打招呼，或主動問問別人需不需要幫忙。",
+      "參加一個跟你興趣有關的社團、球隊、志工或校內活動，在一起做事的過程中比較容易認識人。",
+      "約朋友一起參加活動時，選安全、公開的地方。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "在網路上認識的人，不要單獨見面，也不要給出個人資料。"
+    ],
+    "when_to_seek_help": "如果孤單的感覺很強烈或持續很久，或是在學校被排擠、被欺負，請告訴輔導老師或家人。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Loneliness - Every Mind Matters",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/lifes-challenges/loneliness/",
+        "updated": null,
+        "supports": "傳訊息給老朋友保持聯繫；參加興趣團體；向認得的人打招呼；當志工；約在安全公開的地方；孤單嚴重或持續很久可能影響心理健康。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Helping Teens Connect With Their Community",
+        "publisher": "American Academy of Pediatrics (HealthyChildren.org)",
+        "url": "https://www.healthychildren.org/English/family-life/Community/Pages/Helping-Teens-Connect-With-Their-Community.aspx",
+        "updated": "2025-11-07",
+        "supports": "青少年可透過志工、藝術、音樂、運動等興趣活動、聯絡親戚、找導師與人連結，幫助他們覺得不孤單、有人可以依靠。",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "關係裡的付出與收穫",
+        "publisher": "衛生福利部 心快活心理健康學習平台",
+        "url": "https://wellbeing.mohw.gov.tw/kid/pstunt/1/1872",
+        "updated": "2021-10-01",
+        "supports": "人際關係與孤獨感互相影響；在家庭、學校、社區中和他人建立連結可以減少孤獨感。",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "talking-how-to-start",
+    "topic": "talking",
+    "title": "不知道怎麼開口？找人說的小技巧",
+    "keywords": [
+      "不知道怎麼說",
+      "不敢講",
+      "想找人聊",
+      "沒人可以說",
+      "怎麼開口",
+      "說不出口",
+      "怕被罵",
+      "想跟爸媽說",
+      "跟朋友說心事"
+    ],
+    "summary": "把心事說出來可以減輕壓力，先選一個信任的人、挑對時間，從一句簡單的話開始就好。",
+    "steps": [
+      "在紙上或手機裡列出幾個你信任的人，例如家人、朋友、導師或輔導老師。",
+      "選一個你們都有空、不趕時間的時候；邊散步邊聊，常常比面對面坐著更自在。",
+      "先寫下幾個想說的重點，開頭可以說：「我最近覺得壓力很大，想找人聊聊。」並告訴對方你想要建議，還是只想被聽。",
+      "不用一次說完全部，也可以約下次再聊；如果對方幫不上忙，那不是你的錯，可以換另一個人試試。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果當面說太難，可以先把想說的寫在紙上，見面時拿給對方看或照著念。"
+    ],
+    "when_to_seek_help": "如果身邊的人沒辦法幫你，或心事已經讓你很難過日子，請直接找學校輔導老師，或撥打1925安心專線（24小時）。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "How to talk about your mental health (Every Mind Matters)",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/how-to-talk-about-your-mental-health/",
+        "updated": null,
+        "supports": "列出信任的人；挑雙方有空的時間、邊走邊聊減少壓力；先寫下想說的話；開場句範例與說明想要建議或只想被聽；不必一次說完、對方幫不上忙不是你的問題",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Where to get mental health support - children and young people",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/mental-health-support/how-to-get-support/where-to-get-support/",
+        "updated": "2023-07-19",
+        "supports": "可以找老師、學校護理人員、醫師等信任的大人；說不出口時可以先寫下想說的內容",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "1925安心專線（依舊愛我）",
+        "publisher": "衛生福利部心理健康司",
+        "url": "https://dep.mohw.gov.tw/DOMHAOH/cp-4906-54077-107.html",
+        "updated": "2025-08-28",
+        "supports": "有心理壓力或情緒困擾可撥1925，提供24小時免付費心理諮詢",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "talking-who-can-help-in-taiwan",
+    "topic": "talking",
+    "title": "在學校和身邊，可以找誰幫忙？",
+    "keywords": [
+      "要找誰",
+      "輔導室",
+      "輔導老師",
+      "導師",
+      "求助",
+      "心理諮商",
+      "學生輔導諮商中心",
+      "安心專線",
+      "1925",
+      "需要有人幫我"
+    ],
+    "summary": "在臺灣，學校導師和輔導室、各縣市學生輔導諮商中心，以及24小時的1925安心專線，都是可以求助的地方。",
+    "steps": [
+      "先找你覺得最好說話的大人，例如導師、輔導老師、學校護理師或家人，告訴他你最近的感覺。",
+      "說的時候盡量講清楚：你有什麼感覺、持續多久了、對上課睡覺有什麼影響。",
+      "可以直接到學校輔導室；各縣市（包括南投縣）也有學生輔導諮商中心，可以請輔導老師幫你了解怎麼使用。",
+      "晚上或假日找不到人時，可以打1925安心專線，24小時免費。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果有立即危險，請馬上撥打119。"
+    ],
+    "when_to_seek_help": "只要心情困擾已經影響到生活，或你自己覺得撐不住，就是找輔導老師或醫師的好時機，不用等到很嚴重。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "輔導資源 - 教育部學生輔導資訊網",
+        "publisher": "教育部",
+        "url": "https://www.guide.edu.tw/resources/",
+        "updated": null,
+        "supports": "各縣市政府設有學生輔導諮商中心；國家教育研究院學生輔導諮商中心的駐點服務包含南投區",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "1925安心專線（依舊愛我）",
+        "publisher": "衛生福利部心理健康司",
+        "url": "https://dep.mohw.gov.tw/DOMHAOH/cp-4906-54077-107.html",
+        "updated": "2025-08-28",
+        "supports": "1925安心專線提供24小時免付費心理諮詢",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Where to get mental health support - children and young people",
+        "publisher": "NHS (UK)",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/mental-health-support/how-to-get-support/where-to-get-support/",
+        "updated": "2023-07-19",
+        "supports": "可以找老師、學校護理人員、醫師或信任的大人；說明時講清楚感受、持續多久、對日常生活的影響",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "study-self-testing",
+    "topic": "study_skills",
+    "title": "闔上課本考自己：主動回想",
+    "keywords": [
+      "自我測驗",
+      "主動回想",
+      "讀書方法",
+      "一直重讀",
+      "看懂了但考不出來",
+      "背書",
+      "提取練習",
+      "怎麼複習",
+      "考試技巧"
+    ],
+    "summary": "讀完一段後闔上書、自己把重點想出來或寫出來，通常比只把課本重讀一遍更有效。",
+    "steps": [
+      "讀完一小段或一節，就把書和筆記蓋起來，試著把重點寫下來或小聲講出來。",
+      "打開書對答案，把想不起來或寫錯的地方圈起來，下次先複習這些。",
+      "用課本後面的習題、考卷或自己做的問答卡來考自己，不要只是把課本再看一遍。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "一直重讀會讓人「覺得自己都會了」，但這種感覺不一定準，要用考自己來確認。"
+    ],
+    "when_to_seek_help": "如果考自己時發現很多地方一直看不懂，可以把題目帶去問任課老師；若讀書壓力已經影響睡眠或心情，可以找輔導老師聊聊。",
+    "evidence": "single_study",
+    "sources": [
+      {
+        "name": "主動回憶學習法再度獲得美國教育心理學家重視",
+        "publisher": "國家教育研究院 台灣教育研究資訊網（駐洛杉磯文化組摘譯）",
+        "url": "https://teric.naer.edu.tw/wSite/PDFReader?xmlId=1165187&fileName=1400726821557&format=PDF",
+        "updated": "2009",
+        "supports": "闔上書回想內容比單純重讀更有效；反覆重讀會讓學生高估自己學會的程度（caution）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "測驗效果：學習遷移的促進（碩士論文）",
+        "publisher": "國立臺灣科技大學（臺灣博碩士論文知識加值系統）",
+        "url": "https://ndltd.ncl.edu.tw/cgi-bin/gs32/gsweb.cgi?o=dnclcdr&s=id=%22098NTUS5027047%22.&searchmode=basic",
+        "updated": "2010",
+        "supports": "提取練習（例如作答測驗）能提升之後的記憶表現（測驗效果）",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "study-spaced-practice",
+    "topic": "study_skills",
+    "title": "分次讀，比一次讀到爆更記得住",
+    "keywords": [
+      "讀書方法",
+      "怎麼讀書",
+      "記不住",
+      "考前抱佛腳",
+      "熬夜念書",
+      "分散練習",
+      "複習",
+      "讀了就忘",
+      "背不起來",
+      "讀書計畫"
+    ],
+    "summary": "同樣的讀書時間，分成好幾段、隔幾天再複習，通常比考前一晚一次讀完更能長久記住。",
+    "steps": [
+      "把一次要讀很久的內容拆成幾段，例如一天兩小時改成兩到三次、每次短一點。",
+      "上課當天先簡單看一次，隔一兩天再回頭複習，之後再隔幾天看一次。",
+      "在行事曆上把複習時間先排好，不要全部留到考前一晚。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "考前臨時硬背也許能應付考試，但比較容易很快忘掉。",
+      "需要一口氣想完的題目（例如很長的推理題），可以一次做完一整題再休息。"
+    ],
+    "when_to_seek_help": "如果你已經試著分次複習，成績還是一直很難進步、或讀書讓你壓力很大，可以找導師或輔導老師一起看看方法。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "分布練習（教育大辭書）",
+        "publisher": "國家教育研究院（教育百科）",
+        "url": "https://pedia.cloud.edu.tw/Entry/Detail/?title=%E5%88%86%E5%B8%83%E7%B7%B4%E7%BF%92&search=%E5%88%86%E5%B8%83%E7%B7%B4%E7%BF%92",
+        "updated": "2000-12",
+        "supports": "分段練習一般比一次集中練習效果好；機械式記憶適合分段，連續推理的內容可集中進行（caution 2）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "練習（教育Wiki）",
+        "publisher": "教育部教育百科",
+        "url": "https://pedia.cloud.edu.tw/Entry/WikiContent?title=%E7%B7%B4%E7%BF%92&search=%E7%B7%B4%E7%BF%92",
+        "updated": null,
+        "supports": "分散練習有助長期記憶；考前一晚死記不一定能牢牢記住（引用 Slavin 教育心理學，2005）",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "focus-phone-away",
+    "topic": "focus",
+    "title": "寫功課時，讓手機離開視線",
+    "keywords": [
+      "專心",
+      "分心",
+      "一直滑手機",
+      "寫作業滑手機",
+      "通知",
+      "專注力",
+      "定不下心",
+      "手機成癮",
+      "邊看影片邊寫功課"
+    ],
+    "summary": "邊寫功課邊看影片、回訊息會影響學習，把手機和其他螢幕先關掉或拿開，比較容易專心。",
+    "steps": [
+      "寫功課前把手機調成勿擾或關掉通知，最好放到另一個房間或書包裡。",
+      "寫功課時把電視和影片關掉，一次只做一件事。",
+      "先把功課完成，再把滑手機或玩遊戲當作完成後的獎勵。",
+      "跟家人約好一段「讀書時間」，這段時間大家都不傳訊息打擾你。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果學校功課需要用手機或電腦，只開需要的程式，其他 App 先關掉。"
+    ],
+    "when_to_seek_help": "如果你試了這些方法還是很難專心好幾個星期，或已經影響成績和心情，可以跟導師、輔導老師或家人說，一起想辦法。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Constantly Connected: How Media Use Can Affect Your Child",
+        "publisher": "American Academy of Pediatrics（HealthyChildren.org）",
+        "url": "https://www.healthychildren.org/English/family-life/Media/Pages/adverse-effects-of-television-commercials.aspx",
+        "updated": "2023-05-30",
+        "supports": "寫功課時同時使用娛樂媒體，可能讓課業表現變差",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Resource Guide for Pediatricians: School Phone Policies",
+        "publisher": "American Academy of Pediatrics",
+        "url": "https://www.aap.org/en/patient-care/media-and-children/center-of-excellence-on-social-media-and-youth-mental-health/resource-guide-for-pediatricians-school-phone-policies/",
+        "updated": "2026-04-27",
+        "supports": "手機通知和想看社群、遊戲、影片的念頭會打斷學習；可用勿擾或上課模式減少分心",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "降低3C網路成癮風險 國教署提「數位教養六大原則」盼促親子良好互動",
+        "publisher": "教育部",
+        "url": "https://www.edu.tw/News_Content.aspx?n=9E7AC85F1954DDA8&s=F5140FBDD10B81A9",
+        "updated": "2020-01-20",
+        "supports": "先完成功課再使用3C（普雷馬克原則）；與家人約定使用時段",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "focus-study-blocks-breaks",
+    "topic": "focus",
+    "title": "一段一段讀，中間短暫休息",
+    "keywords": [
+      "專心不了",
+      "讀很久沒效率",
+      "讀書很累",
+      "休息",
+      "番茄鐘",
+      "讀書時間安排",
+      "注意力",
+      "坐不住",
+      "讀書環境"
+    ],
+    "summary": "連續讀太久會累、專注力下降，把讀書切成幾段、中間安排短暫休息，比較能維持專心。",
+    "steps": [
+      "把今天要讀的內容拆成幾個小份量，一次只處理一份。",
+      "每讀完一段就休息一下，起來走走或伸展，而不是改去滑手機。",
+      "選一天中精神最好的時段，和一個安靜、不容易被打擾的地方來讀比較難的科目。",
+      "排計畫時留一點空檔，讀不完時可以補，不會整個計畫垮掉。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "休息時間太長或休息時開始滑手機，常常會一路滑下去，最好先設好鬧鐘。"
+    ],
+    "when_to_seek_help": "如果你怎麼調整都很難專心、常常覺得很累或很焦慮，可以找輔導老師或信任的大人談談。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Tips on preparing for exams",
+        "publisher": "NHS",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/help-for-teenagers-young-adults-and-students/tips-on-preparing-for-exams/",
+        "updated": "2023-10-24",
+        "supports": "長時間連續讀書會累、降低專注，建議切成小份量並安排短暫休息；不讀書時做散步、伸展等活動",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Tackling your to-do list",
+        "publisher": "NHS Every Mind Matters",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/self-help-cbt-techniques/tackling-your-to-do-list/",
+        "updated": null,
+        "supports": "選精神最好的時段與安靜的地點來做需要完成的事",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "善用三步驟+兩技巧 從高一開始練習制定你的讀書計畫",
+        "publisher": "大學招生委員會聯合會 ColleGo!",
+        "url": "https://collego.edu.tw/Media/Article/804",
+        "updated": "2023-08-15",
+        "supports": "讀書時段盡量完整不被打斷；計畫中保留彈性時間與休息",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "motivation-small-goals-self-progress",
+    "topic": "motivation",
+    "title": "訂小目標，跟昨天的自己比",
+    "keywords": [
+      "怕考不好",
+      "不想念書",
+      "跟別人比",
+      "壓力大",
+      "目標",
+      "讀書計畫",
+      "拖延",
+      "沒信心",
+      "成績很爛"
+    ],
+    "summary": "很多拖延其實是怕失敗；把目標放在「自己有沒有進步」，再拆成看得到的小目標，比較能動起來。",
+    "steps": [
+      "把大目標拆成具體的小任務，例如「今天把第三課的練習題做完」。",
+      "每完成一個小目標就打勾，達到小里程碑時給自己一點獎勵。",
+      "提醒自己讀書是為了自己更懂、更進步，而不是為了證明比別人強。",
+      "每週回頭看一次計畫，如果太滿就減量，不要硬撐到放棄。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "一直被罵或一直跟別人比較，通常會讓人更想拖延。"
+    ],
+    "when_to_seek_help": "如果你很怕失敗、怕到常常不敢開始，或家裡、學校的壓力讓你很難受，可以找輔導老師聊聊。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "教育心理學家的三招密技，終結孩子的課業拖延症！（秒懂心理學）",
+        "publisher": "國立臺灣師範大學 教育心理與輔導學系",
+        "url": "https://epbulletin.epc.ntnu.edu.tw/BEP/read/detail.jsp?id=1045",
+        "updated": null,
+        "supports": "課業拖延常與害怕失敗有關；負面回饋與能力比較會增加拖延，重視自己理解與進步可減少拖延（引用簡嘉菱、程炳林，2018）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "善用三步驟+兩技巧 從高一開始練習制定你的讀書計畫",
+        "publisher": "大學招生委員會聯合會 ColleGo!",
+        "url": "https://collego.edu.tw/Media/Article/804",
+        "updated": "2023-08-15",
+        "supports": "把進度拆成具體任務、設小里程碑並獎勵自己、定期檢視並在太滿時調整",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "motivation-try-five-minutes",
+    "topic": "motivation",
+    "title": "提不起勁？先做 5 分鐘就好",
+    "keywords": [
+      "不想讀書",
+      "提不起勁",
+      "拖延",
+      "懶得念",
+      "沒動力",
+      "一直拖",
+      "不想寫作業",
+      "讀書好累",
+      "動機",
+      "怎麼開始"
+    ],
+    "summary": "一直拖著不開始時，先答應自己只做 5 分鐘，事情會變得比較容易開始。",
+    "steps": [
+      "設一個 5 分鐘的計時器，只做最簡單的一小步，例如把課本翻到那一頁、寫第一題。",
+      "開始前先想好做完要給自己的小獎勵，例如聽一首喜歡的歌。",
+      "把比較喜歡的科目和比較討厭的科目交替著做，用做喜歡科目的順手感帶動自己。",
+      "記下這週一直在逃避的作業，看看是不是都卡在同一種事情上。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "一直逃避不做，當下會覺得輕鬆，但久了常常讓心情更低落。"
+    ],
+    "when_to_seek_help": "如果提不起勁已經持續好幾個星期、對很多以前喜歡的事也沒興趣，或心情一直很低落，請告訴輔導老師或你信任的大人。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Tackling your to-do list",
+        "publisher": "NHS Every Mind Matters",
+        "url": "https://www.nhs.uk/every-mind-matters/mental-wellbeing-tips/self-help-cbt-techniques/tackling-your-to-do-list/",
+        "updated": null,
+        "supports": "先試做 5 分鐘、事先規劃獎勵、喜歡與困難的事交替做、記錄逃避的事項；逃避會讓低落心情更難改善（caution）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Tips on preparing for exams",
+        "publisher": "NHS",
+        "url": "https://www.nhs.uk/mental-health/children-and-young-adults/help-for-teenagers-young-adults-and-students/tips-on-preparing-for-exams/",
+        "updated": "2023-10-24",
+        "supports": "把要讀的內容拆成可處理的小塊，讀完一段給自己獎勵；有壓力時找信任的人談",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "career-junior-high-explore",
+    "topic": "career",
+    "title": "國中生：動手體驗不同職業",
+    "keywords": [
+      "不知道以後要做什麼",
+      "生涯探索",
+      "職業試探",
+      "技藝教育",
+      "高職還是高中",
+      "興趣",
+      "職探中心",
+      "選學校",
+      "五專"
+    ],
+    "summary": "國中生可以透過職業試探體驗課程、營隊和技藝教育課程，實際動手認識不同職業，再想升學方向。",
+    "steps": [
+      "問輔導室：你的縣市或學校有沒有「職業試探與體驗」的課程或寒暑假營隊可以報名。",
+      "如果你喜歡動手做，問輔導老師學校有沒有開技藝教育課程，可以先體驗餐旅、設計、機械等職群。",
+      "每次體驗完寫下：我喜歡哪個部分、哪裡覺得辛苦，慢慢找出自己的興趣。",
+      "把體驗心得拿回家和家人分享，一起討論適合的高中、高職或五專方向。"
+    ],
+    "suitable_for": "國中",
+    "cautions": [
+      "各縣市和學校提供的課程不一樣，實際有哪些課、怎麼報名要問自己學校的輔導室。"
+    ],
+    "when_to_seek_help": "如果你對未來很迷惘，或你的想法和家人差很多、不知道怎麼溝通，可以找輔導老師幫忙。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "發展多元職業試探課程 落實技職教育向下扎根",
+        "publisher": "教育部國民及學前教育署（教育部網站）",
+        "url": "https://www.moe.gov.tw/News_Content.aspx?n=9E7AC85F1954DDA8&s=C21A8A9F00519DBC",
+        "updated": "2022-05-31",
+        "supports": "國教署與地方政府設置區域職業試探與體驗示範中心，提供國中生動手體驗課程與寒暑假營隊",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "國中技藝教育專案編班 學生多元適性發展的推手",
+        "publisher": "教育部國民及學前教育署（教育部網站）",
+        "url": "https://www.edu.tw/News_Content.aspx?n=9E7AC85F1954DDA8&s=737DD28FDBFB109D",
+        "updated": "2023-05-16",
+        "supports": "國中技藝教育以實作、模擬體驗認識各職群（如餐旅、設計、機械），銜接技術型高中與五專",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "career-senior-high-tools",
+    "topic": "career",
+    "title": "高中選組選系：興趣量表＋ColleGo!",
+    "keywords": [
+      "選組",
+      "選系",
+      "不知道念什麼科系",
+      "學群",
+      "興趣量表",
+      "學系探索量表",
+      "ColleGo",
+      "大學科系",
+      "生涯規劃",
+      "第一類組第二類組"
+    ],
+    "summary": "高中生可以先做大考中心的興趣量表了解自己的興趣類型，再到 ColleGo! 查學群、學類和校系，慢慢縮小選組選系的範圍。",
+    "steps": [
+      "請輔導室安排或詢問如何做大考中心的「興趣量表」，一般建議高一做，看看自己的興趣類型和學群地圖。",
+      "高二下到高三上可以再做「學系探索量表」，看看哪些學類比較符合你的喜好。",
+      "到 ColleGo! 網站用學群、學類或喜歡的科目去找科系，最多可以把三個學群或校系放在一起比較。",
+      "把感興趣的科系寫下來，查它們大學在上什麼課，再和輔導老師、家人討論選組。"
+    ],
+    "suitable_for": "高中",
+    "cautions": [
+      "量表結果只是參考，不是決定；興趣也可能隨經驗改變。"
+    ],
+    "when_to_seek_help": "如果你在選組選系上卡很久、很焦慮，或和家人意見不同，可以請輔導老師幫你解釋量表結果並一起討論。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "心理量表（興趣量表、學系探索量表）",
+        "publisher": "財團法人大學入學考試中心基金會",
+        "url": "https://career.ceec.edu.tw/StudentSection/Introduce",
+        "updated": null,
+        "supports": "興趣量表供高中以上學生了解興趣類型、選組選系參考，結果含學群地圖；學系探索量表建議高二下或高三上使用、呈現學類適配排行",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "ColleGo! 大學選才與高中育才輔助系統",
+        "publisher": "大學招生委員會聯合會（臺北醫學大學執行）",
+        "url": "https://collego.edu.tw/",
+        "updated": null,
+        "supports": "可依學群、學類、喜歡的科目探索科系，查看校系課程，並可比較最多三個學群／學類／校系",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "admissions-junior-high-official-sites",
+    "topic": "admissions",
+    "title": "國中升學資訊：去這些官方網站查",
+    "keywords": [
+      "會考",
+      "國中會考",
+      "免試入學",
+      "簡章",
+      "比序",
+      "五專",
+      "升高中",
+      "歷屆試題",
+      "會考成績",
+      "就學區"
+    ],
+    "summary": "國中會考的內容和歷屆試題看會考官網，免試入學簡章到各就學區免試入學委員會網站下載，五專免試入學看技專校院招生委員會聯合會網站。",
+    "steps": [
+      "到國中教育會考網站看考試內容、成績等級怎麼算、常見問題和歷屆試題。",
+      "免試入學的簡章可以在你所在就學區的免試入學委員會網站免費下載，也可以從國教署的國中畢業生適性入學宣導網站找到連結。",
+      "想念五專的話，到技專校院招生委員會聯合會網站看五專免試入學的管道和簡章資訊。",
+      "日期、名額和規定每年都可能改，一定以當年度官網公告和學校輔導室的說明為準。"
+    ],
+    "suitable_for": "國中",
+    "cautions": [
+      "網路上的補習班或懶人包可能過時或有錯，重要資訊請回到官方網站核對。"
+    ],
+    "when_to_seek_help": "看不懂簡章、不確定自己屬於哪個就學區，或不知道要怎麼選填志願時，可以直接問學校輔導室或導師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "國中教育會考",
+        "publisher": "國立臺灣師範大學心理與教育測驗研究發展中心",
+        "url": "https://cap.rcpet.edu.tw/",
+        "updated": null,
+        "supports": "會考官網提供考試內容、成績計算說明、歷屆試題、應考服務與常見問題",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "115學年度高級中等學校免試入學招生簡章公告 可上網免費下載",
+        "publisher": "教育部國民及學前教育署",
+        "url": "https://www.k12ea.gov.tw/Tw/News/K12eaNewsDetail?filter=9F92BBB7-0251-4CB7-BF06-82385FD996A0&id=5b61f0b6-a6ee-46ca-905b-cbd03da9ea7e",
+        "updated": "2026-01-15",
+        "supports": "免試入學簡章可到各就學區免試入學委員會網站免費下載，也可由國中畢業生適性入學宣導網站連到各縣市資訊",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "技專校院招生委員會聯合會",
+        "publisher": "技專校院招生委員會聯合會",
+        "url": "https://www.jctv.ntut.edu.tw/",
+        "updated": null,
+        "supports": "五專完全免試、優先免試與聯合免試入學等管道資訊",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "admissions-senior-high-official-sites",
+    "topic": "admissions",
+    "title": "高中職升大學：學測、分科、統測去哪查",
+    "keywords": [
+      "學測",
+      "分科測驗",
+      "統測",
+      "申請入學",
+      "繁星推薦",
+      "校系分則",
+      "簡章",
+      "四技二專",
+      "考古題",
+      "升大學"
+    ],
+    "summary": "學測、分科測驗看大考中心網站，繁星推薦和申請入學看大學甄選入學委員會網站，高職統測看技專校院入學測驗中心網站。",
+    "steps": [
+      "學測、分科測驗、英聽的簡章、歷屆試題和成績相關資訊，到大考中心網站查。",
+      "繁星推薦、個人申請的簡章和各校系要求（校系分則），到大學甄選入學委員會網站查。",
+      "高職生的統測簡章、考試大綱和歷屆試題，到技專校院入學測驗中心網站查；四技二專的甄選與分發，問輔導室當年度的官方網址。",
+      "日期、名額和採計方式每年都可能改，一定看當年度的官方簡章，不要只看別人整理的資料。"
+    ],
+    "suitable_for": "高中",
+    "cautions": [
+      "報名、繳費、上傳資料都有期限，請把官方公告的時間記在行事曆，並和學校確認。"
+    ],
+    "when_to_seek_help": "看不懂簡章或校系分則、不知道該走哪個管道時，請找輔導室、導師或教務處的升學承辦老師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "大學甄選入學委員會",
+        "publisher": "大學招生委員會聯合會 大學甄選入學委員會",
+        "url": "https://www.cac.edu.tw/cacportal/index.php",
+        "updated": null,
+        "supports": "繁星推薦與個人申請入口；申請入學頁面提供簡章、校系分則查詢、篩選結果查詢等",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "財團法人大學入學考試中心基金會",
+        "publisher": "大學入學考試中心",
+        "url": "https://www.ceec.edu.tw/",
+        "updated": null,
+        "supports": "學測、分科測驗、高中英聽的考試簡章、歷屆試題與成績證明等資訊",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "財團法人技專校院入學測驗中心基金會",
+        "publisher": "技專校院入學測驗中心",
+        "url": "https://www.tcte.edu.tw/",
+        "updated": null,
+        "supports": "四技二專統一入學測驗（統測）的簡章、考試大綱、歷屆試題與答案",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "gaming-cant-stop",
+    "topic": "gaming",
+    "title": "遊戲停不下來時，先看看這幾件事",
+    "keywords": [
+      "打電動停不下來",
+      "遊戲成癮",
+      "沉迷手遊",
+      "一直玩遊戲",
+      "網路成癮",
+      "玩太久",
+      "熬夜打遊戲",
+      "戒遊戲",
+      "被罵玩太多"
+    ],
+    "summary": "玩得久不一定就是成癮，重點是能不能控制、有沒有擠掉睡覺和功課；發現停不下來時，可以先記錄、找替代活動，必要時求助。",
+    "steps": [
+      "連續記錄一週每天玩多久、玩的時候錯過了什麼（睡覺、功課、和朋友家人相處）。",
+      "想一想遊戲帶給你什麼，例如放鬆、成就感或朋友，再找一件也能給你這些的活動，例如運動、騎車或和朋友出去。",
+      "和家人一起約好可以玩的時段，比被突然沒收更容易做到。",
+      "可以用衛福部網路成癮專區的自我篩檢量表檢查自己的狀況。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "量表只是自我檢查，不能自己下診斷。",
+      "改變習慣需要時間，偶爾失敗很正常，重新開始就好。"
+    ],
+    "when_to_seek_help": "如果你很想少玩卻一直做不到，或遊戲已經讓你睡不好、成績或人際明顯變差，請找輔導老師或家人，也可以撥 1925 安心專線。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "Addictive behaviours: Gaming disorder",
+        "publisher": "World Health Organization",
+        "url": "https://www.who.int/news-room/questions-and-answers/item/addictive-behaviours-gaming-disorder",
+        "updated": "2020-10-22",
+        "supports": "遊戲障礙的重點是失去控制、遊戲優先於其他事、明知有害仍繼續；只有少數玩家受影響；建議留意遊戲時間是否擠掉其他日常活動",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "網路成癮專區",
+        "publisher": "衛生福利部心理健康司",
+        "url": "https://dep.mohw.gov.tw/Domhaoh/cp-4104-87265-107.html",
+        "updated": "2026-07-28",
+        "supports": "網路使用習慣自我篩檢量表、短版手機遊戲成癮量表，以及 1925 安心專線、社區心理衛生中心等求助資源",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "孩子一直玩線上遊戲，我該怎麼辦？",
+        "publisher": "教育部 中小學數位素養教育資源網",
+        "url": "https://eliteracy.edu.tw/Archive.aspx?id=4058&from=et",
+        "updated": null,
+        "supports": "先了解遊戲滿足了什麼需求（紓壓、成就感、朋友），用運動、閱讀等活動替代；改變習慣需要時間",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "gaming-in-app-spending",
+    "topic": "gaming",
+    "title": "課金和遊戲交易：先想清楚再花錢",
+    "keywords": [
+      "課金",
+      "儲值",
+      "抽卡",
+      "遊戲點數",
+      "虛寶",
+      "買帳號",
+      "遊戲詐騙",
+      "偷刷爸媽的卡",
+      "零用錢",
+      "165"
+    ],
+    "summary": "課金前先分清楚想要和需要、用零用錢訂上限，並且不要跟陌生人買賣帳號或虛寶，遇到可疑狀況找家人並打 165。",
+    "steps": [
+      "課金前先問自己：這是「想要」還是「需要」？值得用掉這筆零用錢嗎？",
+      "跟家人討論每個月零用錢裡最多可以花多少在遊戲上，花完就停。",
+      "不要用家人的手機或綁定的信用卡偷偷付款，付款前看清楚按鈕，避免誤按購買。",
+      "不要把帳號密碼、手機號碼或驗證碼給網路上的人，也不要買來路不明的虛寶或帳號；覺得被騙時馬上告訴家人，並打 165 反詐騙專線或上 165 網站報案。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "很多免費遊戲是靠玩家課金賺錢，一點一點花下去，加起來常常很多。"
+    ],
+    "when_to_seek_help": "如果你已經花掉很多錢不敢跟家人說，或被網友要求付錢、給密碼，請馬上告訴家人或學校老師，不要自己處理。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "陪孩子玩線上遊戲聊「課金」",
+        "publisher": "教育部 中小學數位素養教育資源網",
+        "url": "https://eliteracy.edu.tw/Archive.aspx?id=4200&from=et",
+        "updated": null,
+        "supports": "免費遊戲靠販售裝備服務賺錢；與家人討論零用錢分配、分辨想要與需要、練習克制課金衝動；保管付款密碼",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "網路遊戲常見的詐騙手法",
+        "publisher": "教育部 中小學數位素養教育資源網",
+        "url": "https://eliteracy.edu.tw/Archive.aspx?id=4191&from=et",
+        "updated": null,
+        "supports": "假交友套取帳密、虛寶交易詐騙、手機綁定付款誤刷；不給陌生人個資、不買來路不明物品、交易先經家長同意",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "常見問答：撥打165反詐騙諮詢專線需要通話費用嗎？",
+        "publisher": "內政部警政署",
+        "url": "https://www.npa.gov.tw/ch/app/faq/view?module=faq&id=2144&serno=A1078837",
+        "updated": "2022-11-01",
+        "supports": "165 反詐騙諮詢專線可諮詢與報案，也可在 165 網站線上報案",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "learning",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "bullying-cyberbullying-steps",
+    "topic": "bullying",
+    "title": "遇到網路霸凌怎麼辦",
+    "keywords": [
+      "網路霸凌",
+      "被留言罵",
+      "群組被排擠",
+      "被做梗圖",
+      "被肉搜",
+      "IG 被嘲笑",
+      "限動被嗆",
+      "截圖",
+      "檢舉帳號",
+      "iWIN"
+    ],
+    "summary": "網路霸凌也是霸凌，先保存證據、不要對罵，再檢舉並找大人幫忙。",
+    "steps": [
+      "先把霸凌的貼文、留言、訊息截圖存起來，最好看得到日期和帳號。",
+      "不要回嘴或跟對方繼續吵，可以用平台的封鎖、檢舉功能處理。",
+      "告訴家人、老師或其他信任的大人，讓他們陪你一起想下一步。",
+      "需要協助移除內容或諮詢時，可以到 iWIN 網站「我要申訴」，或在上班時間打 iWIN 諮詢專線 02-2577-5118。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "看到別人被網路霸凌時，不要按讚、轉傳或加入留言，沉默跟起鬨都可能讓對方更痛苦。",
+      "暫時離開社群讓自己喘口氣可以，但問題還是要找大人一起處理。"
+    ],
+    "when_to_seek_help": "如果霸凌一直持續、你覺得很難過或不安全，請盡快告訴輔導老師或家人；在學校發生的也可以打 1953，有立即危險請打 110。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "遇到網路霸凌怎麼辦？",
+        "publisher": "iWIN 網路內容防護機構",
+        "url": "https://i.win.org.tw/propaganda_detail.php?SerialNo=1241&Type=1&currentPage=1",
+        "updated": "2026-06-23",
+        "supports": "截圖保存證據、不對罵、向平台檢舉、告訴大人、旁觀者不要袖手旁觀或加入；iWIN 申訴與諮詢專線 02-2577-5118（週一至週五上班時間）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Cyberbullying: What is it and how to stop it",
+        "publisher": "UNICEF",
+        "url": "https://www.unicef.org/end-violence/how-to-stop-cyberbullying",
+        "updated": "2026-01",
+        "supports": "告訴信任的大人、向平台檢舉、封鎖、保存訊息與截圖、可暫時離線；旁觀者可傾聽並陪同求助",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "bullying-victim-or-bystander-what-to-do",
+    "topic": "bullying",
+    "title": "被霸凌或看到霸凌，可以怎麼做",
+    "keywords": [
+      "被霸凌",
+      "被欺負",
+      "同學排擠我",
+      "看到有人被霸凌",
+      "旁觀者",
+      "反霸凌專線",
+      "1953",
+      "要不要告訴老師",
+      "被嗆被打",
+      "霸凌檢舉"
+    ],
+    "summary": "不管是自己被霸凌還是看到別人被霸凌，都值得說出來，學校和教育部都有管道可以幫忙。",
+    "steps": [
+      "把發生的事情記下來，例如時間、地點、誰做了什麼、有誰在場。",
+      "告訴一位你信任的大人，例如導師、輔導老師或學務處老師，也可以請信任的同學陪你一起去說。",
+      "如果在學校不敢說，可以打教育部反霸凌專線 1953，24 小時都有人接聽，也可以先只問問看。",
+      "如果你是旁觀者，不要一起起鬨或轉傳，可以陪在被欺負的同學旁邊聽他說，並一起去找大人幫忙。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要用報復或私下找人「討公道」的方式處理，這可能讓你更危險，也可能讓你變成被處理的一方。",
+      "霸凌不是你的錯，也不是「忍一下就好」的小事。"
+    ],
+    "when_to_seek_help": "只要霸凌持續發生、你覺得害怕或不想上學，就請馬上告訴導師或輔導老師，或撥打 1953；如果有人正在受傷或有立即危險，請打 110。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "教育部防制校園霸凌專區（首頁）",
+        "publisher": "教育部",
+        "url": "https://bully.moe.edu.tw/index",
+        "updated": null,
+        "supports": "1953 反霸凌專線 24 小時、學校通報管道（導師、輔導室、學務處、信箱）、可找信任同學、旁觀者「停、聽、看」",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "陪你勇敢，不再旁觀 教育部反霸凌專線電話1953正式啟用",
+        "publisher": "教育部",
+        "url": "https://bully.moe.edu.tw/details/208",
+        "updated": "2022",
+        "supports": "1953 提供 24 小時諮詢與通報、鼓勵被霸凌者與旁觀者勇敢說出來",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "family-conflict-cool-down-then-talk",
+    "topic": "family_conflict",
+    "title": "跟家人吵架時：先暫停，再好好說",
+    "keywords": [
+      "跟爸媽吵架",
+      "跟家人吵架",
+      "爸媽一直罵我",
+      "吵到很生氣",
+      "冷戰",
+      "不想講話",
+      "怎麼跟爸媽溝通",
+      "我訊息",
+      "情緒失控"
+    ],
+    "summary": "吵得很兇時先暫停冷靜，約好時間再談，用「我覺得…」說出感受，比較容易被聽見。",
+    "steps": [
+      "發現自己快要大吼或說出傷人的話時，先說「我現在很生氣，想先冷靜一下，等一下再談」，然後去安全的地方深呼吸。",
+      "跟家人約一個具體的時間再談，例如 20 分鐘後或晚餐後。",
+      "再談的時候用「我」開頭，說清楚發生的事和你的感受，例如「我被當著大家的面唸，覺得很丟臉」，少用「你每次都…」。",
+      "也試著聽聽家人擔心的是什麼，找找看有沒有雙方都能接受的做法。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "吵架時不要摔東西或傷害自己，生氣是正常的，但要用安全的方式讓自己冷靜。"
+    ],
+    "when_to_seek_help": "如果常常吵到很害怕、有人動手或威脅要傷害你，請告訴輔導老師或撥打 113 保護專線；心情一直很低落時可以撥打 1925 安心專線（24 小時免付費）。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "家有青少年＝掀開壓力鍋?!--解鎖自我情緒調節技巧(下)（電子報第73期）",
+        "publisher": "國立臺灣大學中國信託慈善基金會兒少暨家庭研究中心",
+        "url": "https://cfrc.ntu.edu.tw/edm.php?id=73",
+        "updated": "2020-04",
+        "supports": "衝突時先各自離開冷靜、約定時間再討論、避免命令與「你每次…」句型、改用描述感受的「我」訊息（原文寫給家長，原則雙方適用）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Family Arguments",
+        "publisher": "American Academy of Pediatrics (HealthyChildren.org)",
+        "url": "https://www.healthychildren.org/English/family-life/family-dynamics/Pages/Family-Arguments.aspx",
+        "updated": "2025-12-16",
+        "supports": "爭吵變成大吼或繞圈時先暫停、冷靜後再回來談、真正聽對方觀點並找妥協",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "113保護專線介紹",
+        "publisher": "衛生福利部保護服務司",
+        "url": "https://dep.mohw.gov.tw/DOPS/cp-1183-6499-105.html",
+        "updated": "2024-05-24",
+        "supports": "113 受理家庭暴力與兒少受虐通報諮詢、24 小時免付費、有立即危險先打 110",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "family-conflict-feeling-misunderstood",
+    "topic": "family_conflict",
+    "title": "覺得家人不懂我：讓溝通容易一點的小步驟",
+    "keywords": [
+      "爸媽不懂我",
+      "家人不理解我",
+      "不知道怎麼跟爸媽說",
+      "講了也沒用",
+      "被比較",
+      "想被聽見",
+      "跟家人有代溝",
+      "沒人懂我"
+    ],
+    "summary": "很多高中生都覺得父母不了解自己，你不孤單；挑對時機、平常多聊，並找其他信任的大人幫忙，都能讓溝通容易一點。",
+    "steps": [
+      "先把想說的重點寫下來，挑一個家人比較有空、心情比較好的時間開口。",
+      "平常找機會跟家人單獨相處或一起做喜歡的事，例如散步、煮飯，聊聊日常小事，慢慢累積信任。",
+      "說的時候講出你的感受和需要，例如「我希望你先聽我說完」，比只說「你都不懂」更容易被聽懂。",
+      "如果自己說不出口，可以請輔導老師或其他信任的大人幫忙想說法，或陪你一起談。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "一次談不好很正常，不代表家人不在乎你，可以換個時間再試。"
+    ],
+    "when_to_seek_help": "如果覺得在家很痛苦、心情一直很差或有傷害自己的念頭，請告訴輔導老師，或撥打 1925 安心專線（24 小時免付費）。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "浪漫聖誕 親密人際關係溝通技巧「3不1要」 助親子關係升溫",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.mohw.gov.tw/cp-16-80941-1.html",
+        "updated": "2024-12-23",
+        "supports": "超過七成高中職學生覺得父母不了解自己的問題與憂慮；溝通時傾聽、不批評比較、表達同理",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Six tips for adolescents for building better relationships with parents",
+        "publisher": "UNICEF India",
+        "url": "https://www.unicef.org/india/stories/six-tips-adolescents-building-better-relationships-parents",
+        "updated": "2022-06-28",
+        "supports": "與父母單獨相處、一起做喜歡的事、每天聊日常、關係緊張時緩和氣氛、可向輔導老師等信任大人求助",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "安心專線108年12月20日正式單軌使用1925 號碼改變 關心不變",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/cp-4250-50587-1.html",
+        "updated": "2019-12-20",
+        "supports": "1925 安心專線全年無休、24 小時免付費心理諮詢",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "dating-breakup-coping-and-safety",
+    "topic": "dating",
+    "title": "分手、失戀了，怎麼陪自己走過",
+    "keywords": [
+      "分手",
+      "失戀",
+      "被甩",
+      "好難過",
+      "忘不了他",
+      "想復合",
+      "提分手",
+      "怕對方生氣",
+      "分手後被騷擾",
+      "心碎"
+    ],
+    "summary": "失戀後難過、生氣、睡不好都是常見反應，給自己時間、找人陪伴；如果對方讓你害怕，分手要先顧安全。",
+    "steps": [
+      "允許自己難過或生氣，不用逼自己馬上忘記，每個人復原的速度不一樣。",
+      "找家人或朋友陪你聊聊，也可以運動、參加社團或嘗試新事物，讓生活慢慢回到軌道。",
+      "如果要跟控制欲強的人提分手，選白天、明亮、有人在的公開地方，並先告訴朋友你去哪裡、何時回來。",
+      "分手後保持距離；如果對方一直糾纏或騷擾，保留訊息等證據，告訴大人並報警。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要用傷害自己或報復對方的方式處理難過。"
+    ],
+    "when_to_seek_help": "如果難過很久都沒有好轉、影響吃飯睡覺上學，或有傷害自己的念頭，請找輔導老師或撥打 1925 安心專線；被跟蹤或威脅時請打 110。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "分手了，怎麼辦？",
+        "publisher": "國立清華大學學務處諮商中心",
+        "url": "https://counsel.site.nthu.edu.tw/p/406-1250-221303,r9412.php",
+        "updated": null,
+        "supports": "分手後難過、生氣、睡眠食慾改變是常見反應、復原需要時間且速度不同、找親友支持、照顧自己、需要時尋求諮商",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "如何與「危險情人」談分手？",
+        "publisher": "國立臺灣師範大學學生輔導中心",
+        "url": "https://counseling.sa.ntnu.edu.tw/en/%E5%A6%82%E4%BD%95%E8%88%87%E5%8D%B1%E9%9A%AA%E6%83%85%E4%BA%BA%E8%AB%87%E5%88%86%E6%89%8B%EF%BC%9F/",
+        "updated": "2021-09-11",
+        "supports": "白天公開明亮地點談分手、告知朋友行程、分手後保持距離、被糾纏騷擾時蒐證報警、找輔導老師",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "dating-crush-and-healthy-relationship",
+    "topic": "dating",
+    "title": "喜歡一個人、告白，健康的關係長什麼樣子",
+    "keywords": [
+      "喜歡一個人",
+      "告白",
+      "要不要告白",
+      "被拒絕",
+      "交往",
+      "男女朋友",
+      "健康的感情",
+      "他一直查我手機",
+      "恐怖情人",
+      "感情控制"
+    ],
+    "summary": "喜歡一個人很正常；健康的關係是互相尊重、可以好好說話、彼此都能保有自己的朋友和生活，而且不會讓你害怕。",
+    "steps": [
+      "告白前想一想：不管對方答應或拒絕，都要尊重對方的決定，被拒絕不代表你不好。",
+      "交往時檢查看看：你們能不能好好溝通、意見不同時能不能冷靜討論、你還能不能跟朋友家人相處。",
+      "對方如果一直查你手機、限制你跟誰出去、亂吃醋或逼你做不想做的事，這些是不健康的警訊。",
+      "身體接觸讓你不舒服時可以直接說「不要」，也可以結束話題或離開現場。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "在感情裡感到害怕，從來都不是正常的。",
+      "不要把私密照片傳給任何人，包括正在交往的人。"
+    ],
+    "when_to_seek_help": "如果對方罵你、打你、威脅你或威脅要傷害自己，請馬上告訴家人或輔導老師；有立即危險請打 110。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Expect Respect: Healthy Relationship Tips for Teens",
+        "publisher": "American Academy of Pediatrics (HealthyChildren.org)",
+        "url": "https://www.healthychildren.org/English/ages-stages/teen/dating-sex/Pages/Expect-Respect-Healthy-Relationships.aspx",
+        "updated": "2025-07-13",
+        "supports": "健康關係的特徵（尊重、溝通、信任、保有自己生活）、不健康與暴力警訊（控制、查手機、威脅）、感到害怕不正常、需要時找信任的大人",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "4招守護身體界線 在感情中做自己的主人",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.mohw.gov.tw/cp-16-81496-1.html",
+        "updated": "2025-02-20",
+        "supports": "感情中身體接觸不舒服可堅定拒絕、停止話題、離開現場、找信任的人幫忙",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "青春要設防，避免兒少成為性暴力事件被害人!",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/cp-3539-36712-1.html",
+        "updated": "2023-07-07",
+        "supports": "不拍攝或傳送私密照給任何人（網路戀人也一樣）",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "consent-body-boundaries",
+    "topic": "consent",
+    "title": "身體界線與同意：你的身體你做主",
+    "keywords": [
+      "身體界線",
+      "同意",
+      "性同意",
+      "不想被碰",
+      "可以拒絕嗎",
+      "被逼親密",
+      "說不出口",
+      "怎麼拒絕",
+      "他說大家都這樣",
+      "我的身體我做主"
+    ],
+    "summary": "任何身體接觸都要雙方真心願意，你隨時可以說「不要」，就算之前答應過也可以改變主意。",
+    "steps": [
+      "身體接觸讓你不舒服時，清楚、堅定地說「不要」，不用因為怕對方失望就勉強自己。",
+      "如果不好意思直接拒絕，可以轉移話題，或找理由離開，例如說家人要來接你了。",
+      "還不熟或關係不明確時，避免兩個人單獨待在私密空間，可以約一群朋友一起出去。",
+      "也要尊重別人的「不要」，對方沒有說好、猶豫或沉默，都不算同意。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "台灣法律特別保護未滿 16 歲的人：就算對方說「兩個人都願意」，與未滿 16 歲的人發生性行為仍會觸法。"
+    ],
+    "when_to_seek_help": "如果有人不顧你的拒絕碰你、逼你，或你覺得很混亂，請告訴信任的大人或輔導老師，也可以撥打 113 保護專線（24 小時免付費）。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "4招守護身體界線 在感情中做自己的主人",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.mohw.gov.tw/cp-16-81496-1.html",
+        "updated": "2025-02-20",
+        "supports": "不舒服的身體接觸可立刻堅定拒絕、不必怕對方不開心而勉強、停止話題、離開現場、找信任的人",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "青少年拒絕不當性邀約 國民健康署教你4招小撇步",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.mohw.gov.tw/fp-16-57995-1.html",
+        "updated": "2021-02-12",
+        "supports": "避免單獨相處、轉移話題或找理由離開、坦誠溝通、清楚說不",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "青春要設防，避免兒少成為性暴力事件被害人!",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/cp-3539-36712-1.html",
+        "updated": "2023-07-07",
+        "supports": "與未滿 16 歲者發生性行為，不論是否同意都須負刑事責任",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "consent-unwanted-touch-sexual-harassment-help",
+    "topic": "consent",
+    "title": "遇到不舒服的碰觸或性騷擾，可以找誰",
+    "keywords": [
+      "性騷擾",
+      "被亂摸",
+      "不舒服的碰觸",
+      "黃色笑話",
+      "被偷拍",
+      "老師碰我",
+      "同學毛手毛腳",
+      "113",
+      "性平會",
+      "要跟誰說"
+    ],
+    "summary": "讓你覺得不舒服、被冒犯的性相關言語或碰觸可能是性騷擾，不是你的錯，學校和 113 都可以幫你。",
+    "steps": [
+      "先讓自己離開現場到安全的地方，有立即危險就打 110。",
+      "把發生的時間、地點、對方說了或做了什麼記下來，訊息或照片不要刪。",
+      "告訴導師、輔導老師或學務處，學校老師知道後依法要在 24 小時內通報，學校也要對你的身分保密；你和家長也可以用書面向學校申請調查。",
+      "不想先找學校，或發生在校外，可以撥打 113 保護專線，有社工 24 小時提供諮詢和轉介，也可以用 113 線上諮詢或簡訊。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要一個人去找對方對質，先找大人一起處理比較安全。",
+      "就算對方是認識的人、老師或長輩，你也有權利說出來。"
+    ],
+    "when_to_seek_help": "只要發生讓你不舒服的碰觸或性相關言語，都可以馬上告訴信任的大人或撥打 113；有立即危險請先打 110。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "性騷擾防治",
+        "publisher": "衛生福利部保護服務司",
+        "url": "https://www.mohw.gov.tw/cp-190-232-1.html",
+        "updated": "2026-07-14",
+        "supports": "性騷擾是讓人不舒服、被冒犯的性或性別相關言行；113 由社工 24 小時提供諮詢、通報與轉介並保密；未成年時被騷擾可於成年後三年內申訴",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "113保護專線介紹",
+        "publisher": "衛生福利部保護服務司",
+        "url": "https://dep.mohw.gov.tw/DOPS/cp-1183-6499-105.html",
+        "updated": "2024-05-24",
+        "supports": "113 受理性騷擾等通報諮詢、24 小時免付費、線上諮詢與簡訊、立即危險先打 110",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "性別平等教育法",
+        "publisher": "教育部（全國教育法規資料庫）",
+        "url": "https://edu.law.moe.gov.tw/LawContent.aspx?id=FL030508",
+        "updated": "2023-08-16",
+        "supports": "第22條學校人員知悉後24小時內通報、第23條當事人身分保密、第31條被害人或法定代理人可書面向行為人所屬學校申請調查",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "online-safety-online-friends",
+    "topic": "online_safety",
+    "title": "網路交友：保護自己的幾個原則",
+    "keywords": [
+      "網友",
+      "網路交友",
+      "交友軟體",
+      "網友約見面",
+      "網戀",
+      "網友要我的照片",
+      "網友要地址",
+      "遊戲認識的人",
+      "要不要見面",
+      "網友借錢"
+    ],
+    "summary": "網路上的人不一定是他說的那個人，保護個資、不單獨見面、不傳私密照，是網路交友最重要的原則。",
+    "steps": [
+      "不要給網友你的真實姓名、學校、住址、電話或身分證等個人資料。",
+      "如果真的要見面，先讓家人知道，不要一個人去，也只約在公開場所；別人準備的飲料不要喝。",
+      "網友要你傳私密照或裸露的視訊時，堅定拒絕，把對話留著，並告訴爸媽或老師。",
+      "沒見過面的網友向你借錢、要你買點數或匯款，幾乎都是詐騙，不要付錢。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要拍或傳私密照給任何人，網路上的男女朋友也一樣。"
+    ],
+    "when_to_seek_help": "網友讓你覺得怪怪的、施壓或威脅你時，請馬上告訴家人或老師；遇到兒少性剝削或威脅可報警 110，網路不當內容可向 iWIN 申訴。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "青春要設防，避免兒少成為性暴力事件被害人!",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/cp-3539-36712-1.html",
+        "updated": "2023-07-07",
+        "supports": "不透露個資、不單獨赴約、避免非公開場所、不喝別人準備的飲料、不拍不傳私密照；兒少性剝削向 110 報案",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "看過來~~當你/妳遇到有人索取私密照，該怎麼聰明應對？",
+        "publisher": "iWIN 網路內容防護機構",
+        "url": "https://i.win.org.tw/news_detail.php?SerialNo=1215&Type=1&currentPage=5",
+        "updated": "2024-04-08",
+        "supports": "被索取私密照時堅定拒絕、保存對話證據、向師長父母求助、報警檢舉",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "常見詐騙手法話術解析與因應之道－第四章 假愛情交友",
+        "publisher": "內政部警政署刑事警察局",
+        "url": "https://www.cib.npa.gov.tw/ch/app/data/view?module=wg116&id=1909&serno=064fe6c9-ae2c-40d2-a7df-2e5a4223091f",
+        "updated": "2026-10-22",
+        "supports": "交友詐騙手法、未見面網友要錢時要高度警覺、不提供過多個資、未查證不匯款",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "online-safety-sexual-image-threat",
+    "topic": "online_safety",
+    "title": "私密照被要求或被威脅散布，怎麼辦",
+    "keywords": [
+      "私密照",
+      "裸照",
+      "被威脅",
+      "被勒索",
+      "性勒索",
+      "裸聊",
+      "照片外流",
+      "被拍影片",
+      "對方說要公開",
+      "性影像處理中心"
+    ],
+    "summary": "被威脅公開私密照不是你的錯；保留證據、不要付錢也不要答應任何條件，馬上告訴信任的大人並求助。",
+    "steps": [
+      "不要刪掉任何東西：把對話、對方帳號、照片被貼出的網址和網站名稱都截圖存起來。",
+      "不要付錢、不要再傳照片，也不要因為被威脅就答應對方任何要求。",
+      "馬上告訴家人、老師或你信任的大人，請他們陪你一起處理。",
+      "向衛福部性影像處理中心申訴請平台移除（專線 02-6605-7373，每天 9:00–22:00，也可從衛福部網站線上申訴），並可以報警處理。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要自己一個人跟對方談判或見面。",
+      "把社群和通訊軟體的隱私設定調高，避免再被騷擾。"
+    ],
+    "when_to_seek_help": "只要有人要求或威脅散布你的私密照，就請立刻告訴信任的大人並求助；有立即危險請打 110，需要保護與諮詢可撥 113。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "終結性影像，沒有人是局外人！「不」拍、「不」傳、「不」留，一起防制性影像散布",
+        "publisher": "衛生福利部",
+        "url": "https://mohw.gov.tw/cp-2704-74815-1.html",
+        "updated": "2024-03-22",
+        "supports": "性影像處理中心為移除單一窗口、可線上申訴並由中心通知平台移除、截圖保存群組名稱、散布者帳號、網址與網站名稱、可協助報案",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "全民「攻」敵 群起吹哨 發現兒少性剝削，你該怎麼做？",
+        "publisher": "衛生福利部保護服務司",
+        "url": "https://dep.mohw.gov.tw/DOPs/fp-1269-79605-105.html",
+        "updated": "2024-08-12",
+        "supports": "保持冷靜、保存證據、調高隱私設定、性影像處理中心專線 02-6605-7373（09:00–22:00）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "不幸遇到視訊裸聊詐騙，可以這麼做！",
+        "publisher": "iWIN 網路內容防護機構",
+        "url": "https://i.win.org.tw/propaganda_detail.php?SerialNo=671&Type=2&currentPage=8",
+        "updated": "2023-12-11",
+        "supports": "不要因威脅刪除證據或答應對方任何條件、保存影像對話與帳號、可報警或找性影像處理中心、向信任的親友求助",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "scams-common-tricks-for-teens",
+    "topic": "scams",
+    "title": "常見網路詐騙手法：先付錢的都要小心",
+    "keywords": [
+      "詐騙",
+      "免費送手機",
+      "抽獎中獎",
+      "買點數",
+      "朋友 LINE 借錢",
+      "假網拍",
+      "便宜演唱會門票",
+      "打工收帳戶",
+      "要驗證碼",
+      "假管理員"
+    ],
+    "summary": "「免費送」「中獎」「朋友急著借錢」「輕鬆打工」常常是詐騙，只要對方要你先付錢、給帳戶或驗證碼，就先停下來。",
+    "steps": [
+      "看到免費送手機、點數、門票，卻要你先付保證金、運費或驗證費，就是詐騙警訊，真的要送你的人不會叫你先付錢。",
+      "朋友突然傳訊息要你代買點數、借錢或要驗證碼，先打電話直接問本人，帳號可能被盜了。",
+      "網路買東西不要被拉去 LINE 或私訊交易，價格便宜得不合理時要特別小心。",
+      "打工機會如果要你交存摺、提款卡、密碼或幫忙開帳戶，絕對不要給，這可能讓你變成詐騙集團的人頭帳戶。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "對方叫你「不要跟家人說」或催你「現在就要」，更要先問大人。"
+    ],
+    "when_to_seek_help": "只要牽涉到付錢、帳戶或驗證碼，先問爸媽或老師；不確定是不是詐騙可以撥打 165 反詐騙諮詢專線查證。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "免費的最貴：一支免費 iPhone，差點讓孩子損失3萬元",
+        "publisher": "iWIN 網路內容防護機構",
+        "url": "https://i.win.org.tw/propaganda_detail.php?SerialNo=1292&Type=6&currentPage=1",
+        "updated": "2026-10-07",
+        "supports": "免費贈品要先付保證金等警訊、要求帳戶資料、催促與轉私訊、先問家長、真心送東西的人不會叫你先付錢、被要求對家人保密是警訊",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "常見詐騙手法話術解析與因應之道－第八章 盜(冒)用網路帳號",
+        "publisher": "內政部警政署刑事警察局",
+        "url": "https://www.cib.npa.gov.tw/ch/app/data/view?module=wg116&id=1909&serno=a2f50753-ab28-469a-a6ce-59368758d083",
+        "updated": "2026-10-22",
+        "supports": "盜用親友 LINE 帳號要求代買點數、借錢或驗證碼，應先打電話向本人確認",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "常見詐騙手法話術解析與因應之道－第七章 假求職",
+        "publisher": "內政部警政署刑事警察局",
+        "url": "https://www.cib.npa.gov.tw/ch/app/data/view?module=wg116&id=1909&serno=87a85079-c42f-48cb-9506-14e08c912a39",
+        "updated": "2026-10-22",
+        "supports": "假求職騙取存摺、帳戶密碼當人頭帳戶；不要依指示幫人開戶或交出帳戶資料",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "scams-what-to-do-after-being-scammed",
+    "topic": "scams",
+    "title": "被騙了怎麼辦：停止付款、告訴大人、打 165",
+    "keywords": [
+      "被騙了",
+      "被詐騙怎麼辦",
+      "匯錢給騙子",
+      "165",
+      "報案",
+      "錢拿不回來",
+      "不敢跟爸媽說",
+      "帳戶被凍結",
+      "網路報案",
+      "被騙點數"
+    ],
+    "summary": "發現被騙時不要再付任何錢，馬上告訴家人，並撥打 165 反詐騙專線或到警察局報案，越快越好。",
+    "steps": [
+      "立刻停止匯款、轉帳或買點數，不管對方怎麼說都不要再照他的指示做。",
+      "馬上告訴爸媽或信任的大人，被騙不是丟臉的事，越早說越有機會處理。",
+      "撥打 165 反詐騙諮詢專線（市話免費）諮詢或報案，也可以到 165 全民防騙網「我要報案」或附近派出所。",
+      "如果帳戶有奇怪的錢進出，請家人陪你立刻聯絡銀行，也不要聽陌生人指示去提款或轉帳。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要把存摺、提款卡或密碼交給任何人，就算對方說可以幫你把錢拿回來。"
+    ],
+    "when_to_seek_help": "只要懷疑被騙或有人一直逼你付錢，就馬上告訴家人並打 165；如果被威脅或有人身危險，請打 110。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "常見問答－撥打165反詐騙諮詢專線需要通話費用嗎?受騙報案除可撥打165外，還有其他方式嗎?",
+        "publisher": "內政部警政署",
+        "url": "https://www.npa.gov.tw/ch/app/faq/view?module=faq&id=2144&serno=A1078837",
+        "updated": "2022-11-01",
+        "supports": "可撥 165 諮詢、檢舉或報案，市話免費（手機除中華電信外每分鐘 1 元）；可在 165 官網網路報案後轉派出所完成筆錄",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "警署澄清：犯罪手法不合理，呼籲民眾勿轉傳",
+        "publisher": "內政部警政署",
+        "url": "https://www.npa.gov.tw/ch/app/news/view?id=2141&module=clarification&serno=33443eca-96d7-4c6d-a251-cb584f5af193",
+        "updated": "2021-09-09",
+        "supports": "帳戶有不明款項應立即聯絡銀行、勿聽陌生人指示提款或轉帳、有疑慮撥 165 查證或打 110 報警",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "防詐專區－在網路從事任何活動，請記得保護網路資訊安全 - 反詐「五不」原則",
+        "publisher": "內政部警政署保安警察第三總隊",
+        "url": "https://www.3spc.npa.gov.tw/ch/app/data/view?module=govinfo&id=18710&serno=012de532-f310-486c-bffb-5644c8443a55",
+        "updated": "2023-10-12",
+        "supports": "不依網友指示匯款、不交出存摺、提款卡或密碼",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "relationships",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "puberty-body-changes-are-normal",
+    "topic": "puberty",
+    "title": "青春期身體在變，是正常的",
+    "keywords": [
+      "青春期",
+      "長高",
+      "變聲",
+      "長毛",
+      "長痘痘",
+      "胸部變化",
+      "月經",
+      "夢遺",
+      "發育比別人慢",
+      "發育比較早",
+      "身體怪怪的"
+    ],
+    "summary": "青春期因為荷爾蒙改變，身體會慢慢長成大人的樣子，每個人開始的時間和速度都不一樣，早一點或晚一點通常都是正常的。",
+    "steps": [
+      "先知道長高、長毛、流汗變多、皮膚和頭髮變油，是很多人在青春期都會遇到的變化。",
+      "不要拿自己和同學比進度，每個人發育的時間本來就不同，朋友比你早或晚都很常見。",
+      "把想問的問題寫下來，找家人、學校護理師或健康教育老師問，也可以看國健署「健康九九─青少年好漾館」的青春期資料。",
+      "青春期流汗和出油會變多，每天洗澡、洗頭，保持清潔會讓自己舒服一點。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "網路上的說法不一定正確，身體的問題最好以官方衛教資料或醫護人員的說明為準。"
+    ],
+    "when_to_seek_help": "如果身體變化讓你很擔心、很痛或跟大部分人差很多，可以先找學校護理師聊聊，需要時再請家人陪你去看醫師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "青少年健康",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/List.aspx?nodeid=33",
+        "updated": null,
+        "supports": "青春期因荷爾蒙分泌，身體與心理開始產生變化",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Puberty",
+        "publisher": "NHS Healthier Together (Shropshire, Telford and Wrekin)",
+        "url": "https://stw-healthiertogether.nhs.uk/health-for-young-people/growing/puberty",
+        "updated": null,
+        "supports": "青春期常見的身體變化、每個人發育速度不同是正常的",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "青少年健康（衛生福利e寶箱）",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-88-213-1.html",
+        "updated": "2026-10-07",
+        "supports": "國健署「健康九九─青少年好漾館」提供認識青春期等衛教資訊",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "puberty-mood-and-who-to-ask",
+    "topic": "puberty",
+    "title": "青春期心情起伏大，可以問誰？",
+    "keywords": [
+      "心情忽好忽壞",
+      "情緒起伏",
+      "容易生氣",
+      "青春期煩惱",
+      "想一個人靜靜",
+      "不敢問",
+      "性問題",
+      "交往",
+      "要問誰",
+      "青少年門診"
+    ],
+    "summary": "青春期心情一下開心一下難過是常見的，有疑問時可以找信任的大人、學校護理師，或國健署的青少年健康資源。",
+    "steps": [
+      "心情起伏很大時，先告訴自己這在青春期很常見，不代表你很奇怪。",
+      "找一個你信任的大人，例如家人、導師、輔導老師或學校護理師，說說你的感受或疑問。",
+      "想查資料時，可以先看國健署「健康九九─青少年好漾館」，裡面有青春期、身體和交往相關的衛教內容。",
+      "如果需要看醫生又不知道去哪裡，可以請大人幫忙查國健署推動的青少年健康促進服務友善機構。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "心情起伏常見，但如果一直很低落，就不要只當成「青春期而已」。"
+    ],
+    "when_to_seek_help": "如果你常常覺得難過、煩躁，已經影響睡覺、上學或跟朋友相處，請找輔導老師或學校護理師幫忙。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "青少年健康（衛生福利e寶箱）",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-88-213-1.html",
+        "updated": "2026-10-07",
+        "supports": "青少年好漾館衛教資源；青少年親善照護機構可提供人際、情緒與生育健康諮詢",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "青少年健康促進服務友善機構",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/List.aspx?nodeid=4167",
+        "updated": null,
+        "supports": "國健署推動青少年健康促進服務友善機構網絡",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Puberty",
+        "publisher": "NHS Healthier Together (Shropshire, Telford and Wrekin)",
+        "url": "https://stw-healthiertogether.nhs.uk/health-for-young-people/growing/puberty",
+        "updated": null,
+        "supports": "青春期情緒起伏（mood swings）是正常的",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "body-image-comparison-and-social-media",
+    "topic": "body_image",
+    "title": "一直跟別人比外表，好累",
+    "keywords": [
+      "身材焦慮",
+      "覺得自己太胖",
+      "覺得自己太瘦",
+      "外表",
+      "長得不好看",
+      "跟網美比",
+      "照片修圖",
+      "社群媒體",
+      "討厭自己的身體",
+      "被說胖",
+      "想要有肌肉"
+    ],
+    "summary": "青春期身體在變、加上社群上很多修過的照片，很容易讓人對外表焦慮，但可以練習把注意力放回自己的優點和身體能做到的事。",
+    "steps": [
+      "提醒自己網路上很多照片有修圖或濾鏡，不是真實的樣子。",
+      "整理一下追蹤的帳號，取消追蹤或按「不感興趣」那些讓你看完更討厭自己的內容。",
+      "寫下三個跟外表無關的優點，例如你很會照顧朋友、很會畫畫或很有耐心。",
+      "選一種你喜歡的運動或活動，重點放在它讓你覺得舒服、開心，而不是只為了改變外表。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果有人一直批評你的身材，那是他的問題，不是你的錯，可以告訴信任的大人。"
+    ],
+    "when_to_seek_help": "如果擔心外表佔掉你大部分的時間和力氣，讓你不想出門、不想見人，或開始不好好吃飯，請找輔導老師或學校護理師談談。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "Teens and body image",
+        "publisher": "UNICEF",
+        "url": "https://www.unicef.org/parenting/mental-health/teens-body-image",
+        "updated": null,
+        "supports": "青春期與社群媒體造成身體意象壓力、重設社群動態、列出優點、為感覺好而運動、何時該求助",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Puberty",
+        "publisher": "NHS Healthier Together (Shropshire, Telford and Wrekin)",
+        "url": "https://stw-healthiertogether.nhs.uk/health-for-young-people/growing/puberty",
+        "updated": null,
+        "supports": "每個人發育速度不同，不用跟朋友比",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "body-image-unhealthy-dieting-warning",
+    "topic": "body_image",
+    "title": "不吃飯、亂吃減肥藥很傷身",
+    "keywords": [
+      "減肥",
+      "節食",
+      "不吃飯",
+      "斷食",
+      "減肥藥",
+      "催吐",
+      "不吃澱粉",
+      "瘦身",
+      "怕胖",
+      "吃完很罪惡",
+      "拚命運動"
+    ],
+    "summary": "不吃東西、只吃某一類食物或自己買減肥藥，不但傷身體，還可能是飲食問題的警訊，正在長大的身體更需要均衡飲食。",
+    "steps": [
+      "三餐盡量定時吃，不要用跳過一餐的方式來控制體重。",
+      "不要自己上網買減肥藥或來路不明的產品，這些東西可能含有傷身的成分。",
+      "留意自己有沒有吃完很有罪惡感、偷偷不吃、拚命運動或吃完想吐的情況，有的話要跟大人說。",
+      "如果真的在意體重，找學校護理師或家人一起討論，不要一個人照網路方法做。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "這張卡不提供減重菜單或熱量數字，體重問題請和醫護人員一起討論。",
+      "飲食疾患常發生在青少年，而且當事人有時不會發現自己生病了。"
+    ],
+    "when_to_seek_help": "如果你常常不吃、吃完催吐、體重一直掉，或吃東西這件事讓你很痛苦，請盡快告訴學校護理師、輔導老師，並請家人陪你看醫師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "減重迷思大破解",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=542&pid=9731",
+        "updated": "2025-09-10",
+        "supports": "禁食傷身、只吃某類食物會營養不均衡、非法減肥藥的危害、三餐定時",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Eating disorders – Overview",
+        "publisher": "NHS",
+        "url": "https://www.nhs.uk/mental-health/feelings-symptoms-behaviours/behaviours/eating-disorders/overview/",
+        "updated": "2024-01-23",
+        "supports": "青少年較常發生飲食疾患、警訊（體重大掉、隱瞞吃多少、過度運動、飯後常跑廁所）、擔心時要盡快就醫並可找人陪同",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "substances-alcohol-betel-nut",
+    "topic": "substances",
+    "title": "酒和檳榔，先說不",
+    "keywords": [
+      "喝酒",
+      "啤酒",
+      "長輩叫我喝",
+      "聚餐勸酒",
+      "喝醉",
+      "檳榔",
+      "吃檳榔",
+      "口腔癌",
+      "未成年喝酒",
+      "朋友請我"
+    ],
+    "summary": "青少年的大腦特別容易受酒精影響，太早喝酒會提高以後依賴酒精的風險；檳榔則是一級致癌物，就算不加配料也可能致癌。",
+    "steps": [
+      "聚餐時被勸酒，可以直接說「我還未成年，我喝茶就好」，用茶或無酒精飲料代替。",
+      "盡量不去可能會喝酒的聚會，改約朋友運動或做其他喜歡的事。",
+      "有人遞檳榔給你時，可以直接拒絕，不用因為是長輩或朋友就勉強自己。",
+      "如果家裡常有人喝酒或吃檳榔讓你困擾，可以跟信任的大人或老師說。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "衛福部提醒，18歲以下不得飲酒是法律規定。",
+      "很多青少年第一次喝酒是跟著家人或朋友，被勸時更要記得自己有權利拒絕。"
+    ],
+    "when_to_seek_help": "如果你已經常常喝酒、喝到醉，或有人一直逼你喝酒或吃檳榔，請告訴輔導老師或學校護理師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "青少年向酒say NO 家庭是拒酒的第一道防線",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4878&pid=19064",
+        "updated": "2025-05-07",
+        "supports": "青少年大腦易受酒精影響、早期飲酒增加日後依賴、多數因親友喝酒而跟著喝、以茶代酒與避免飲酒場合",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "123「檳榔防制日」 拒絕檳榔 定期做口腔癌篩檢",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4576&pid=16345",
+        "updated": "2022-12-02",
+        "supports": "檳榔是一級致癌物，不論有無添加配料都可能罹患口腔癌",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "青春不喝94狂 未成年不飲酒宣導",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/cp-2736-8864-1.html",
+        "updated": "2024-04-25",
+        "supports": "18歲以下不得飲酒為法律規定、有拒絕飲酒的權利",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "substances-vape-heated-tobacco-refusal",
+    "topic": "substances",
+    "title": "電子煙、加熱菸、香菸：怎麼拒絕？",
+    "keywords": [
+      "電子煙",
+      "加熱菸",
+      "抽菸",
+      "香菸",
+      "同學叫我試",
+      "不敢拒絕",
+      "尼古丁",
+      "電子煙違法",
+      "被起鬨",
+      "戒菸",
+      "水果口味煙"
+    ],
+    "summary": "電子煙和加熱菸多含尼古丁，會讓人上癮、影響大腦發育，台灣法律也全面禁止電子煙，被邀請時可以用簡單的方法拒絕。",
+    "steps": [
+      "先想好一句拒絕的話，例如「我不要，我對這個沒興趣」，被問時直接說出來。",
+      "用簡單的理由拒絕，或用輕鬆的方式帶過，例如轉移話題、邀大家去做別的事。",
+      "如果對方一直起鬨，就找理由離開現場，不用留下來證明自己很「敢」。",
+      "如果你已經在用而且想停，可以打國健署免費戒菸專線 0800-636363，或找學校護理師協助。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "加熱菸不是比較安全的選擇，也不是戒菸工具。",
+      "依菸害防制法，電子煙全面禁止使用，未滿20歲也不可以吸菸，違規可能被罰款。"
+    ],
+    "when_to_seek_help": "如果你發現自己很難不碰菸或電子煙，或被同學一直施壓，請找學校護理師或輔導老師幫忙。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "校園拒菸八招不跟風 加熱菸「減害」是迷思",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=5020&pid=20320",
+        "updated": "2026-09-15",
+        "supports": "拒菸八不的拒絕方法、加熱菸沒有減害效果也不是戒菸工具、戒菸專線",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "菸害防制法全面禁止電子煙 保護兒少免於「煙」害！",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4809&pid=18649",
+        "updated": "2024-12-09",
+        "supports": "112年3月22日起全面禁止電子煙、禁止吸菸年齡提高至未滿20歲、尼古丁影響青少年大腦發育",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "電子煙違法又傷身 近8萬名青少年使用，三不政策提醒避免觸法",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4809&pid=18342",
+        "updated": "2024-08-15",
+        "supports": "使用電子煙最高可罰新臺幣1萬元、三不政策（不嘗試、不購買、不推薦）",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "nutrition-breakfast-my-plate",
+    "topic": "nutrition",
+    "title": "早餐這樣吃，比較有元氣",
+    "keywords": [
+      "早餐",
+      "不吃早餐",
+      "早餐店",
+      "吃什麼",
+      "均衡飲食",
+      "我的餐盤",
+      "喝牛奶",
+      "吃蔬菜",
+      "外食",
+      "上課沒精神"
+    ],
+    "summary": "國健署「我的餐盤」建議每餐都有主食、蛋白質和蔬菜，早餐店也能選出比較均衡的組合，缺的水果和蔬菜可以在其他餐補回來。",
+    "steps": [
+      "早餐店點餐時，選有夾生菜的餐點，再搭配蛋或肉等蛋白質。",
+      "飲料改選無糖鮮奶茶或鮮奶，不要每天都配含糖奶茶。",
+      "早餐店通常沒有水果和堅果，可以在下課或午餐後補一份水果。",
+      "早餐的蔬菜量通常不夠，午餐和晚餐記得多吃一點菜。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "豆漿和鮮奶的營養不一樣，想多補鈣可以選鮮奶。"
+    ],
+    "when_to_seek_help": "如果你常常吃不下、沒胃口，或有特殊飲食需求（例如過敏或吃素），可以找學校護理師或請家人帶你諮詢營養師、醫師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "均衡飲食菜單-外食這樣吃也能很均衡：早餐篇",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4687&pid=11678",
+        "updated": "2024-11-19",
+        "supports": "早餐店的均衡選法、無糖鮮奶茶、餐後補水果堅果、午晚餐補蔬菜、豆漿與鮮奶營養不同",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "國內兒童及青少年平均約每3位就有1位過重或肥胖 善用三撇步 暑假體位健康不超標",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-16-78901-1.html",
+        "updated": "2024-05-29",
+        "supports": "「我的餐盤」六口訣、多選天然原型食物",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "nutrition-less-sugary-drinks-more-water",
+    "topic": "nutrition",
+    "title": "少喝含糖飲料，多喝白開水",
+    "keywords": [
+      "手搖飲",
+      "含糖飲料",
+      "珍奶",
+      "汽水",
+      "喝水",
+      "白開水",
+      "口渴",
+      "飲料喝太多",
+      "減糖",
+      "全糖"
+    ],
+    "summary": "國健署建議避免含糖飲料、多喝白開水，白開水是最好的水分來源，可以從小地方慢慢少喝一點甜的。",
+    "steps": [
+      "帶一個自己的水壺上學，口渴時先喝白開水。",
+      "覺得白開水沒味道，可以加幾片檸檬或自己泡冷泡茶。",
+      "真的想喝飲料時，優先選無糖的，也不要天天喝含糖飲料。",
+      "跟朋友約好一起少喝飲料，互相提醒會比較容易做到。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "改變習慣可以慢慢來，從小的改變開始做比較容易持續。"
+    ],
+    "when_to_seek_help": "如果你一直覺得很口渴、喝很多水還是渴，或常常頭暈沒力氣，請告訴學校護理師或去看醫師。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "正確飲食習慣",
+        "publisher": "衛生福利部國民健康署",
+        "url": "https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=543&pid=8365",
+        "updated": "2021-10-21",
+        "supports": "國民飲食指標：少吃高糖食物、避免含糖飲料、多喝開水、從小的改變漸進做起",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "國內兒童及青少年平均約每3位就有1位過重或肥胖 善用三撇步 暑假體位健康不超標",
+        "publisher": "衛生福利部（資料來源：國民健康署）",
+        "url": "https://www.mohw.gov.tw/cp-16-78901-1.html",
+        "updated": "2024-05-29",
+        "supports": "白開水是最好的水分來源、可加檸檬片或冷泡茶、含糖飲料喝越多身體負擔越大",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "somatic-headache-stomachache-see-doctor",
+    "topic": "somatic",
+    "title": "頭痛肚子痛，什麼時候一定要看醫生？",
+    "keywords": [
+      "頭痛",
+      "肚子痛",
+      "一直痛",
+      "半夜痛醒",
+      "痛到吐",
+      "發燒",
+      "要不要看醫生",
+      "頭很痛",
+      "胃痛很久",
+      "撞到頭"
+    ],
+    "summary": "壓力造成的頭痛常常休息、睡飽就會改善，但有些情況代表可能不只是壓力，一定要馬上告訴大人並去看醫生。",
+    "steps": [
+      "頭痛時先找安靜、光線暗一點的地方休息放鬆，脖子肩膀緊可以冰敷或熱敷。",
+      "平常保持規律睡眠、不熬夜、三餐不要餓過頭，可以減少頭痛發作。",
+      "少喝咖啡、茶、可樂這類含咖啡因的飲料。",
+      "把痛的時間、位置和當時在做什麼記下來，看醫生時可以拿給醫生看。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "這張卡不提供止痛藥或其他藥物建議，止痛藥也不能自己天天吃，請先問醫師或藥師。"
+    ],
+    "when_to_seek_help": "如果頭痛越來越痛、半夜痛醒、早上起床就劇吐、伴隨手腳無力、發高燒加上脖子僵硬、撞到頭之後才開始痛，或肚子痛持續好幾個小時越來越痛、合併發燒，請立刻告訴學校護理師或家人並盡快就醫；突然非常劇烈的頭痛要直接去急診。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "兒童頭痛（臺大醫院健康電子報 2017年06月）",
+        "publisher": "國立臺灣大學醫學院附設醫院",
+        "url": "https://epaper.ntuh.gov.tw/health/201706/child_1.html",
+        "updated": "2017-06",
+        "supports": "張力型頭痛與心理壓力有關；越來越痛、半夜痛醒、噴射性嘔吐、肢體無力要盡快就醫；規律睡眠、不過餓",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Tension headaches",
+        "publisher": "NHS",
+        "url": "https://www.nhs.uk/conditions/tension-headaches/",
+        "updated": "2025-08-01",
+        "supports": "壓力與睡眠問題、咖啡因可引起緊張型頭痛；放鬆、冷熱敷、調整睡眠、減少咖啡因；何時看醫師與何時要急診（突然劇烈頭痛、頭部受傷後頭痛）",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Abdominal Pain in Children: 7 Possible Causes",
+        "publisher": "American Academy of Pediatrics (HealthyChildren.org)",
+        "url": "https://www.healthychildren.org/English/health-issues/conditions/abdominal/Pages/Abdominal-Pain-in-Children.aspx",
+        "updated": "2023-08-11",
+        "supports": "情緒壓力可造成反覆肚子痛；肚子痛持續或在3到5小時內加劇、合併發燒要立即聯絡醫師",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "somatic-stress-body-signals",
+    "topic": "somatic",
+    "title": "壓力大，身體也會不舒服",
+    "keywords": [
+      "壓力大",
+      "頭痛",
+      "肚子痛",
+      "胃痛",
+      "吃不下",
+      "睡不好",
+      "考試前肚子痛",
+      "一上學就不舒服",
+      "身體緊緊的",
+      "心跳很快"
+    ],
+    "summary": "壓力太大時，身體可能出現頭痛、腸胃不舒服、吃太多或吃太少、睡不好等反應，這些不舒服是真的，可以先試著照顧自己、減輕壓力。",
+    "steps": [
+      "留意不舒服是不是常常出現在考試或某些讓你有壓力的事情前後。",
+      "試試慢慢深呼吸、伸展或出去走一走，讓身體放鬆一下。",
+      "把大事拆成小目標，一次做一件，先處理自己能改變的部分。",
+      "找朋友、家人或老師說說最近的壓力，不要一個人撐著。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要用菸、酒或其他東西來紓壓，這會讓身心狀況更糟。",
+      "這張卡不提供用藥建議，有需要請問醫師或藥師。"
+    ],
+    "when_to_seek_help": "如果自己試了一陣子還是很不舒服、壓力大到應付不來，或已經影響上學和睡覺，請找輔導老師或學校護理師，需要時去看醫師。",
+    "evidence": "expert_opinion",
+    "sources": [
+      {
+        "name": "壓力大嗎？！談青少年的壓力調適（臺大醫院健康電子報）",
+        "publisher": "國立臺灣大學醫學院附設醫院",
+        "url": "https://epaper.ntuh.gov.tw/health/201104/PDF/%E8%AB%87%E9%9D%92%E5%B0%91%E5%B9%B4%E7%9A%84%E5%A3%93%E5%8A%9B%E8%AA%BF%E9%81%A9.pdf",
+        "updated": "2011-04",
+        "supports": "壓力過大可能造成頭痛、腸胃不適、睡眠問題；生活調劑與適當求助",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "Stress",
+        "publisher": "NHS",
+        "url": "https://www.nhs.uk/mental-health/feelings-symptoms-behaviours/feelings-and-symptoms/stress/",
+        "updated": "2026-03-06",
+        "supports": "壓力的身體症狀（頭痛、肌肉緊繃、腸胃問題、吃太多或太少）、深呼吸與小目標等自我照顧、避免用菸酒紓壓、何時求助",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "health",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "mohw-free-counseling-15-plus",
+    "topic": "counseling_access",
+    "title": "滿15歲可以用的公費心理諮商",
+    "keywords": [
+      "免費心理諮商",
+      "公費諮商",
+      "青壯世代心理健康支持方案",
+      "年輕族群心理健康支持方案",
+      "心理師",
+      "15歲",
+      "合作機構",
+      "南投 心理諮商",
+      "不想讓學校知道"
+    ],
+    "summary": "衛福部「青壯世代心理健康支持方案」提供15到45歲的民眾每人3次免費心理諮商，可以上官方網站查有名額的合作機構。",
+    "steps": [
+      "先確認自己已經滿15歲，並準備好身分證明文件（例如身分證或健保卡）。",
+      "到衛福部方案網站「青壯年的心有我傾聽」（https://sps.mohw.gov.tw/mhs）查詢還有名額的合作機構。",
+      "直接打電話給機構預約，也可以順便問未成年使用時需不需要家長陪同或同意。",
+      "如果還沒滿15歲，或想找南投在地資源，可以在上班時間打給南投縣政府衛生局社區心理衛生中心（049-2202662）詢問免費諮商。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "方案的年度、名額和規則可能會變，一切以衛福部官網最新公告為準。",
+      "方案限個別諮商，每人有次數上限，用完後可以請機構或學校輔導室幫你想下一步。"
+    ],
+    "when_to_seek_help": "如果情緒已經影響到睡覺、吃飯或上學，或出現傷害自己的念頭，不用等預約，請立刻撥 1925 或告訴身邊的大人。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "健康「心」生活！115年續推青壯世代心理健康支持方案",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/cp-16-85046-1.html",
+        "updated": "2026-01-08",
+        "supports": "適用15–45歲、本國籍或持健保卡外籍人士、每人3次免費諮商、到「青壯年的心有我傾聽」網站查詢合作機構、預約流程與身分證明文件",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "諮詢服務資源一覽表",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/dl-92646-cfd22d78-1de6-4cbb-9e60-4accf69a6116.html",
+        "updated": "2026-03",
+        "supports": "方案限個別諮商、方案網址 sps.mohw.gov.tw/mhs、南投縣衛生局社區心理衛生中心列為心理諮詢資源",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "南投縣政府衛生局 心理諮商服務",
+        "publisher": "南投縣政府衛生局",
+        "url": "https://www.ntshb.gov.tw/counseling/index?Parser=99,5,74,42",
+        "updated": null,
+        "supports": "南投縣衛生局提供預約制免付費心理諮商、社區心理衛生中心諮詢電話與上班時間",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "school-counseling-office-how-to-use",
+    "topic": "counseling_access",
+    "title": "學校輔導室可以幫你什麼？",
+    "keywords": [
+      "輔導室",
+      "輔導老師",
+      "想找人聊聊",
+      "怎麼約輔導",
+      "心情不好",
+      "壓力很大",
+      "個別諮商",
+      "會不會被說出去"
+    ],
+    "summary": "依《學生輔導法》，學校要依學生需要提供輔導，輔導老師可以陪你聊、一起想辦法，必要時再連結校外專業資源。",
+    "steps": [
+      "下課或午休直接走到輔導室，跟老師說「我想找輔導老師聊聊」，或請導師幫你約時間。",
+      "如果當面講不出口，可以先寫一張紙條或簡短訊息，說明你大概想談什麼。",
+      "談過之後，輔導老師可能會跟你約下一次，或安排個別諮商、小團體，需要時也會幫你轉介校外的專業協助。",
+      "如果你擔心談話內容被別人知道，可以在一開始就直接問老師保密的範圍。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "輔導人員依法要保密，但遇到緊急危險（例如有人可能受傷）時，為了保護你，可能需要讓其他人一起幫忙。",
+      "每間學校的預約方式不太一樣，以你學校輔導室的說明為準。"
+    ],
+    "when_to_seek_help": "如果你連續好幾天心情很差、睡不好或不想上學，就可以去輔導室；有想傷害自己的念頭時，請馬上告訴老師或撥 1925。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "學生輔導法",
+        "publisher": "教育部（主管法規共用系統）",
+        "url": "https://edu.law.moe.gov.tw/LawContent.aspx?id=GL001380",
+        "updated": "2024-12-18",
+        "supports": "三級輔導內容（個別諮商、小團體、轉介）、校長與老師都有輔導責任、輔導人員保密義務與緊急危險例外",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "hotlines-danger-113-110-119",
+    "topic": "hotlines",
+    "title": "被傷害或有危險：113、110、119",
+    "keywords": [
+      "113",
+      "110",
+      "119",
+      "家暴",
+      "被打",
+      "性騷擾",
+      "報警",
+      "叫救護車",
+      "有危險",
+      "保護專線"
+    ],
+    "summary": "被家人或別人傷害可以打 113 保護專線；正有立即危險要報警打 110；有人受傷、生病需要救護車或發生火災打 119。",
+    "steps": [
+      "遇到家暴、兒少被虐待或疏忽、性侵害或性騷擾，可以撥 113（24小時、免付費），不方便講話也可以傳簡訊到 113 或用 113 線上諮詢。",
+      "如果你現在人身安全有立即危險，先打 110 請警察到場，110 是24小時受理。",
+      "有人受重傷、昏倒、呼吸困難，或發生火災時，撥 119；打通後先說「這是救護案件」，再說地址和發生什麼事。",
+      "如果 119 打不通，可以改撥 112。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要因為怕麻煩別人而不打電話，危險的時候先求救最重要。",
+      "這些號碼是緊急或保護用的，一般心情困擾可以改打 1925。"
+    ],
+    "when_to_seek_help": "只要你覺得自己或別人的安全正受到威脅，就立刻撥打對應的號碼，並告訴可以信任的大人。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "113保護專線介紹",
+        "publisher": "衛生福利部保護服務司",
+        "url": "https://dep.mohw.gov.tw/DOPS/cp-1183-6499-105.html",
+        "updated": "2024-05-24",
+        "supports": "113 受理家暴、兒少保護、性侵害與性騷擾，24小時全年無休、免付費，可傳簡訊或線上諮詢，立即危險先撥110",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "110為民服務全天候不打烊",
+        "publisher": "內政部警政署",
+        "url": "https://www.npa.gov.tw/ch/app/artwebsite/view?module=artwebsite&id=807&serno=690fec3f-ab57-46ed-905e-5a65bd80c3f6",
+        "updated": "2026-08-04",
+        "supports": "110 為24小時受理民眾報案",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "消防救護車使用指南（內政部消防署發行，學校轉載）",
+        "publisher": "內政部消防署（國立聯合大學網站轉載）",
+        "url": "https://stua05.nuu.edu.tw/var/file/66/1066/attach/77/pta_53618_8497376_81200.pdf",
+        "updated": "2018-01",
+        "supports": "緊急救護撥119、報案時先說是救護案件並說明地址與狀況、119打不通改撥112",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "hotlines-need-to-talk",
+    "topic": "hotlines",
+    "title": "想找人說說話：1925、1995、1980",
+    "keywords": [
+      "1925",
+      "安心專線",
+      "生命線",
+      "1995",
+      "張老師",
+      "1980",
+      "想找人說話",
+      "半夜睡不著",
+      "想不開",
+      "心情很糟"
+    ],
+    "summary": "心情很糟、想找人說話時，可以打衛福部 1925 安心專線（24小時免費），也可以打 1995 生命線或 1980 張老師。",
+    "steps": [
+      "任何時間都可以撥 1925 安心專線，接線人員會聽你說，必要時協助轉介。",
+      "也可以撥 1995 生命線，學校輔導單位整理的資料標示為24小時服務。",
+      "想在白天或晚上固定時段跟人聊，可以撥 1980 張老師；它不是24小時，時段依各地中心公告為準。",
+      "打電話時不用準備好要說什麼，從「我最近心情不太好」開始講就可以。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "如果你或別人正在危險中（例如已經受傷或準備傷害自己），請直接打 119 或 110。",
+      "各專線的服務時間可能調整，以各單位官方公告為準。"
+    ],
+    "when_to_seek_help": "只要出現想傷害自己或不想活的念頭，就請立刻撥 1925，並告訴一個你信任的大人。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "全年無休的自殺防治守護者-安心專線1925",
+        "publisher": "衛生福利部",
+        "url": "https://www.mohw.gov.tw/cp-16-19209-1.html",
+        "updated": "2022-04-21",
+        "supports": "1925 提供24小時免費心理諮詢、自殺防治與轉介",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "全國諮詢及救援服務專線",
+        "publisher": "衛生福利部心理健康司",
+        "url": "https://dep.mohw.gov.tw/DOMHAOH/cp-327-8715-107.html",
+        "updated": "2025-07-09",
+        "supports": "1925 安心專線、1995 生命線、1980 張老師的官方號碼",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "全國性免費心理諮商專線",
+        "publisher": "臺北市立大學學生輔導中心",
+        "url": "https://advisory.utaipei.edu.tw/p/412-1037-8273.php?Lang=zh-tw",
+        "updated": null,
+        "supports": "1995 生命線為24小時、1980 張老師為分時段服務（非24小時）",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "teen-part-time-work-age-consent",
+    "topic": "part_time_work",
+    "title": "未滿18歲打工：幾歲可以、要什麼同意",
+    "keywords": [
+      "打工",
+      "工讀",
+      "幾歲可以打工",
+      "15歲打工",
+      "童工",
+      "家長同意書",
+      "未滿18歲",
+      "暑假打工",
+      "晚上打工"
+    ],
+    "summary": "依勞動部說明，原則上要滿15歲才能受僱；未滿18歲工作時，雇主要留存法定代理人（通常是家長）同意書和年齡證明。",
+    "steps": [
+      "先確認年齡：未滿15歲原則上不能受僱，除非已經國中畢業，或經地方勞工主管機關認定工作無礙身心並許可。",
+      "請家長簽法定代理人同意書，並準備年齡證明文件，交給雇主留存。",
+      "如果你是15歲以上未滿16歲（童工），每天不能超過8小時、每週不能超過40小時，晚上8點到隔天早上6點不能工作。",
+      "未滿18歲不能做危險性或有害性的工作，遇到這種要求可以拒絕並找大人商量。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "這裡只是整理勞動部的公開說明，不是法律意見，個別情況請洽當地勞工局或撥 1955 詢問。"
+    ],
+    "when_to_seek_help": "如果雇主要你在禁止的時段工作、做危險的事，或沒有家長同意就要你上班，請告訴家長並撥 1955 勞工諮詢申訴專線。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "僱用未滿18歲勞工須留意勞動基準法特別規定以免觸法",
+        "publisher": "勞動部",
+        "url": "https://www.mol.gov.tw/1607/1632/1633/70371/post",
+        "updated": "2024-07-16",
+        "supports": "未滿15歲原則不得受僱及例外、童工工時與夜間限制、雇主應備法定代理人同意書及年齡證明、可向地方主管機關申訴",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "暑期工讀應注意，雇主僱用部分工時勞工及未滿18歲青少年，務必遵守勞動基準法",
+        "publisher": "勞動部",
+        "url": "https://www.mol.gov.tw/1607/1632/1633/71695/post",
+        "updated": "2024-08-06",
+        "supports": "童工工時與例假日、夜間限制，未滿18歲不得從事危險性或有害性工作，可撥1955申訴",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "teen-part-time-work-wage-complaint",
+    "topic": "part_time_work",
+    "title": "打工薪水和被欠薪怎麼辦",
+    "keywords": [
+      "時薪",
+      "最低工資",
+      "基本工資",
+      "被欠薪",
+      "老闆不給錢",
+      "加班費",
+      "1955",
+      "勞工局",
+      "工讀生權益"
+    ],
+    "summary": "工讀生和一般勞工有一樣的權益，薪水不能低於勞動部公告的最低工資（以前叫基本工資），被欠薪或不當對待可以撥 1955 或找當地勞工局。",
+    "steps": [
+      "上勞動部網站查目前公告的每小時最低工資，金額可能每年調整，以勞動部公告為準。",
+      "把自己的上下班時間、班表、薪資單或轉帳紀錄保存好，有問題時比較好說清楚。",
+      "如果被少給薪水、沒拿到加班費或被不當對待，先跟家長說，再撥 1955 勞工諮詢申訴專線詢問。",
+      "也可以向工作地點所在的縣市政府勞工主管機關（例如南投縣政府的勞工業務單位）提出申訴。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "不要因為是學生或「只是打工」就接受比較差的條件，勞動部說明工讀生的權益和一般勞工一樣。",
+      "這張卡不是法律意見，詳細規定以勞動部與地方勞工主管機關的說明為準。"
+    ],
+    "when_to_seek_help": "如果被威脅、被罵到害怕去上班，或遇到肢體或性騷擾，除了 1955，也可以找家長、導師，緊急時撥 110 或 113。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "工資（部分工時／工讀生，我該瞭解的權益有哪些?）",
+        "publisher": "勞動部",
+        "url": "https://www.mol.gov.tw/1607/28690/87756/87780/87783/lpsimplelist",
+        "updated": "2026-02-05",
+        "supports": "勞雇議定工資不得低於最低工資、工讀生同樣適用、加班費規定、1955 勞工諮詢申訴專線",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "114年度工讀生與部分工時勞工勞動條件專案檢查結果說明",
+        "publisher": "勞動部",
+        "url": "https://www.mol.gov.tw/1607/1632/1633/96453/post",
+        "updated": "2026-07-31",
+        "supports": "工讀生享有與一般勞工相同權益、工資不得低於最低工資、權益受損可向地方主管機關申訴或撥1955",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-04-23"
+  },
+  {
+    "id": "school-bullying-where-to-report",
+    "topic": "school_complaints",
+    "title": "在學校被霸凌，可以找誰？",
+    "keywords": [
+      "霸凌",
+      "被欺負",
+      "被排擠",
+      "網路霸凌",
+      "1953",
+      "反霸凌專線",
+      "學務處",
+      "導師",
+      "不敢說"
+    ],
+    "summary": "依教育部防制校園霸凌專區，被霸凌時可以找導師、輔導室、學務處或家長，也可以打教育部 1953 反霸凌專線。",
+    "steps": [
+      "先告訴一個你信任的大人：導師、輔導室、學務處老師或家長都可以。",
+      "如果不方便當面說，可以用學校的反映信箱或專線電話，或打縣市政府的反霸凌專線。",
+      "也可以撥教育部反霸凌專線 1953（24小時），或到教育部防制校園霸凌專區的留言專區反映。",
+      "把發生的時間、地點、經過，以及截圖或訊息紀錄保存下來，方便學校了解狀況。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "學校知道疑似霸凌後會先啟動關懷輔導，並判斷是否要進行調查，過程中可以請家長或輔導老師陪你。"
+    ],
+    "when_to_seek_help": "如果被打、被威脅，或已經害怕到不敢上學，請馬上告訴大人；有立即危險時撥 110。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "遇到霸凌應該怎麼辦（教育部防制校園霸凌專區 常見問題）",
+        "publisher": "教育部",
+        "url": "https://bully.moe.edu.tw/problem_details/41",
+        "updated": null,
+        "supports": "可向導師、輔導室、學務處、家長、學校信箱與專線、縣市反霸凌專線、教育部1953及留言專區反映",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "陪你勇敢，不再旁觀 教育部反霸凌專線電話1953正式啟用",
+        "publisher": "教育部",
+        "url": "https://bully.moe.edu.tw/details/208",
+        "updated": null,
+        "supports": "1953 為教育部反霸凌諮詢及通報專線、24小時服務，鼓勵被霸凌者與旁觀者使用",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "教育部防制校園霸凌專區（法令）",
+        "publisher": "教育部",
+        "url": "https://bully.moe.edu.tw/details/141",
+        "updated": null,
+        "supports": "學校知悉疑似霸凌後啟動關懷輔導並判斷是否調查",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  },
+  {
+    "id": "school-gender-and-unfair-treatment-complaint",
+    "topic": "school_complaints",
+    "title": "遇到性平事件或被不公平對待怎麼申訴",
+    "keywords": [
+      "性騷擾",
+      "性平事件",
+      "性平會",
+      "被偷拍",
+      "學生申訴",
+      "不公平處罰",
+      "被記過",
+      "老師不公平",
+      "申評會"
+    ],
+    "summary": "性騷擾、性霸凌等性平事件可以向學校申請調查，由性平會處理；覺得學校的處罰或做法不公平，可以向學校的學生申訴評議委員會提出申訴。",
+    "steps": [
+      "遇到性平事件，可以先告訴信任的老師或學務處；被害人或家長可以用書面向對方所屬的學校申請調查，任何知道的人也可以檢舉。",
+      "學校受理後會交給性別平等教育委員會（性平會）調查，你和檢舉人的身分資料依法要保密。",
+      "如果覺得學校的處罰或做法不合理、傷害你的權益，可以向學校提出學生申訴：高中生可以自己提出，國中生要由家長或實際照顧者代為提出。",
+      "申訴和申復都有期限，越早提出越好，可以請學務處或輔導老師告訴你學校的申請方式。"
+    ],
+    "suitable_for": "國中、高中",
+    "cautions": [
+      "依法老師和學校人員知道疑似性平事件後，必須在24小時內通報，這是為了保護你，不是你做錯事。",
+      "對學校結果不服，還可以向主管教育機關再申訴；詳細期限和程序以教育部法規系統最新條文為準。"
+    ],
+    "when_to_seek_help": "如果事件讓你害怕上學、一直想起來很難受，請同時找輔導老師陪伴，遇到立即危險撥 110 或 113。",
+    "evidence": "official_guideline",
+    "sources": [
+      {
+        "name": "性別平等教育法",
+        "publisher": "教育部（主管法規共用系統）",
+        "url": "https://edu.law.moe.gov.tw/LawContent.aspx?id=FL030508",
+        "updated": "2023-08-16",
+        "supports": "被害人或法定代理人書面向行為人所屬學校申請調查、任何人可檢舉、交性平會調查、身分保密、教職員24小時內通報、申復制度",
+        "checked_at": "2026-10-23"
+      },
+      {
+        "name": "高級中等以下學校學生申訴及再申訴評議委員會組織及運作辦法",
+        "publisher": "教育部（主管法規共用系統）",
+        "url": "https://edu.law.moe.gov.tw/LawContent.aspx?id=GL001254",
+        "updated": "2023-12-18",
+        "supports": "高中生可自行申訴、國中生由法定代理人或實際照顧者提出、可申訴的措施範圍、申訴期限、向主管機關再申訴",
+        "checked_at": "2026-10-23"
+      }
+    ],
+    "area": "rights",
+    "status": "pilot",
+    "reviewed_by": null,
+    "review_note": "來源已逐筆開啟核對（2026-10-23）；尚待輔導人員與專業人員審閱",
+    "expires_at": "2027-10-23"
+  }
+]

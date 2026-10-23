@@ -623,7 +623,8 @@ def process_chat_turn(message):
     sent_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     exchange = [{"role": "user", "text": message, "at": sent_at},
                 {"role": "assistant", "text": reply["reply"], "at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                 "source": reply_source(reply["model_used"])}]
+                 "source": reply_source(reply["model_used"]),
+                 **({"cards": [s["title"] for s in reply["sources"]]} if reply.get("sources") else {})}]
     try:
         context = save_dialogue_state(session["student_context_id"], session["student_email_hash"],
             remember_turn(dialogue_state, message, reply["reply"]), previous_state.get("turn_count", 0),
@@ -646,6 +647,8 @@ def process_chat_turn(message):
         "reply_style": dialogue_state.get("reply_style", "warm"),
         "style_overridden_by_safety": bool(dialogue_state.get("style_overridden_by_safety")),
         "support_offer": offer,
+        # Harness: the reviewed cards this reply cited (title, organisation, link).
+        "sources": reply.get("sources", []),
         "show_urgent_help": level == "red",
         "show_support_help": level in ("orange", "red"),
         "notification_connected": False,
