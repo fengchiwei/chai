@@ -1,6 +1,6 @@
 # 少年仔、安啦會客室：AI 陪伴與風險預警原型
 
-目前原始碼版本：**v2.8.2**。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)，與計畫書的逐項對照見 [docs/PROPOSAL_ALIGNMENT.md](docs/PROPOSAL_ALIGNMENT.md)，專業人員審閱包見 [docs/PROFESSIONAL_REVIEW.md](docs/PROFESSIONAL_REVIEW.md)。
+目前原始碼版本：**v2.8.3**。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)，與計畫書的逐項對照見 [docs/PROPOSAL_ALIGNMENT.md](docs/PROPOSAL_ALIGNMENT.md)，專業人員審閱包見 [docs/PROFESSIONAL_REVIEW.md](docs/PROFESSIONAL_REVIEW.md)。
 
 提供學生對話（四種回覆風格）、語音輸入／朗讀、南投資源、離線求助卡、模擬案例測試、燈號判讀說明，以及需密碼登入的真人覆核工作臺。
 
@@ -51,6 +51,7 @@ anla-youth-v1.3-A.1/
 - **自動選模型與故障切換**：依金鑰讀取它能用的對話模型（只讀清單、不耗 token），預設用排名最高的；某個模型額度用完（429）、已停用（404）、過載（503）或逾時，同一則訊息內自動改用下一個（最多 3 個、不超過 30 秒預算），出問題的模型暫停一段時間後再試。學生不用選模型、也看不到模型名稱；排名、使用中的模型與各模型狀態只在工作臺「🤖 AI 模型」面板。
 - **回覆一律由 AI 寫**：一般聊天、隱私與身分問題、界線都由 AI 回覆（規則決定的事實當參考內容）。偵測到危險時，AI 依審過的安全文字改寫，必須保留求助電話、不能承諾保密或先問手段，沒通過或超過 12 秒就改用那段固定文字。AI 回覆不了時（沒金鑰、額度用完、全部模型故障、逾時），學生看到誠實的說明與 119／1925，不再有制式的本機對話回覆；回應附 `fallback_reason`。
 - **青少年生活知識庫（Harness）**：學生問方法或資訊時（「睡不著怎麼辦」「電子煙有什麼影響」「15 歲可以打工嗎」「被霸凌可以找誰」），先在本機的知識卡裡找最相關的 1–2 張，讓 AI 依卡片回答並在回覆下方附「📚 資料來源」連結。78 張卡涵蓋情緒與壓力、學習與升學、人際與安全、身體與健康、權益與求助五大面向 39 個主題，每個來源都在白名單上、都開啟核對過。安全回合不使用；AI 引用沒提供的來源時不送出。見 `docs/HARNESS_PLAN.md`。
+- **開始新對話**：學生頁頂端「開始新對話」會刪除剛才的對話暫存（記憶、對話紀錄、未分享的摘要）與它的風險等級，從頭開始；暱稱、鄉鎮與回覆風格保留，已送到工作臺的個案不受影響，並留操作紀錄。
 - **身心電力檢核**：學生頁「身心檢核」約 2–3 分鐘，BSRS-5 六題（含自殺想法附加題）加持續時間、生活影響、壓力來源、支持系統四題。學生只看到白話說明與下一步，不看到燈號或分數；分數、各題答案與用時只給工作臺。
 - **橙紅色自動送出必要安全資訊**：對話或檢核達橙色、紅色時，不等學生同意，就把燈號、理由、引發警訊的原話（最多 5 句）、檢核結果、時間與鄉鎮送到工作臺（「系統安全通報」）；不含暱稱、學校、聯絡方式與完整對話，學生畫面會說明送出了什麼。學生之後同意分享，才補上身分與完整對話。
 - **朗讀**：每則回覆都能朗讀，朗讀中再按一次是暫停、再按是繼續，旁邊有停止鍵。「🗣️ 聲音」可選聲音與速度：伺服器有設定語音金鑰時提供雲端自然語音（Azure 台灣華語、OpenAI、Gemini），也可選這台裝置內建的聲音（不經網路）。雲端語音只傳 AI 回覆文字，失敗時自動改用裝置內建聲音。
@@ -111,7 +112,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-23 本機結果：單元測試 **429 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-23 本機結果：單元測試 **433 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 

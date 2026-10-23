@@ -210,6 +210,29 @@ function startConversationalCheckin() {
   quickSend(checkinPrompt);
 }
 
+// 開始新對話：刪除剛才的對話暫存與它的風險狀態，重新整理頁面從頭開始（工作臺既有個案不受影響）。
+async function startNewConversation() {
+  if (!studentOnboarded) {
+    openOnboardingModal(false);
+    return;
+  }
+  const ok = confirm("要開始新對話嗎？\n\n剛才的對話會從這個網站的暫存刪除，安啦也不會再記得。已經送到真人工作臺的資料不會被刪除。\n\n如果現在有立即危險，請先撥 119，或打 1925 安心專線。");
+  if (!ok) return;
+  if (typeof stopSpeech === "function") stopSpeech();
+  try {
+    const res = await fetch("/api/chat/reset", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": window.ANLA_CSRF_TOKEN },
+      body: "{}",
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "暫時無法開始新對話，請稍後再試。");
+    location.reload();
+  } catch (error) {
+    alert(error.message || "暫時無法開始新對話，請稍後再試。");
+  }
+}
+
 // ==================== 發送對話訊息與 AI 最溫暖同理回覆 ====================
 
 async function sendMessage() {

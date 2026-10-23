@@ -41,6 +41,18 @@ def get_student_context(context_id, email_hash):
         conn.close()
 
 
+def delete_student_context(context_id, email_hash):
+    """The student started a new conversation: the old one (memory, transcript, unshared draft) is deleted.
+    Cases already on the workbench are staff records and stay."""
+    conn = get_connection()
+    try:
+        with conn:
+            cursor = conn.execute("DELETE FROM student_contexts WHERE context_id=? AND email_hash=?", (context_id, email_hash))
+        return cursor.rowcount == 1
+    finally:
+        conn.close()
+
+
 def set_student_profile(context_id, email_hash, profile):
     conn = get_connection()
     try:

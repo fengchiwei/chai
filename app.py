@@ -39,7 +39,8 @@ from engine.triage import RISK_LEVEL_WEIGHTS, perform_triage
 from engine.support import choose_support_offer
 from engine.bsrs5 import ITEMS as BSRS_ITEMS
 from engine.referral import (
-    STUDENT_ALERT_NOTICE, auto_safety_handoff, consent_kind, get_student_context, record_student_consent,
+    STUDENT_ALERT_NOTICE, auto_safety_handoff, consent_kind, delete_student_context, get_student_context,
+    record_student_consent,
     set_student_profile, stage_student_summary,
     save_dialogue_state,
 )
@@ -486,7 +487,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.8.2"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.8.3"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -550,6 +551,35 @@ def api_chat_state():
         "style_overridden_by_safety": bool((context or {}).get("dialogue_state", {}).get("style_overridden_by_safety")),
         "next_steps": student_next_steps(context),
     })
+
+
+# Session keys that belong to one conversation; 「開始新對話」 clears them (the reply style is the student's choice).
+CONVERSATION_KEYS = ("student_context_id", "highest_risk", "safety_pending", "referral_offer_level",
+                     "support_offer_state", "case_id")
+
+
+@app.route("/api/chat/reset", methods=["POST"])
+def api_chat_reset():
+    """Start a new conversation: delete the old one from the expiring store and forget its risk level, so a
+    misread (「睡不著怎麼辦」 once kept a whole conversation in safety mode) does not follow the student.
+    Workbench cases already created stay; the student keeps their nickname and township."""
+    error = require_csrf()
+    if error:
+        return error
+    context = current_student_context()
+    if context is None:
+        return jsonify({"error": "請先閱讀資料使用說明"}), 403
+    holder = conversation_lock(session["student_context_id"])
+    with holder.lock:
+        case_id = session.get("case_id") or context.get("case_id", "")
+        delete_student_context(session["student_context_id"], session["student_email_hash"])
+        for key in CONVERSATION_KEYS:
+            session.pop(key, None)
+        session["student_context_id"] = secrets.token_urlsafe(32)
+        set_student_profile(session["student_context_id"], session["student_email_hash"], context["profile"])
+    log_audit("student", "student_reset_conversation", case_id if get_case_by_id(case_id) else "",
+              "學生開始新對話，舊對話暫存已刪除（工作臺既有個案不受影響）")
+    return jsonify({"ok": True, "message": "已開始新對話，剛才的對話已從暫存刪除。"})
 
 
 @app.route("/api/chat", methods=["POST"])
