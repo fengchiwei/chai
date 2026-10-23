@@ -79,5 +79,32 @@ class DiagnosticsTimingTests(RouteBase):
         self.assertGreaterEqual(turns[0]["latency_ms"], 50)
 
 
+class SecondRoundLiveTests(unittest.TestCase):
+    """2026-10-23 second live round on Render (v2.9.3)."""
+
+    def test_the_abuse_check_moves_on_instead_of_repeating(self):
+        from engine.dialogue_reply import safety_reply
+        state = {"safety_action": "brief_safety_check", "risk_type": "abuse", "risk_subject": "self",
+                 "history": [{"role": "user", "text": "補習班老師一直私訊我，說我身材很好"},
+                             {"role": "assistant", "text": "這不是你的錯，願意說出來很不容易。想先確認一下：你現在安全嗎？這件事現在還在發生嗎？"}],
+                 "last_reply": ""}
+        reply = safety_reply("他還在傳，昨天還約我下課單獨去找他", state)
+        self.assertNotIn("現在安全嗎", reply)
+        self.assertIn("先不要單獨去見對方", reply)
+        self.assertIn("截圖", reply)
+        self.assertIn("113", reply)
+
+    def test_no_hotline_added_when_the_reference_has_none(self):
+        from engine.dialogue_ai import prepare_dialogue, turn_task
+        from engine.dialogue_policy import remember_turn
+        from engine.dialogue_reply import safety_reply
+        state = {}
+        for message in ("我現在沒有想傷害自己，但昨天真的有想過", "有", "因為跟爸媽吵架"):
+            _, state = prepare_dialogue(message, perform_triage(message), state, use_model=False, hour=14)
+            task = turn_task(message, state)
+            state = remember_turn(state, message, safety_reply(message, state))
+        self.assertIn("這一輪不要自己再加求助電話", task)
+
+
 if __name__ == "__main__":
     unittest.main()

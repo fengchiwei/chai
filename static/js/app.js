@@ -911,6 +911,10 @@ function updateAiStatusFromReply(data) {
       .then(res => (res.ok ? res.json() : null))
       .then(body => body && renderAiStatus(body.ai))
       .catch(() => setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT.cooldown}`, ""));
+  } else if (data.reply_source === "safety") {
+    // The student got the reviewed safety text; one empty or slow AI call is not an outage, and a warning badge
+    // at that moment only adds worry (2026-10-23 live test). Real outages still show through /api/status.
+    setAiStatus("ok", "AI 連線正常", "這一則用審核過的安全文字回覆。");
   } else if (reason && AI_REASON_TEXT[reason]) {
     setAiStatus("warn", `AI 暫時無法使用：${AI_REASON_TEXT[reason]}`, "這一則 AI 沒辦法回覆；需要協助可直接撥 1925 或 119。");
   }

@@ -431,8 +431,8 @@
         render(current, true);
         return;
       }
-      const bubble = appendMessage("ai", "好，這是一張可以給輔導老師的字條，可以先改成你自己的話：");
-      teacherNote(bubble);
+      const bubble = appendMessage("ai", "好，幫你寫了一張給輔導老師的字條：");
+      teacherNote(bubble).then(() => keepReplyInView(bubble));
     },
     update(data) {
       if (data.safety_alert) safetyNotice(data.safety_alert);

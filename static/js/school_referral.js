@@ -39,7 +39,7 @@ window.AnlaSchoolReferral = (() => {
       try {
         const next = await lookup(body);
         if (area.value !== data.note) next.note = area.value;  // keep the student's own edits
-        card.replaceWith(render(next));
+        card.replaceWith(render(next, true));
       } catch (error) {
         if (button) button.disabled = false;
         alert(error.message);
@@ -102,7 +102,7 @@ window.AnlaSchoolReferral = (() => {
     return box;
   }
 
-  function render(data) {
+  function render(data, expanded = false) {  // folded unless the student just looked a school up
     const card = el("section", "", "school-referral-card");
     card.setAttribute("aria-label", "學校輔導室與轉介單");
     card.appendChild(el("h3", "🏫 可以找學校輔導室談談"));
@@ -122,7 +122,7 @@ window.AnlaSchoolReferral = (() => {
     card.appendChild(list);
     // Folded by default so the card does not push the reply out of the chat window (2026-10-23 live test).
     const notePart = el("details", "", "school-referral-more");
-    notePart.open = Boolean(data.school_asked);
+    notePart.open = expanded;
     notePart.appendChild(el("summary", "📝 看轉介單（可以修改，還沒有寄出）"));
     const area = el("textarea", "", "choice-text");
     area.rows = 10;
@@ -143,7 +143,7 @@ window.AnlaSchoolReferral = (() => {
     notePart.appendChild(copy);
     card.appendChild(notePart);
     const schoolBox = el("details", "", "school-referral-more");
-    schoolBox.open = Boolean(data.school_asked);
+    schoolBox.open = expanded;
     schoolBox.appendChild(el("summary", data.school ? `🏫 ${data.school.name}的聯絡方式` : "🏫 查我的學校聯絡方式"));
     schoolBox.appendChild(schoolPart(card, data, area));
     card.appendChild(schoolBox);
@@ -167,7 +167,7 @@ window.AnlaSchoolReferral = (() => {
     try {
       const data = await lookup({});
       const chat = document.getElementById("chatMessages");
-      chat.appendChild(render(data));
+      chat.appendChild(render(data, true));
       chat.scrollTop = chat.scrollHeight;
     } catch (error) {
       alert(error.message);

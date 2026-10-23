@@ -60,8 +60,17 @@ def safety_reply(message, state):
                     "不管是哪一種，都可以先說說發生了什麼事。")
         if state.get("risk_type") in ("abuse", "digital_sexual_violence"):
             # Being hurt by others (bullying, abuse, leaked images): ask about safety now, not about dying.
-            return (f"這不是{who}的錯，願意說出來很不容易。想先確認一下：{who}現在安全嗎？這件事現在還在發生嗎？"
-                    "想說的話，可以慢慢說發生了什麼。")
+            if not re.search(r"現在安全嗎|安全的地方|還在(?:持續)?發生", "".join(_recent_replies(state))):
+                return (f"這不是{who}的錯，願意說出來很不容易。想先確認一下：{who}現在安全嗎？這件事現在還在發生嗎？"
+                        "想說的話，可以慢慢說發生了什麼。")
+            # Asked already: give the next step instead of the same question (2026-10-23 live test: the same
+            # sentence twice, after the student said the messages continue and they were asked to meet alone).
+            said = message + "".join(t.get("text", "") for t in state.get("history", []) if t.get("role") == "user")
+            alone = "先不要單獨去見對方。" if re.search(r"單獨|約我|見面|去找他|去找她|私下", said) else ""
+            keep = "那些訊息先截圖留著，不用回覆。" if re.search(r"訊息|私訊|傳|LINE|IG|照片|影片", said) else ""
+            return (f"謝謝{who}告訴我，這些都不是{who}的錯。{alone}{keep}"
+                    "這件事可以找輔導老師或信任的大人一起處理，也可以打 113 保護專線（二十四小時）先問問看怎麼做。"
+                    f"{who}想先從誰開始說？")
         if state.get("pending_disambiguation") and state.get("risk_evidence") in message:
             # LIN-01: name the hyperbole as probably figurative, then check once, gently.
             return (f"「{quote(state['risk_evidence'], 20)}」聽起來比較像很誇張的形容，"

@@ -600,11 +600,17 @@ def turn_task(message, state):
     """Reference content for turns the rules have decided (safety, privacy, identity, boundaries, roles).
     The model writes the reply in its own words; the facts and phone numbers in the reference must stay."""
     if state["safety_check_required"]:
+        reference = safety_reply(message, state)
+        # The reviewed text drops the standing hotline line once it was said recently; the model added it back in
+        # its own words on three replies in a row (2026-10-23 live test). Numbers stay on the page at all times.
+        no_numbers = ("" if re.search(PHONE_NUMBERS, reference) else
+                      "- 參考內容這一輪沒有電話號碼：前幾輪已經說過、頁面上也一直看得到，這一輪不要自己再加求助電話。\n")
         return ("【本輪安全回覆（系統判斷，優先於其他規則與回覆風格）】\n"
                 "請以下面的參考內容為基礎，配合學生剛說的話，用自然、溫和、具體的話重寫成 2–4 句：\n"
                 "- 一定要保留參考內容裡所有的電話號碼；參考內容有提問時，只問那一個問題，不加別的問題。\n"
+                + no_numbers +
                 "- 不問參考內容沒有提到的工具、方法或計畫；不承諾保密、不說已通知任何人、不診斷、不說教、不複誦學生整句話。\n"
-                f"參考內容：「{safety_reply(message, state)}」")
+                f"參考內容：「{reference}」")
     if state["current_goal"] in LOCAL_GOALS or state["safety_denied"]:
         return ("【本輪任務】請以下面參考內容的意思，用自然的口語回覆學生；可以調整用字與順序，"
                 "但事實（例如資料保存 24 小時、同意後才分享、有安全危險時會自動送出必要安全資訊、不會自動通知學校或家人、你是 AI）不能改變，也不要加新的問題。\n"

@@ -507,7 +507,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.9.3"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.9.4"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
