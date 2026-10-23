@@ -30,7 +30,9 @@ def unseal(value):
 
 
 def get_connection():
-    conn = sqlite3.connect(DB_PATH)
+    # Wait for a busy database instead of failing: 50 students at once hit "database is locked" with the
+    # 5-second default (2026-10-23 simulation). WAL mode (set in init_db) lets reads run during a write.
+    conn = sqlite3.connect(DB_PATH, timeout=30)
     conn.row_factory = sqlite3.Row
     # Overwrite deleted rows so expired conversations do not linger in free pages.
     conn.execute("PRAGMA secure_delete=ON")
@@ -95,8 +97,11 @@ def init_db():
             updated_at INTEGER NOT NULL
         )
     """)
+    # Expired-context cleanup scans by time; without an index every write read the whole table.
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_student_contexts_updated ON student_contexts(updated_at)")
 
     conn.commit()
+    conn.execute("PRAGMA journal_mode=WAL")  # persistent per database file
     conn.close()
 
     # 展示案例只從 data/mock_cases.json 讀取，不灌入真實個案資料表。
@@ -229,12 +234,16 @@ def get_all_cases(risk_filter=None, township_filter=None, status_filter=None):
         query += " AND township = ?"
         params.append(township_filter)
 
-    if status_filter and status_filter != "all":
+    if status_filter == "pending":
+        # 「待覆核」 includes cases a student just shared or asked to be referred (2026-10-23 simulation: always 0).
+        query += " AND status IN ('pending', 'student_requested_referral', 'student_shared_summary')"
+    elif status_filter and status_filter != "all":
         query += " AND status = ?"
         params.append(status_filter)
 
     query += """
         ORDER BY
+            CASE WHEN status IN ('completed', 'referred') THEN 1 ELSE 0 END,
             CASE risk_level
                 WHEN 'red' THEN 1
                 WHEN 'orange' THEN 2
@@ -250,6 +259,28 @@ def get_all_cases(risk_filter=None, township_filter=None, status_filter=None):
     return results
 
 
+def flag_risk_after_consent(case_id: str, level: str):
+    """The student's conversation rose above the level they agreed to share. Record only the level and time
+    (no new content) so staff know to reach out or ask for consent again."""
+    case = get_case_by_id(case_id)
+    if not case or RISK_ORDER.get(level, 0) <= RISK_ORDER.get(case["risk_level"], 0):
+        return False
+    summary = dict(case.get("summary") or {})
+    if (summary.get("raised_after_consent") or {}).get("level") == level:
+        return False
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    summary["raised_after_consent"] = {"level": level, "at": now_str}
+    conn = get_connection()
+    try:
+        with conn:
+            conn.execute("UPDATE cases SET summary_json = ?, updated_at = ? WHERE case_id = ?",
+                         (seal(json.dumps(summary, ensure_ascii=False)), now_str, case_id))
+    finally:
+        conn.close()
+    log_audit("system", "risk_raised_after_consent", case_id, f"學生同意分享後，對話燈號升至 {level}（未分享新內容）")
+    return True
+
+
 def get_case_by_id(case_id: str):
     conn = get_connection()
     cursor = conn.cursor()
@@ -259,19 +290,33 @@ def get_case_by_id(case_id: str):
     return _row_to_case(r) if r else None
 
 
+STATUS_LABELS = {"pending": "待覆核", "reviewing": "審查中", "contacted": "已聯絡", "referred": "已轉介", "completed": "已結案",
+                 "student_requested_referral": "學生提出轉介", "student_shared_summary": "學生分享摘要"}
+STAFF_STATUSES = {"reviewing", "contacted", "referred", "completed"}
+RISK_ORDER = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
+
+
 def update_case_status(case_id: str, new_status: str, counselor_notes: str = "", decision_action: str = "", actor: str = "counselor"):
-    if new_status not in {"pending", "reviewing", "contacted", "referred", "completed",
-                          "student_requested_referral", "student_shared_summary"}:
+    """Staff set only their own statuses; notes are appended to a timeline, never overwritten
+    (2026-10-23 simulation: closing a red case with an empty note erased 「02:30 已聯絡生輔組」)."""
+    if new_status not in STAFF_STATUSES:
         return False
     conn = get_connection()
     cursor = conn.cursor()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    row = cursor.execute("SELECT counselor_notes FROM cases WHERE case_id = ?", (case_id,)).fetchone()
+    if row is None:
+        conn.close()
+        return False
+    timeline = unseal(row["counselor_notes"]) if row["counselor_notes"] else ""
+    entry = f"{now_str[:16]}｜{actor}｜{STATUS_LABELS[new_status]}" + (f"｜{counselor_notes.strip()}" if counselor_notes.strip() else "")
+    timeline = (timeline + "\n" + entry).strip()
 
     cursor.execute("""
         UPDATE cases
         SET status = ?, counselor_notes = ?, decision_action = ?, updated_at = ?
         WHERE case_id = ?
-    """, (new_status, seal(counselor_notes), seal(decision_action), now_str, case_id))
+    """, (new_status, seal(timeline), seal(decision_action), now_str, case_id))
 
     changed = cursor.rowcount > 0
     conn.commit()

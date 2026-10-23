@@ -5,32 +5,62 @@ from engine.dialogue_ai import (
     get_auto_warm_response, prepare_dialogue,
 )
 
+def _known(value):
+    return isinstance(value, str) and value.strip() and value.strip() not in ("尚未提及", "尚未確認", "未提及", "近期")
+
+
 def generate_help_seeking_draft(case_info: dict, target: str = "輔導老師") -> str:
-    concern = case_info.get("category", "近期心理與生活困擾")
-    duration = case_info.get("duration", "最近一段時間")
-    life_impact = case_info.get("life_impact", "情緒低落與睡眠不佳")
+    """A short note the student can edit and send. Only a short topic is used, never the conversation itself,
+    and fields the student has not mentioned are left out (2026-10-23 simulation: the note copied the chat
+    verbatim and kept 「【尚未提及】」 blanks)."""
+    concern = case_info.get("category") if _known(case_info.get("category")) else "最近的心情和生活"
+    duration = case_info.get("duration")
+    life_impact = case_info.get("life_impact")
+    since = f"，大概持續了{duration}" if _known(duration) else ""
+    impact = f"生活上也有些影響，例如{life_impact}。" if _known(life_impact) else ""
 
     if target == "輔導老師":
         return (
             f"老師您好，我是班上的同學。\n"
-            f"我最近因為【{concern}】的事情，大概持續了【{duration}】，"
-            f"生活上有些影響，例如【{life_impact}】。\n"
+            f"我最近因為{concern}的事情有些困擾{since}。{impact}\n"
             f"我一直不知道該怎麼開口，但覺得自己需要找人談一談。"
             f"請問老師這週是否有方便的時間，我可以去輔導室跟您聊聊大約 20 分鐘嗎？謝謝老師！"
         )
     elif target == "班導師":
         return (
             f"導師您好，想跟您說一下我最近的狀況。\n"
-            f"我最近在【{concern}】上遇到了困難，感到有些焦慮和吃力，"
-            f"狀況大概有【{duration}】了。我希望能好好調適，想先讓老師知道我的情形，"
+            f"我最近在{concern}上遇到了一些困難{since}。{impact}我希望能好好調適，想先讓老師知道我的情形，"
             f"如果有合適的資源或建議，再麻煩老師協助我，謝謝導師關心！"
         )
     else:
         return (
-            f"爸媽/家人好，我最近一直有件事情壓在心裡不太舒服，是關於【{concern}】。\n"
-            f"已經煩惱了【{duration}】，我發現自己晚上常常睡不好，也很難專心。"
+            f"爸媽/家人好，我最近一直有件事情壓在心裡不太舒服，是關於{concern}{since}。{impact}\n"
             f"我希望能跟你們坐下來好好聊聊，聽聽你們的想法，也希望你們能先聽聽我的感受，不要生氣好嗎？謝謝你們。"
         )
+
+# Reminders for school staff by risk type. They point to the duty, not to a legal opinion; the system never
+# reports on anyone's behalf (2026-10-23 simulation: no reporting prompt for abuse, no timeline for red cases).
+REPORTING = {
+    "suicide": "自殺／自傷風險：依校內自殺防治與三級輔導流程處理；有立即危險先打 119；依校內規定通知家長或監護人並留存紀錄；校安通報依教育部規定時限辦理。",
+    "abuse": "疑似兒少保護或家庭暴力：教育人員知悉後應立即通報縣市主管機關，至遲不得超過 24 小時（兒少權法第 53 條、家庭暴力防治法第 50 條；可用「關懷 e 起來」線上通報或 113），並辦理校安通報。",
+    "peer": "疑似校園霸凌（肢體）：先確保學生在校安全；依校園霸凌防制準則通報學校防制霸凌因應小組，並辦理校安通報。",
+    "digital_sexual_violence": "疑似兒少性剝削或私密影像外流：教育人員知悉後應立即通報縣市主管機關（兒少性剝削防制條例）；涉及校園性別事件依性別平等教育法於 24 小時內通報；協助保全證據、申請下架。",
+    "violence": "可能傷害他人：評估是否有立即危險，必要時報警（110）；通知學務處並依校安通報規定處理。",
+}
+REPORTING_NOTE = "法條與時限請以最新公告及校內規定為準；本系統不會代為通報。"
+
+
+def reporting_checklist(level, safety):
+    if level not in ("orange", "red"):
+        return []
+    types = [t for t in (safety.get("risk_types") or [safety.get("risk_type")]) if t and t not in ("none", "other")]
+    items = []
+    for kind in types or ["suicide"]:
+        key = "peer" if kind == "abuse" and safety.get("risk_cue") == "peer" else "suicide" if kind == "self_harm" else kind
+        if REPORTING.get(key) and REPORTING[key] not in items:
+            items.append(REPORTING[key])
+    return items + [REPORTING_NOTE] if items else []
+
 
 def generate_counselor_one_page_summary(case_info: dict, triage_result: dict) -> dict:
     bsrs = triage_result.get("bsrs_details", {})
@@ -83,5 +113,6 @@ def generate_counselor_one_page_summary(case_info: dict, triage_result: dict) ->
             "details": bsrs.get("item_details", {})
         },
         "action_recommendation": action_recommendation,
+        "reporting_checklist": reporting_checklist(level, dialogue_safety),
         "triage_explainability": triage_result.get("explainability", "評估完畢")
     }

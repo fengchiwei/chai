@@ -16,7 +16,7 @@ from engine.dialogue_policy import (STAGES, build_state, history_clean, observe_
 from engine.dialogue_reply import (drop_trailing_questions, local_reply, response_violations, safety_reply,
                                    tidy_surface)
 from engine.dialogue_role import ROLE_RULES, role_notice, role_user_message
-from engine import model_router
+from engine import model_router, providers
 from engine.privacy_scrubber import scrub_pii
 from engine.prompt_guard import as_data, output_issues, student_block
 from engine.support import include_support_offer, support_turn_instruction
@@ -211,18 +211,15 @@ def probe_model(model=None):
     """Cheap reachability/key check: read the model's metadata, generating nothing (no token cost).
 
     Returns "ok", "auth_error", "model_not_found", "rate_limited", "timeout" or "api_error"."""
-    provider = _provider()
-    model = model or _model_name(provider)
+    info = providers.active()
+    if not providers.configured():
+        return "api_error"
+    model = model or _model_name(info["name"])
+    # Compatible servers do not all serve /models/{id}; their model list is the metadata check instead.
+    path = "/models" if info["api"] == "openai" and info["name"] != "openai" else f"/models/{model}"
     try:
-        if provider == "gemini":
-            response = requests.get(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model}",
-                headers={"x-goog-api-key": Config.GEMINI_API_KEY}, proxies=DIRECT_CONNECTION,
-                timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 8))
-        else:
-            response = requests.get(f"{Config.OPENAI_BASE_URL.rstrip('/')}/models/{model}",
-                                    headers={"Authorization": f"Bearer {Config.OPENAI_API_KEY}"},
-                                    timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 8))
+        response = requests.get(info["base_url"] + path, headers=providers.auth_headers(info),
+                                proxies=DIRECT_CONNECTION, timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 8))
     except (requests.Timeout, TimeoutError):
         return "timeout"
     except Exception as exc:
@@ -239,8 +236,7 @@ def model_status(probe=False):
 
     state: not_configured | ok | degraded | unknown. `probe=True` runs probe_model() at most once per PROBE_TTL."""
     provider = _provider()
-    configured = provider in ("gemini", "openai") and bool(
-        Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY)
+    configured = providers.configured()
     if configured and probe and Config.MODEL_AUTO_SELECT:
         model_router.discover(provider)  # cached; reads the model list only (no tokens)
     info = {"provider": provider if configured else "builtin", "model": _model_name(provider) if configured else None,
@@ -308,20 +304,31 @@ SINGLE_CALL_FORMAT = """
 
 
 def _provider():
-    selected = (Config.LLM_PROVIDER or "auto").lower()
-    if selected == "auto":
-        return "gemini" if Config.GEMINI_API_KEY else "openai" if Config.OPENAI_API_KEY else "builtin"
-    return selected
+    """Configured cloud service name (gemini, anthropic, openai, deepseek, …) or "builtin"."""
+    return providers.name()
 
 
-def _call_model(prompt, message, history=None, analysis=False, timeout=None, structured=False):
-    provider = _provider()
-    if provider == "builtin":
+def _attempt_limit(provider, model, remaining, last):
+    """Read timeout for one attempt. With a backup model left, one slow model may not use the whole turn:
+    1.5× its measured reply time, or 65% of what is left when it has no history yet (2026-10-23 simulation:
+    a timing-out first model used all 25 s and the next model was never tried)."""
+    if last:
+        return remaining
+    known = model_router.latency(provider, model)
+    return min(remaining, max(8.0, known * 1.5)) if known else remaining * 0.65
+
+
+def _call_model(prompt, message, history=None, analysis=False, timeout=None, structured=False, validate=None):
+    """`validate(text)` rejects a reply that arrived but is unusable (e.g. broken JSON): it counts against
+    that model and the next model is tried in the same turn."""
+    info = providers.active()
+    if not info:
         return None, "builtin"
-    if provider not in ("gemini", "openai"):
+    if not info["api"]:
         return None, "unsupported_provider"
-    if not (Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY):
+    if not info["key"] or not info["base_url"]:
         return None, "no_key"
+    provider = info["name"]
     if _cooling_down():
         return None, "cooldown"
     if not _within_global_budget():
@@ -340,18 +347,24 @@ def _call_model(prompt, message, history=None, analysis=False, timeout=None, str
         remaining = deadline - _clock()
         if attempt and remaining < MIN_REPLY_SECONDS:
             break
+        read = _attempt_limit(provider, model, remaining, last=attempt == len(models) - 1)
         # Fail fast when the network is down: the connect phase gets a short cap of its own.
-        limits = (max(0.5, min(Config.LLM_CONNECT_TIMEOUT, remaining)), max(0.5, remaining))
+        limits = (max(0.5, min(Config.LLM_CONNECT_TIMEOUT, read)), max(0.5, read))
         started = _clock()
-        result, status = _request_model(provider, model, prompt, message, history, analysis, limits, structured)
+        result, status = _request_model(info, model, prompt, message, history, analysis, limits, structured)
+        if status == "ok" and validate and not validate(result["reply"]):
+            status = "bad_response"
         model_router.record(provider, model, status, latency=_clock() - started,
                             retry_after=result if status == "rate_limited" else None)
         if status == "ok":
+            result.update(provider=provider, model=model)
             break
         if status not in model_router.MODEL_LEVEL:
             break  # bad key, network outage or blocked content: another model would not help
         logging.warning("模型 %s 無法使用（%s），改試下一個模型", model, status)
-    _record_outcome(status)
+    if status != "incomplete":
+        # One student's blocked content says nothing about the service; it must not change everyone's status light.
+        _record_outcome(status)
     return (result, status) if status == "ok" else (None, status)
 
 
@@ -371,14 +384,17 @@ def _thinking_config(model):
     return {"thinkingLevel": "low"} if version and int(version.group(1)) >= 3 else None
 
 
-def _request_model(provider, model, prompt, message, history, analysis, timeout, structured=False):
+def _request_model(info, model, prompt, message, history, analysis, timeout, structured=False):
     """One HTTP call: (reply, "ok"), (retry_after, "rate_limited") or (None, failure status)."""
+    provider, api, base = info["name"], info["api"], info["base_url"]
+    headers = {**providers.auth_headers(info), "Content-Type": "application/json"}
+    temperature = 0.1 if analysis else Config.LLM_TEMPERATURE
+    max_tokens = 1600 if analysis or structured else 1000
     try:
-        if provider == "gemini":
+        if api == "gemini":
             contents = [{"role": "user" if t["role"] == "user" else "model", "parts": [{"text": t["text"]}]} for t in history]
             contents.append({"role": "user", "parts": [{"text": message}]})
-            generation = {"temperature": 0.1 if analysis else Config.LLM_TEMPERATURE,
-                          "maxOutputTokens": 1600 if analysis or structured else 1000}
+            generation = {"temperature": temperature, "maxOutputTokens": max_tokens}
             if structured:
                 generation["responseMimeType"] = "application/json"
             thinking = _thinking_config(model)
@@ -390,8 +406,8 @@ def _request_model(provider, model, prompt, message, history, analysis, timeout,
             # None-valued proxies override env/registry proxies, i.e. a direct connection
             # (same effect as the verified trust_env=False smoke test, but still mockable).
             send = lambda: requests.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-                headers={"x-goog-api-key": Config.GEMINI_API_KEY},
+                f"{base}/models/{model}:generateContent",
+                headers=providers.auth_headers(info),
                 json=payload,
                 timeout=timeout,
                 proxies=DIRECT_CONNECTION,
@@ -402,16 +418,20 @@ def _request_model(provider, model, prompt, message, history, analysis, timeout,
                 _no_thinking_config.add(model)
                 generation.pop("thinkingConfig")
                 response = send()
-            label = f"Google Gemini ({model})"
+        elif api == "anthropic":
+            # Messages API: the system prompt is a top-level field; JSON is asked for in the prompt itself.
+            messages = [{"role": t["role"], "content": t["text"]} for t in history]
+            messages.append({"role": "user", "content": message})
+            response = requests.post(f"{base}/messages", headers=headers, proxies=DIRECT_CONNECTION, timeout=timeout,
+                                     json={"model": model, "system": prompt, "messages": messages,
+                                           "max_tokens": max_tokens, "temperature": temperature})
         else:
             messages = [{"role": "system", "content": prompt}] + [{"role": t["role"], "content": t["text"]} for t in history]
             messages.append({"role": "user", "content": message})
-            response = requests.post(f"{Config.OPENAI_BASE_URL.rstrip('/')}/chat/completions",
-                headers={"Authorization": f"Bearer {Config.OPENAI_API_KEY}", "Content-Type": "application/json"},
-                json={"model": model, "messages": messages, "temperature": 0.1 if analysis else Config.LLM_TEMPERATURE,
-                      "max_tokens": 1600 if analysis or structured else 1000,
-                      **({"response_format": {"type": "json_object"}} if structured else {})}, timeout=timeout)
-            label = f"OpenAI ({model})"
+            response = requests.post(f"{base}/chat/completions", headers=headers, timeout=timeout,
+                json={"model": model, "messages": messages, "temperature": temperature, "max_tokens": max_tokens,
+                      **({"response_format": {"type": "json_object"}} if structured else {})})
+        label = f"{info['label']} ({model})"
     except (requests.Timeout, TimeoutError):
         logging.warning("對話模型 %s 逾時（連線上限 %.0f 秒／讀取上限 %.0f 秒）", provider, timeout[0], timeout[1])
         return None, "timeout"
@@ -430,7 +450,7 @@ def _request_model(provider, model, prompt, message, history, analysis, timeout,
         return None, "model_not_found" if code == 404 else "unavailable" if code >= 500 else "rejected"
     try:
         data = response.json()
-        if provider == "gemini":
+        if api == "gemini":
             if (data.get("promptFeedback") or {}).get("blockReason"):
                 return None, "incomplete"
             candidate = (data.get("candidates") or [{}])[0]
@@ -438,6 +458,12 @@ def _request_model(provider, model, prompt, message, history, analysis, timeout,
                 return None, "incomplete"
             reply = "".join(p.get("text", "") for p in candidate.get("content", {}).get("parts", [])
                             if isinstance(p, dict) and isinstance(p.get("text"), str) and not p.get("thought")).strip()
+        elif api == "anthropic":
+            if data.get("stop_reason") in ("max_tokens", "refusal"):
+                return None, "incomplete"
+            reply = "".join(block.get("text", "") for block in data.get("content", [])
+                            if isinstance(block, dict) and block.get("type") == "text"
+                            and isinstance(block.get("text"), str)).strip()
         else:
             choice = (data.get("choices") or [{}])[0]
             if choice.get("finish_reason") in ("length", "content_filter"):
@@ -525,7 +551,10 @@ def prepare_dialogue(message, triage, previous=None, history=None, use_model=Tru
         prompt = (_reply_prompt(state, offer) + "\n\n" + SINGLE_CALL_FORMAT + "\nanalysis 物件的規則：\n"
                   + ANALYSIS_PROMPT.split("\n", 1)[1])
         model, status = _call_model(prompt, _student_input(state, message), history,
-                                    timeout=min(Config.LLM_TIMEOUT, Config.LLM_TURN_BUDGET), structured=True)
+                                    timeout=min(Config.LLM_TIMEOUT, Config.LLM_TURN_BUDGET), structured=True,
+                                    validate=lambda text: _parse_single(text) is not None)
+        if status == "bad_response":
+            status = "format_error"  # every model tried this turn returned something unusable
         if model:
             parsed = _parse_single(model["reply"])
             if parsed is None:

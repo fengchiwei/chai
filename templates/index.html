@@ -140,7 +140,7 @@
             🎙️
           </button>
 
-          <input type="text" id="userInput" aria-label="想說的話" placeholder="輸入文字或點擊左側 🎙️ 說說你的心情...（按 Enter 發送）" onkeypress="if(event.key === 'Enter') sendMessage()">
+          <input type="text" id="userInput" maxlength="2000" aria-label="想說的話（2000 字以內）" placeholder="輸入文字或點擊左側 🎙️ 說說你的心情...（按 Enter 發送）" onkeypress="if(event.key === 'Enter') sendMessage()">
           
           <button class="btn-send" onclick="sendMessage()">發送 ✈️</button>
         </div>

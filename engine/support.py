@@ -8,10 +8,6 @@ def choose_support_offer(message: str, level: str, previous: dict | None = None,
         return None, state
     state["turns"] = state.get("turns", 0) + 1
     decision = dialogue_state or {}
-    if (decision.get("safety_check_required") or decision.get("emotion_intensity") == "high"
-            or decision.get("current_goal") in ("respect_boundary", "establish_safety", "configure_role", "clarify_identity")
-            or decision.get("role_changed")):
-        return None, state
     compact = re.sub(r"[^\w\u3400-\u9fff]", "", message).lower()
     declined = bool(re.search(
         r"(?:不要|不想|不需要|不用|不願意)[^，。！？,;；\n]{0,12}(?:資源|求助|找人|找老師|輔導|專線|字條|建議)"
@@ -19,7 +15,12 @@ def choose_support_offer(message: str, level: str, previous: dict | None = None,
         r"|只想(?:先)?聊|先(?:繼續)?聊就好|只要.{0,4}(?:聽|陪)", message))
     declined = declined or compact in ("先不要", "暫時不要", "先不用", "不用了")
     if declined:
+        # Recorded before the boundary check below: 「我只想有人陪，不要給我建議」 is itself a boundary turn.
         state["declined"] = True
+        return None, state
+    if (decision.get("safety_check_required") or decision.get("emotion_intensity") == "high"
+            or decision.get("current_goal") in ("respect_boundary", "establish_safety", "configure_role", "clarify_identity")
+            or decision.get("role_changed")):
         return None, state
     wants_note = bool(re.search(r"(?:幫|想|請|可以).{0,8}(?:寫|字條)|字條.{0,8}(?:怎麼|如何|寫)", message)
                       and re.search(r"字條|老師|輔導", message))

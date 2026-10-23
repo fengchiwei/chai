@@ -26,11 +26,31 @@ if (-not (Test-Path $python)) {
 if (-not $env:WORKBENCH_PASSWORD) {
     $env:WORKBENCH_PASSWORD = Read-Secret "設定後台密碼（直接按 Enter 跳過，後台將停用）"
 }
+# 金鑰開頭可辨識的服務（與 engine/providers.py 相同）；只靠開頭判斷，不會把金鑰送去別家試。
+$KeyPrefixes = [ordered]@{ "sk-ant-" = "anthropic"; "sk-or-" = "openrouter"; "sk-proj-" = "openai"; "sk-svcacct-" = "openai";
+                           "gsk_" = "groq"; "xai-" = "xai"; "AIza" = "gemini"; "AQ." = "gemini" }
+$Labels = @{ gemini = "Google Gemini"; anthropic = "Anthropic Claude"; openai = "OpenAI"; deepseek = "DeepSeek"; groq = "Groq";
+             openrouter = "OpenRouter"; xai = "xAI Grok"; mistral = "Mistral"; custom = "OpenAI 相容服務"; builtin = "本機備援回覆" }
+
 if (-not $env:LLM_PROVIDER) {
-    $key = Read-Secret "貼上 Gemini API 金鑰（直接按 Enter 使用本機備援回覆）"
+    $key = Read-Secret "貼上 AI 服務的 API 金鑰（Gemini、Claude、OpenAI、DeepSeek、Groq、OpenRouter 等皆可；直接按 Enter 使用本機備援回覆）"
     if ($key) {
-        $env:GEMINI_API_KEY = $key
-        $env:LLM_PROVIDER = "gemini"
+        $key = $key.Trim()
+        $env:LLM_API_KEY = $key
+        $provider = $null
+        foreach ($prefix in $KeyPrefixes.Keys) { if ($key.StartsWith($prefix)) { $provider = $KeyPrefixes[$prefix]; break } }
+        if (-not $provider) {
+            Write-Host "從金鑰開頭無法判斷是哪一家的服務，請選擇："
+            Write-Host "  1) OpenAI   2) DeepSeek   3) Mistral   4) 其他 OpenAI 相容服務（自行輸入網址）"
+            switch (Read-Host "輸入 1–4（直接按 Enter 為 OpenAI）") {
+                "2" { $provider = "deepseek" }
+                "3" { $provider = "mistral" }
+                "4" { $provider = "custom"; $env:LLM_BASE_URL = (Read-Host "服務網址，例如 https://example.com/v1").Trim() }
+                default { $provider = "openai" }
+            }
+        }
+        $env:LLM_PROVIDER = $provider
+        Remove-Variable provider
     } else {
         $env:LLM_PROVIDER = "builtin"
     }
@@ -38,10 +58,11 @@ if (-not $env:LLM_PROVIDER) {
 }
 
 $url = "http://127.0.0.1:$Port/"
+$label = if ($Labels.ContainsKey($env:LLM_PROVIDER)) { $Labels[$env:LLM_PROVIDER] } else { $env:LLM_PROVIDER }
 Write-Host ""
 Write-Host "學生頁：$url"
 Write-Host ("後台：  ${url}login" + $(if ($env:WORKBENCH_PASSWORD) { "" } else { "（未設密碼，已停用）" }))
-Write-Host ("模型：  " + $(if ($env:LLM_PROVIDER -eq "builtin") { "本機備援回覆" } else { "$env:LLM_PROVIDER（" + $(if ($env:GEMINI_MODEL) { "指定 $env:GEMINI_MODEL" } else { "自動選最佳可用模型，詳見後台" }) + "）" }))
+Write-Host ("模型：  " + $(if ($env:LLM_PROVIDER -eq "builtin") { $label } else { "$label（" + $(if ($env:LLM_MODEL) { "指定 $env:LLM_MODEL" } else { "自動選最佳可用模型，詳見後台" }) + "）" }))
 Write-Host "停止伺服器：按 Ctrl+C 或關閉這個視窗" -ForegroundColor Yellow
 Write-Host ""
 

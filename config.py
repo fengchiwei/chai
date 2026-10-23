@@ -9,9 +9,16 @@ class Config:
     SESSION_COOKIE_SECURE = os.environ.get("COOKIE_SECURE", "false").lower() == "true"
     MAX_CONTENT_LENGTH = 32 * 1024
     
-    # 目前啟用的 LLM 供應商: 'gemini', 'openai', 'builtin'
+    # 雲端模型服務：auto（依金鑰開頭判斷）、gemini、anthropic、openai、deepseek、groq、openrouter、xai、mistral、
+    # custom（任何 OpenAI 相容服務，需 LLM_BASE_URL）或 builtin（本機回覆）。清單見 engine/providers.py。
     LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "auto")
-    
+    # 通用設定：一把金鑰、選填的服務網址與指定模型（未指定時自動挑選最佳可用模型）。
+    LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
+    LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "")
+    LLM_MODEL = os.environ.get("LLM_MODEL", "")
+    # 舊的分家設定仍然有效。
+    ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+
     # OpenAI 相容的文字對話模型
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     OPENAI_BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")

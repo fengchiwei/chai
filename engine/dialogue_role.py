@@ -129,7 +129,9 @@ def resolve_role(message, previous=None, observation=None):
     for action in actions:
         selected = True
         if action["action"] == "reset":
-            profile = {"description": "", "preferences": []}
+            # Cancelling a role does not cancel 「不要一直問我」 or 「不要給建議」 (2026-10-23 simulation).
+            profile = {"description": "", "preferences": [p for p in profile["preferences"]
+                                                          if re.search(r"問|建議|說教|分析", p)]}
         elif action["action"] == "set":
             profile = {"description": action["description"], "preferences": profile["preferences"]}
         else:
@@ -142,6 +144,7 @@ def resolve_role(message, previous=None, observation=None):
     if selected and re.fullmatch(r"(?:好嗎|可以嗎|謝謝|陪我聊聊|陪我說說話|就這樣)", content):
         content = ""
     return {"companion_role": profile, "role_requested": selected,
+            "role_reset": any(a["action"] == "reset" for a in actions),
             "role_changed": selected and profile != old, "role_only": selected and not content,
             "dialogue_content": content}
 
@@ -165,10 +168,15 @@ def role_notice(state):
 
 
 def asks_identity(message):
-    return bool(re.search(r"你(?:真的|真)?(?:是|是不是)(?:我的?|一個|真正的)?(?:媽媽|母親|爸爸|父親|哥哥|姐姐|姊姊|真人|AI|機器人)(?:嗎|[?？])", message, re.I))
+    return bool(re.search(r"你(?:真的|真)?(?:是|是不是)(?:我的?|一個|真正的)?(?:媽媽|母親|爸爸|父親|哥哥|姐姐|姊姊|真人|AI|機器人)(?:嗎|[?？])"
+                          r"|你(?:真的|真)?(?:是|是不是)(?:ChatGPT|GPT|Gemini|Claude|Siri)|你(?:用|是)(?:什麼|哪個|哪一個|哪家)(?:的)?(?:模型|AI)"
+                          r"|你是誰(?:做|開發|寫)的|誰(?:做|開發|寫)(?:了)?你|你會(?:不會)?記(?:得|住)我", message, re.I))
 
 
 def role_acknowledgement(state):
+    if state.get("role_reset") and not role_profile(state)["description"]:
+        kept = "你說過的回應方式我會繼續照做。" if role_profile(state)["preferences"] else ""
+        return "好，已取消自訂角色，我們換回一般陪伴的方式。" + kept + "前面聊過的內容還在，可以接著說。"
     if public_role(state)["custom"]:
         return ("我記住你描述的陪伴角色與說話方式了，接下來會依這個設定回應；我仍是 AI。"
                 "想換角色或調整語氣時，直接告訴我就好。")

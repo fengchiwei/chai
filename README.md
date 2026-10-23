@@ -12,7 +12,7 @@
 
 1. 第一次使用會自動建立 `.venv` 並安裝套件（需已安裝 Python 3.10 以上）。
 2. 詢問後台密碼（輸入時不顯示；直接按 Enter 跳過則後台停用）。
-3. 詢問 Gemini API 金鑰（直接按 Enter 使用本機備援回覆）。
+3. 詢問 AI 服務的 API 金鑰：Gemini、Claude、OpenAI、DeepSeek、Groq、OpenRouter、xAI、Mistral 或任何 OpenAI 相容服務都可以，依金鑰開頭自動判斷；判斷不出時會讓你選擇（直接按 Enter 使用本機備援回覆）。
 4. 伺服器啟動後自動開啟瀏覽器 <http://127.0.0.1:5000/>。關閉視窗或按 `Ctrl+C` 即停止。
 
 密碼與金鑰只存在該視窗的記憶體，不寫入任何檔案。改埠號可執行 `start.bat -Port 5002`；桌面版視窗請見 `docs/PLATFORMS.md`（`desktop_launcher.py`）。
@@ -59,9 +59,11 @@ anla-youth-v1.3-A.1/
 | 變數 | 用途 |
 |---|---|
 | `WORKBENCH_PASSWORD` | 後台密碼；未設定時後台、`/demo`、`/explain` 停用 |
-| `GEMINI_API_KEY`、`LLM_PROVIDER` | 雲端模型；未設定使用本機備援（OpenAI 介面存在但未實測） |
-| `GEMINI_MODEL`、`OPENAI_MODEL` | **通常不用設**。系統會自動選最佳可用模型；設定後該模型排第一順位，故障時仍會切換到其他模型 |
-| `MODEL_AUTO_SELECT` | 預設 `true`；設 `false` 則不讀模型清單，只用 `GEMINI_MODEL`（未設為 `gemini-2.5-flash`） |
+| `LLM_API_KEY` | 雲端模型的金鑰（任一家）。未設定使用本機備援回覆。舊的 `GEMINI_API_KEY`、`OPENAI_API_KEY`、`ANTHROPIC_API_KEY` 仍可使用 |
+| `LLM_PROVIDER` | `auto`（預設，依金鑰開頭判斷）、`gemini`、`anthropic`、`openai`、`deepseek`、`groq`、`openrouter`、`xai`、`mistral`、`custom` 或 `builtin`。`sk-` 開頭的金鑰可能是 OpenAI 或 DeepSeek，請指定 |
+| `LLM_BASE_URL` | `custom` 用的服務網址（任何 OpenAI 相容服務，例如學校自架或 Ollama 的 `http://127.0.0.1:11434/v1`） |
+| `LLM_MODEL` | **通常不用設**。系統會依金鑰讀取可用模型並自動選最佳者；設定後該模型排第一順位，故障時仍會切換 |
+| `MODEL_AUTO_SELECT` | 預設 `true`；設 `false` 則不讀模型清單，只用 `LLM_MODEL`（或該服務的預設模型） |
 | `GEMINI_THINKING` | 預設 `low`：把模型的「思考」降到最低以縮短等待；`default` 則使用模型原本的設定 |
 | `ANLA_DB_KEY` | 資料庫加密金鑰（任意長字串）。未設定時自動在資料庫旁產生 `anla_youth.db.key`，**遺失就無法解密**，切勿上傳 |
 | `HOST`、`PUBLIC_URL` | 讓手機連入：`HOST=0.0.0.0`；掃碼網址用 `PUBLIC_URL`（手機離線快取需 HTTPS） |
@@ -82,7 +84,7 @@ anla-youth-v1.3-A.1/
    python -m venv .venv
    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
    ```
-3. 在同一個視窗設定後台密碼（與選用的 Gemini 金鑰；不要貼在聊天或截圖裡）：
+3. 在同一個視窗設定後台密碼（與選用的 AI 服務金鑰 `$env:LLM_API_KEY`；不要貼在聊天或截圖裡）：
    ```powershell
    $env:WORKBENCH_PASSWORD = Read-Host "設定後台密碼"
    ```
@@ -99,7 +101,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-23 本機結果：單元測試 **316 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-23 本機結果：單元測試 **345 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 

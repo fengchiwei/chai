@@ -39,7 +39,7 @@
 
 | 變數 | 用途 |
 |---|---|
-| `GEMINI_API_KEY` / `OPENAI_API_KEY` | 模型金鑰。**只從環境變數讀取，安裝包內不含任何金鑰。**未設定時依 `config.py` 的 `LLM_PROVIDER` 行為（`auto` 會退回內建回覆）。 |
+| `LLM_API_KEY`（舊的 `GEMINI_API_KEY`／`OPENAI_API_KEY`／`ANTHROPIC_API_KEY` 仍可用） | 任一家 AI 服務的金鑰，依開頭自動判斷服務；可用 `LLM_PROVIDER` 指定。**只從環境變數讀取，安裝包內不含任何金鑰。**未設定時使用內建回覆。 |
 | `WORKBENCH_PASSWORD` | 輔導工作台密碼，只從環境變數讀取。 |
 | `ANLA_SERVER_URL` | 桌面遠端模式；行動版建置時寫入 Capacitor 設定。 |
 | `ANLA_DESKTOP_PORT` | All-in-One 模式優先使用的本機埠（預設 51735）。 |
@@ -55,9 +55,9 @@
 
 設定環境變數的方式：
 
-- Windows（永久，對之後啟動的程式生效）：`setx GEMINI_API_KEY "你的金鑰"`，再重新開啟 App。
+- Windows（永久，對之後啟動的程式生效）：`setx LLM_API_KEY "你的金鑰"`，再重新開啟 App。
 - macOS：從 Finder 啟動的 App 不會讀 shell 設定檔。可在終端機執行
-  `GEMINI_API_KEY=你的金鑰 /Applications/AnlaYouth.app/Contents/MacOS/AnlaYouth`，
+  `LLM_API_KEY=你的金鑰 /Applications/AnlaYouth.app/Contents/MacOS/AnlaYouth`，
   或改用遠端模式連到已設好金鑰的伺服器（建議）。
 
 ## 三、Windows

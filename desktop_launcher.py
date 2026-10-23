@@ -20,7 +20,7 @@
   * SQLite 放在使用者資料夾（Windows: %APPDATA%\\AnlaYouth；macOS: ~/Library/Application Support/AnlaYouth；
     Linux: $XDG_DATA_HOME/AnlaYouth），透過環境變數 DATABASE_PATH 在匯入 app 之前設定；
     若使用者已自行設定 DATABASE_PATH 則尊重之。
-  * GEMINI_API_KEY / WORKBENCH_PASSWORD 等只從環境變數讀取；本程式不寫入、不封裝任何金鑰。
+  * LLM_API_KEY（任一家 AI 服務）/ WORKBENCH_PASSWORD 等只從環境變數讀取；本程式不寫入、不封裝任何金鑰。
 """
 
 from __future__ import annotations

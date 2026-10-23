@@ -82,7 +82,9 @@ class ReferralConsentTests(unittest.TestCase):
             "target": "輔導老師", "case_info": {"category": "不應被採用的偽造內容"},
         })
         self.assertEqual(note.status_code, 200)
-        self.assertIn("最近睡不好", note.json["draft"])
+        # v2.5.5: a topic word from the student's own messages, not their sentences copied in.
+        self.assertIn("睡不好", note.json["draft"])
+        self.assertNotIn("尚未提及", note.json["draft"])
         self.assertNotIn("偽造內容", note.json["draft"])
         self.assertEqual(database.get_all_cases(), [])
         self.assertEqual(self.consent(consent=False).status_code, 200)

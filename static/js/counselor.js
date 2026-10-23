@@ -48,7 +48,8 @@ function renderModels(data) {
   const E = escapeHtml;
   const body = $("modelPanelBody");
   if (!data.configured) {
-    body.innerHTML = "目前沒有設定雲端 AI 金鑰，學生端使用本機規則回覆。設定 <code>GEMINI_API_KEY</code> 或 <code>OPENAI_API_KEY</code> 後重新啟動即可。";
+    body.innerHTML = "目前沒有設定雲端 AI 金鑰，學生端使用本機規則回覆。用 start.bat 啟動時貼上任一家服務的 API 金鑰"
+      + "（或設定 <code>LLM_API_KEY</code>）後重新啟動即可。";
     return;
   }
   const r = data.router || { models: [] };
@@ -70,7 +71,7 @@ function renderModels(data) {
       　｜　連線：${E(CONNECTION_STATE[status.state] || status.state || "")}${status.reason ? "（" + E(MODEL_ERROR[status.reason] || status.reason) + "）" : ""}</p>
     ${r.discovery_error ? `<p style="color:#b91c1c">模型清單讀取失敗：${E(r.discovery_error)}（先使用預設模型）</p>` : ""}
     <details${wasOpen ? " open" : ""}><summary style="cursor:pointer">查看全部模型與排名規則</summary>
-    <p>服務商：${E(data.provider)}　｜　自動選擇：${data.auto_select ? "開啟" : "關閉（使用設定的模型）"}
+    <p>服務商：${E(data.provider_label || data.provider)}${data.base_url ? "（" + E(data.base_url) + "）" : ""}　｜　自動選擇：${data.auto_select ? "開啟" : "關閉（使用設定的模型）"}
       　｜　呼叫方式：${E(CALL_MODE[data.call_mode] || data.call_mode)}</p>
     ${r.discovered ? `<p>已讀取金鑰可用的模型清單（${E(r.discovered_ago)} 秒前）；故障時會自動依序改用下一個。</p>`
                    : "<p>尚未讀取模型清單，先使用預設模型；學生頁開啟或按「重新偵測」時會讀取。</p>"}
@@ -127,10 +128,11 @@ function renderCasesTable(cases) {
     const bsrs = done ? `${bsrsScore(c.bsrs5)} / 20；附加題 ${c.bsrs5.suicide} 分` : "未施測";
     const consent = c.summary?.student_consent;
     const consentLabel = consent?.kind === "referral" ? "學生同意轉介" : consent?.kind === "summary" ? "學生同意分享摘要" : "";
+    const raised = c.summary?.raised_after_consent;
     return `<tr>
       <td>${escapeHtml(c.case_id)}</td><td>${escapeHtml(c.student_alias)}</td>
       <td>${escapeHtml(c.student_email || "未提供／未驗證")}</td><td>${escapeHtml(c.township)}</td>
-      <td>${escapeHtml(levels[c.risk_level] || "待覆核")}</td><td>${escapeHtml(c.category)}</td>
+      <td>${escapeHtml(levels[c.risk_level] || "待覆核")}${raised ? `<br><span style="color:#b91c1c;font-weight:700">⚠ 同意後升至${escapeHtml(LEVEL_NAMES[raised.level] || raised.level)}</span>` : ""}</td><td>${escapeHtml(c.category)}</td>
       <td>${escapeHtml(bsrs)}</td><td>${escapeHtml(statuses[c.status] || "待覆核")}${consentLabel ? `<br><span class="student-consent-label">${escapeHtml(consentLabel)}</span>` : ""}</td>
       <td>${escapeHtml((c.updated_at || "").slice(0, 16))}</td>
       <td><button type="button" class="btn-primary-action" style="padding:.4rem .6rem" data-case-id="${escapeHtml(c.case_id)}">檢視摘要</button></td>
@@ -188,9 +190,19 @@ function renderExplainable(c, E) {
     ${t.pending_disambiguation ? '<span class="explain-tag pending">待消歧</span>' : ""}
     <p class="explain-user" style="white-space:pre-wrap">${markEvidence(c.dialogue_snippet || "", spans, E) || "無對話節錄"}</p>
     <p>${flags.map(([tier, f]) => `<span class="explain-chip tier-${E(tier)}">${E(f)}</span>`).join("") || "無規則字詞"}
-      ${(t.theoretical_basis || []).map(code => `<span class="explain-chip theory">${E(code)}</span>`).join("")}</p>
+      ${(t.theoretical_basis || []).map(code => `<span class="explain-chip theory" title="${E(code)}">${E(THEORY_LABELS[code] || code)}</span>`).join("")}</p>
     <div class="explain-domains">${cards}</div>
   </div>`;
+}
+
+const THEORY_LABELS = {"PSY-01": "C-SSRS 嚴重度", "PSY-02": "IPTS 累贅感／歸屬受挫", "PSY-03": "IMV 困頓感",
+  "PSY-04": "NSSI 自傷功能", "LIN-01": "言語行為／否定範疇", "SIG-02": "非對稱損失（啟發式）",
+  "ENG-03": "瑞士起司／高水位棘輪", "DYN-04": "數位表型（深夜／情緒累積，啟發式）", "SOC-05": "同儕危機守門",
+  "HFE-06": "防警報疲勞／判讀說明"};
+const LEVEL_NAMES = {red: "紅色", orange: "橙色", yellow: "黃色", green: "綠色"};
+function localTime(value) {
+  const date = new Date(value);
+  return value && !isNaN(date) ? date.toLocaleString("zh-TW", {hour12: false}) : (value || "");
 }
 
 function renderOnePageSummary(c) {
@@ -202,14 +214,19 @@ function renderOnePageSummary(c) {
   const consent = sum.student_consent;
   const fields = done ? ["sleep", "anxiety", "anger", "depression", "inferiority", "suicide"]
     .map((key, i) => `<span>${["睡眠", "緊張", "易怒", "低落", "自我價值", "自殺想法"][i]}：${c.bsrs5[key]}</span>`).join("　") : "未施測（自然對話不等於正式 BSRS-5）";
+  const raised = sum.raised_after_consent;
+  const staffStatuses = {reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
   $("summaryModalContent").innerHTML = `
     <div id="printableArea" style="line-height:1.75">
+      ${raised ? `<p class="risk-raised-banner" style="background:#fee2e2;color:#991b1b;padding:.6rem .8rem;border-radius:8px">
+        ⚠ 學生同意分享後，對話燈號在 ${E(raised.at)} 升至<b>${E(LEVEL_NAMES[raised.level] || raised.level)}</b>。新的內容沒有分享給工作臺；
+        請依校內流程主動關心，或請學生再次同意分享。</p>` : ""}
       <h2>真人覆核摘要：${E(c.case_id)}</h2>
       <p><b>暫定風險：</b>${E((({red:"紅色",orange:"橙色",yellow:"黃色",green:"綠色"})[c.risk_level] || "待確認"))}；
       <b>處理狀態：</b>${E(statusLabels[c.status] || "待覆核")}</p>
       <p><b>暱稱：</b>${E(c.student_alias)}　<b>鄉鎮：</b>${E(c.township)}<br>
       <b>填寫信箱：</b>${E(c.student_email || "未提供")}（未驗證，也未自動通知）</p>
-      ${consent ? `<p><b>${consent.kind === "referral" ? "學生同意轉介" : "學生同意分享摘要"}</b>：${E(consent.consented_at)}<br>
+      ${consent ? `<p><b>${consent.kind === "referral" ? "學生同意轉介" : "學生同意分享摘要"}</b>：${E(localTime(consent.consented_at))}<br>
       <b>學校：</b>${E(sum.student_profile?.student_school || "尚未填寫")}；本次為學生同意的摘要快照，尚未對外轉介。</p>` : ""}
       <h3>對話資訊</h3>
       <p><b>使用者原話節錄：</b><span style="white-space:pre-wrap">${E(c.dialogue_snippet || "無")}</span></p>
@@ -220,6 +237,8 @@ function renderOnePageSummary(c) {
       ${renderExplainable(c, E)}
       <p><b>即時安全：</b>${E(sum.current_safety || "尚未確認")}</p>
       <p><b>系統建議：</b>${E(sum.action_recommendation || "由真人覆核")}</p>
+      ${(sum.reporting_checklist || []).length ? `<div class="reporting-checklist" style="border:1px solid #fca5a5;border-radius:8px;padding:.6rem .8rem;margin:.5rem 0">
+        <b>通報與處理檢核（依類型）</b><ul style="margin:.3rem 0 0 1.1rem">${sum.reporting_checklist.map(item => `<li>${E(item)}</li>`).join("")}</ul></div>` : ""}
       <p style="color:#9a3412">系統判讀可能出錯，僅供受訓人員覆核。任何通報、撥號或轉介都須另行執行；本網站沒有自動聯絡功能。</p>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
         <button type="button" onclick="quickApplyDecision('緊急聯繫提議')">擬緊急聯繫</button>
@@ -230,10 +249,12 @@ function renderOnePageSummary(c) {
     </div>
     <hr>
     <label>處理狀態：<select id="updateStatusSelect">
-      ${Object.entries(statusLabels).map(([value, label]) => `<option value="${value}" ${c.status === value ? "selected" : ""}>${label}</option>`).join("")}
+      ${Object.entries(staffStatuses).map(([value, label]) => `<option value="${value}" ${c.status === value ? "selected" : ""}>${label}</option>`).join("")}
     </select></label>
     <p><label>處置摘要：<input id="decisionInput" maxlength="200" value="${E(c.decision_action || "")}" style="width:100%"></label></p>
-    <p><label>真人備註：<textarea id="updateNotesInput" maxlength="1000" rows="3" style="width:100%">${E(c.counselor_notes || "")}</textarea></label></p>
+    <p><b>處理紀錄（只能新增，不能修改或刪除）：</b></p>
+    <pre style="white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:.5rem;max-height:10rem;overflow:auto">${E(c.counselor_notes || "尚無紀錄")}</pre>
+    <p><label>新增一筆紀錄：<textarea id="updateNotesInput" maxlength="1000" rows="3" style="width:100%" placeholder="例：10/23 14:00 已電話聯絡導師，約明天輔導室晤談"></textarea></label></p>
     <p><label><input type="checkbox" id="contactConfirmed"> 若選「已聯絡／已轉介」，我確認已在本網站以外實際完成，並在備註記錄方式與時間。</label></p>
     <button type="button" class="btn-primary-action" onclick="saveCounselorReview()">儲存真人覆核</button>
     <button type="button" onclick="window.print()">列印</button>

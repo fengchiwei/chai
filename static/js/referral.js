@@ -158,7 +158,8 @@
   }
   function textBox(host, text, label) {
     const area = document.createElement("textarea");
-    area.readOnly = true;
+    // The note is the student's own words to send: they can edit it before copying.
+    area.readOnly = label !== "字條";
     area.rows = 7;
     area.className = "choice-text";
     area.setAttribute("aria-label", label);

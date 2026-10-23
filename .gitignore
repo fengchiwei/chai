@@ -5,6 +5,8 @@ __pycache__/
 .env
 *.db
 *.db-journal
+*.db-wal
+*.db-shm
 anla_v13a1_backups/
 
 # 資料庫加密金鑰檔（遺失會無法解密，切勿上傳）

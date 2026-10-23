@@ -7,7 +7,7 @@
 "use strict";
 
 const CACHE_PREFIX = "anla-shell-";
-const CACHE_NAME = CACHE_PREFIX + "v2026-10-23.2";
+const CACHE_NAME = CACHE_PREFIX + "v2026-10-23.3";
 const OFFLINE_URLS = ["/offline", "/static/offline.html"];
 const SHELL = [
   ...OFFLINE_URLS,

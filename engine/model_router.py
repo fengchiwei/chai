@@ -9,7 +9,6 @@ Model choice is an operator concern: students never see model names (backend onl
   malformed replies pause it after FAILURES_BEFORE_PAUSE consecutive failures.
 """
 import logging
-import os
 import re
 import threading
 import time
@@ -17,14 +16,17 @@ import time
 import requests
 
 from config import Config
+from engine import providers
 
 DISCOVERY_TTL = 30 * 60
+DISCOVERY_RETRY = 60  # a failed model-list read is tried again after a minute
 MAX_FAILOVER = 3
 SLOW_SECONDS = 15
 FAILURES_BEFORE_PAUSE = 2
 PAUSE_SECONDS = {"rate_limited": 60, "model_not_found": 24 * 3600, "rejected": 30 * 60,
-                 "unavailable": 30, "timeout": 60, "empty": 60, "bad_response": 60}
-IMMEDIATE = {"rate_limited", "model_not_found", "rejected"}
+                 "unavailable": 30, "timeout": 30, "empty": 60, "bad_response": 60}
+# A timeout pauses a model at once (briefly): otherwise every student in that minute waits on it too.
+IMMEDIATE = {"rate_limited", "model_not_found", "rejected", "timeout"}
 MAX_PAUSE = 300  # cap for Retry-After hints
 # Statuses that say "this model, right now" — the same turn may try the next model.
 MODEL_LEVEL = {"rate_limited", "model_not_found", "rejected", "unavailable", "timeout", "empty", "bad_response"}
@@ -34,6 +36,9 @@ GEMINI_EXCLUDE = re.compile(r"tts|image|imagen|embed|aqa|veo|audio|live|robotics
 OPENAI_INCLUDE = re.compile(r"^(?:gpt-\d|o\d)", re.I)
 OPENAI_EXCLUDE = re.compile(r"audio|realtime|transcribe|tts|image|search|embedding|instruct|whisper|dall|"
                             r"moderation|codex|computer", re.I)
+# Other OpenAI-compatible services list everything they host; keep chat models only.
+COMPATIBLE_EXCLUDE = re.compile(r"embed|whisper|tts|audio|speech|transcri|image|vision-only|dall|stable-diffusion|"
+                                r"flux|moderation|guard|rerank|ocr|realtime|search|code(?:stral)?-embed", re.I)
 
 _clock = time.monotonic
 _lock = threading.Lock()
@@ -47,30 +52,54 @@ def reset():
         _health.clear()
 
 
+def _api(provider):
+    return providers.REGISTRY.get(provider, {}).get("api", "openai")
+
+
 def default_model(provider):
-    return (Config.GEMINI_MODEL or "gemini-2.5-flash") if provider == "gemini" else (Config.OPENAI_MODEL or "gpt-4o")
+    info = providers.active()
+    if info and info["name"] == provider and info["default_model"]:
+        return info["default_model"]
+    return providers.REGISTRY.get(provider, {}).get("default_model") or "gpt-4o"
 
 
 def pinned_model(provider):
     """A model the administrator chose explicitly via the environment (kept first in line)."""
-    return os.environ.get("GEMINI_MODEL" if provider == "gemini" else "OPENAI_MODEL") or None
+    return providers.pinned_model() if providers.name() == provider else None
 
 
 def usable(provider, name):
-    if provider == "gemini":
+    api = _api(provider)
+    if api == "gemini":
         return name.startswith("gemini-") and not GEMINI_EXCLUDE.search(name)
-    return bool(OPENAI_INCLUDE.search(name)) and not OPENAI_EXCLUDE.search(name)
+    if api == "anthropic":
+        return name.startswith("claude-")
+    if provider == "openai":
+        return bool(OPENAI_INCLUDE.search(name)) and not OPENAI_EXCLUDE.search(name)
+    return not COMPATIBLE_EXCLUDE.search(name)
 
 
 def rank_key(provider, name):
     """Higher sorts first: (stable release, version, tier). Explicit names beat '-latest' aliases."""
+    api = _api(provider)
+    if api == "anthropic":
+        # claude-opus-5-5, claude-sonnet-4-5-20250929, claude-3-5-haiku-20241022: dated ids are stable snapshots.
+        stable = 0 if re.search(r"preview|exp", name) else 1
+        digits = re.findall(r"-(\d{1,2})(?=-|$)", name)
+        version = float(".".join(digits[:2])) if digits else 0.0
+        tier = 3 if "opus" in name else 1 if "haiku" in name else 2
+        return (stable, version, tier)
     stable = 0 if re.search(r"preview|exp|experimental|\d{4}-\d{2}-\d{2}|-\d{3,}$", name) else 1
-    version = re.search(r"(?:gemini|gpt|o)-?(\d+(?:\.\d+)?)", name)
+    version = re.search(r"(?:gemini|gpt|o|claude|deepseek|llama|grok|mistral|qwen)-?v?(\d+(?:\.\d+)?)", name, re.I)
     version = float(version.group(1)) if version and "latest" not in name else 0.0
-    if provider == "gemini":
+    if api == "gemini":
         tier = 1 if "lite" in name else 3 if "pro" in name else 2 if "flash" in name else 0
-    else:
+    elif provider == "openai":
         tier = 1 if "nano" in name else 2 if "mini" in name else 3
+    else:
+        low = re.search(r"nano|mini|small|lite|tiny|flash|\b(?:1|3|7|8)b\b|-(?:1|3|7|8)b", name, re.I)
+        high = re.search(r"large|pro|max|opus|405b|70b|72b|reasoner", name, re.I)
+        tier = 1 if low else 3 if high else 2
     return (stable, version, tier)
 
 
@@ -85,21 +114,21 @@ def discover(provider, force=False):
         cached = _catalog.get(provider)
         if cached and not force and _clock() - cached["at"] < DISCOVERY_TTL:
             return cached
+    info = providers.active()
+    if not info or info["name"] != provider or not info["base_url"]:
+        return {"models": [], "at": _clock(), "error": "not_configured"}
     names, error = [], None
     try:
-        if provider == "gemini":
-            response = requests.get("https://generativelanguage.googleapis.com/v1beta/models",
-                                    params={"pageSize": 200}, headers={"x-goog-api-key": Config.GEMINI_API_KEY},
-                                    proxies={"http": None, "https": None, "all": None},
-                                    timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 10))
-            data = response.json() if response.status_code == 200 else {}
+        api = info["api"]
+        response = requests.get(f"{info['base_url']}/models",
+                                params={"pageSize": 200} if api == "gemini" else {"limit": 100} if api == "anthropic" else None,
+                                headers=providers.auth_headers(info), proxies={"http": None, "https": None, "all": None},
+                                timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 10))
+        data = response.json() if response.status_code == 200 else {}
+        if api == "gemini":
             names = [m["name"].split("/")[-1] for m in data.get("models", [])
                      if "generateContent" in m.get("supportedGenerationMethods", [])]
         else:
-            response = requests.get(f"{Config.OPENAI_BASE_URL.rstrip('/')}/models",
-                                    headers={"Authorization": f"Bearer {Config.OPENAI_API_KEY}"},
-                                    timeout=(max(0.5, Config.LLM_CONNECT_TIMEOUT), 10))
-            data = response.json() if response.status_code == 200 else {}
             names = [m["id"] for m in data.get("data", [])]
         if response.status_code != 200:
             error = f"HTTP {response.status_code}"
@@ -110,7 +139,9 @@ def discover(provider, force=False):
                     key=lambda n: rank_key(provider, n), reverse=True)
     with _lock:
         previous = _catalog.get(provider, {}).get("models", [])
-        entry = {"models": models or previous, "at": _clock(), "error": error if not models else None}
+        # A failed read is retried after DISCOVERY_RETRY seconds instead of being cached for half an hour.
+        at = _clock() if models else _clock() - DISCOVERY_TTL + DISCOVERY_RETRY
+        entry = {"models": models or previous, "at": at, "error": error if not models else None}
         _catalog[provider] = entry
     if error:
         logging.warning("模型清單讀取失敗（%s）：%s", provider, error)
@@ -158,6 +189,12 @@ def record(provider, model, status, latency=None, retry_after=None):
             h["paused_until"] = now + pause
 
 
+def latency(provider, model):
+    """Measured average reply time in seconds, or None before the first successful reply."""
+    with _lock:
+        return (_health.get((provider, model)) or {}).get("latency")
+
+
 def pause_summary(provider):
     """(most recent error among paused models, seconds until the first one is back) when none is usable."""
     now = _clock()
@@ -191,5 +228,5 @@ def snapshot(provider):
             "discovered": bool(entry.get("models")),
             "discovered_ago": round(now - entry["at"]) if entry.get("at") else None,
             "discovery_error": entry.get("error"),
-            "ranking_rule": "版本越新越前；同版本 pro > flash > flash-lite（或 完整 > mini > nano）；正式版優先於預覽版；"
-                            f"平均回覆超過 {SLOW_SECONDS} 秒的模型排到最後；GEMINI_MODEL／OPENAI_MODEL 可指定第一順位。"}
+            "ranking_rule": "版本越新越前；同版本較大的型號優先（pro > flash > lite、opus > sonnet > haiku、完整 > mini > nano）；"
+                            f"正式版優先於預覽版；平均回覆超過 {SLOW_SECONDS} 秒的模型排到最後；LLM_MODEL 可指定第一順位。"}

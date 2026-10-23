@@ -217,6 +217,9 @@ async function sendMessage() {
 
   const typingId = showTypingIndicator();
 
+  // A stuck server must not leave the page in 「傳送中」 forever: the student could not send a crisis message.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 45000);
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -225,10 +228,12 @@ async function sendMessage() {
         message: text,
         reply_style: currentReplyStyle,
         // The server retains bounded dialogue history; do not resend the entire conversation.
-      })
+      }),
+      signal: controller.signal,
     });
 
-    const data = await res.json();
+    // An HTML error page (413, 500, a proxy) is not JSON; show a plain message instead of a parser error.
+    const data = await res.json().catch(() => ({ error: res.status === 413 ? "訊息太長了" : "伺服器暫時沒有回應" }));
     removeTypingIndicator(typingId);
     if (!res.ok) {
       if (res.status === 403) openOnboardingModal(false);
@@ -250,8 +255,12 @@ async function sendMessage() {
   } catch (err) {
     removeTypingIndicator(typingId);
     const offlineHint = navigator.onLine === false ? "目前沒有網路，可以先點上方提示打開離線呼吸練習與求助電話。" : "";
-    appendMessage("ai", `訊息送出時發生問題：${err.message || "連線中斷"}。請稍後再試；若現在有立即危險，請直接撥打 119 或找身邊的大人。${offlineHint}`);
+    const reason = err.name === "AbortError" ? "等太久沒有回應" : (err.message || "連線中斷");
+    appendMessage("ai", `訊息送出時發生問題：${reason}。剛才打的字已放回輸入框，可以再按一次送出；若現在有立即危險，請直接撥打 119 或找身邊的大人。${offlineHint}`);
+    if (!input.value) input.value = text;  // do not lose what the student wrote
+    conversationHistory.pop();
   } finally {
+    clearTimeout(timer);
     isSending = false;
   }
 }

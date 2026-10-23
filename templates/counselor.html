@@ -56,15 +56,6 @@
       </div>
     </div>
 
-    <!-- AI 模型：只在後台顯示；學生端看不到模型名稱，也不需要選模型 -->
-    <section class="panel-card" id="modelPanel" style="margin-bottom: 1.5rem;" aria-labelledby="modelPanelTitle">
-      <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
-        <h3 id="modelPanelTitle" style="margin: 0;">🤖 AI 模型（僅後台可見）</h3>
-        <button type="button" id="refreshModels" class="btn-primary-action" style="padding: .4rem .8rem; width: auto; margin: 0;">重新偵測可用模型</button>
-      </div>
-      <div id="modelPanelBody" class="explain-meta" style="margin-top: .6rem;">讀取中…</div>
-    </section>
-
     <!-- 篩選列 -->
     <div class="panel-card" style="margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
       <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
@@ -137,6 +128,15 @@
         </tbody>
       </table>
     </div>
+
+    <!-- AI 模型：只在後台顯示，放在個案清單之後（給管理者看；輔導老師平常用不到） -->
+    <section class="panel-card" id="modelPanel" style="margin-top: 1.5rem;" aria-labelledby="modelPanelTitle">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <h3 id="modelPanelTitle" style="margin: 0;">🤖 AI 模型（管理者用，學生看不到）</h3>
+        <button type="button" id="refreshModels" class="btn-primary-action" style="padding: .4rem .8rem; width: auto; margin: 0;">重新偵測可用模型</button>
+      </div>
+      <div id="modelPanelBody" class="explain-meta" style="margin-top: .6rem;">讀取中…</div>
+    </section>
 
   </div>
 

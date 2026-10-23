@@ -14,6 +14,8 @@ from functools import wraps
 
 import io
 import socket
+import logging
+import sqlite3
 
 import segno
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -26,9 +28,10 @@ from engine.ai_agent import (
     generate_youth_response,
     prepare_dialogue,
 )
-from engine import model_router
+from engine import model_router, providers
 from engine.dialogue_ai import _provider, model_status
 from engine.dialogue_policy import POLICY_VERSION, REPLY_STYLES, build_state, remember_turn
+from engine.dialogue_reply import TOPIC_PATTERN
 from engine.dialogue_role import public_role
 from engine.explain import VERSION as EXPLAIN_VERSION, explain, load_scenarios
 from engine.wellbeing_signals import update_wellbeing_signals
@@ -41,6 +44,7 @@ from engine.referral import (
 )
 from models.database import (
     get_all_cases,
+    flag_risk_after_consent,
     get_case_by_id,
     init_db,
     log_audit,
@@ -248,9 +252,25 @@ def sensitive_cache_policy(response):
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["X-Content-Type-Options"] = "nosniff"
+    # Second line of defence behind escapeHtml/textContent: only this site's scripts, no plugins, no framing,
+    # forms post here only. 'unsafe-inline' stays until the templates' inline onclick handlers move to JS files.
+    response.headers.setdefault("Content-Security-Policy", CONTENT_SECURITY_POLICY)
     if request.path.startswith("/api/") or request.path in ("/", "/counselor", "/login", "/demo", "/explain"):
         response.headers["Cache-Control"] = "no-store"
     return response
+
+
+CONTENT_SECURITY_POLICY = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; "
+                           "img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; "
+                           "frame-ancestors 'none'; form-action 'self'")
+
+
+@app.errorhandler(sqlite3.OperationalError)
+def database_busy(exc):
+    """A locked or unavailable database must not show a stack trace, and a student still sees where to get help."""
+    logging.warning("資料庫暫時無法使用：%s", type(exc).__name__)
+    return jsonify({"error": "系統忙碌中，請稍後再傳一次。若有立即危險，請直接撥打 119，或 1925 安心專線（24 小時）。",
+                    "show_urgent_help": session.get("highest_risk") == "red"}), 503
 
 
 @app.route("/")
@@ -285,6 +305,9 @@ def login():
             limiter.forget_last(login_key)
             # 同一瀏覽器的學生頁可能仍在對話；保留當前對話的安全警訊與 CSRF。
             session["staff"] = True
+            # One shared password, so ask who is working: the audit log then says who did what.
+            name = re.sub(r"[\x00-\x1f<>]", "", request.form.get("staff_name", "")).strip()[:20]
+            session["staff_name"] = name
             return redirect(url_for("counselor"))
         return render_template("login.html", disabled=False, error="密碼錯誤", csrf_token=csrf_token()), 401
     return render_template("login.html", disabled=False, csrf_token=csrf_token())
@@ -376,7 +399,7 @@ def api_status():
 
 def reply_source(model_used):
     """Coarse origin of a reply for the student page, without provider or model names."""
-    if model_used.startswith(("Google Gemini", "OpenAI")):
+    if model_used.startswith(providers.LABELS):
         return "ai"
     return "safety" if model_used in ("安全回覆", "安全確認") else "rules" if model_used == "對話規則回覆" else "local"
 
@@ -521,6 +544,8 @@ def process_chat_turn(message):
         return jsonify({"error": str(exc), "show_urgent_help": session.get("highest_risk") == "red"}), 409
     session["support_offer_state"] = offer_state
     session["safety_pending"] = bool(dialogue_state.get("safety_check_required"))
+    if session.get("case_id"):
+        flag_risk_after_consent(session["case_id"], level)
     return jsonify({
         "reply": reply["reply"],
         # Model names are backend-only; the student page only needs to know where the reply came from.
@@ -646,8 +671,8 @@ def api_config_llm():
     """Staff-only model panel: which models the key can use, their ranking, health and the active one.
     POST {"action": "refresh"} re-reads the provider's model list (metadata only, no tokens)."""
     provider = _provider()
-    configured = provider in ("gemini", "openai") and bool(
-        Config.GEMINI_API_KEY if provider == "gemini" else Config.OPENAI_API_KEY)
+    configured = providers.configured()
+    info = providers.active() or {}
     if request.method == "POST":
         error = require_csrf()
         if error:
@@ -656,19 +681,20 @@ def api_config_llm():
             return jsonify({"error": "金鑰與服務商請在啟動前用環境變數設定；這裡只能重新偵測模型"}), 400
         if configured:
             model_router.discover(provider, force=True)
-            log_audit("已登入工作臺人員", "refresh_models", "", provider)
+            log_audit(staff_actor(), "refresh_models", "", provider)
     elif configured and Config.MODEL_AUTO_SELECT:
         model_router.discover(provider)  # cached for 30 minutes
     return jsonify({
         "provider": provider if configured else "builtin",
+        # Service name only; the key itself never leaves the server.
+        "provider_label": info.get("label") if configured else "本機回覆",
+        "base_url": info.get("base_url") if configured and provider == "custom" else None,
         "configured": configured,
         "auto_select": Config.MODEL_AUTO_SELECT,
         "status": model_status(),
         "router": model_router.snapshot(provider) if configured else None,
         "temperature": Config.LLM_TEMPERATURE,
         "call_mode": Config.LLM_CALL_MODE,
-        "has_openai_key": bool(Config.OPENAI_API_KEY),
-        "has_gemini_key": bool(Config.GEMINI_API_KEY),
     })
 
 
@@ -688,7 +714,7 @@ def api_get_case(case_id):
     if not case:
         return jsonify({"error": "找不到個案"}), 404
     # Every staff read of a case is recorded in the hash-chained audit log.
-    log_audit("已登入工作臺人員", "view_case", case_id, "查閱個案摘要")
+    log_audit(staff_actor(), "view_case", case_id, "查閱個案摘要")
     return jsonify({"case": case})
 
 
@@ -706,18 +732,28 @@ def api_update_case_status(case_id):
         return jsonify({"error": "備註格式不正確或過長"}), 400
     if status in ("contacted", "referred") and (not data.get("contact_confirmed") or not notes.strip()):
         return jsonify({"error": "請真人在系統外完成聯繫或轉介，並記錄處理方式與時間"}), 400
-    if not update_case_status(case_id, status, notes, decision[:200], actor="已登入工作臺人員"):
+    case = get_case_by_id(case_id)
+    if status == "completed" and case and case["risk_level"] in ("orange", "red") and not notes.strip():
+        return jsonify({"error": "紅、橙燈個案結案前，請在備註記錄處理經過與結果"}), 400
+    if not update_case_status(case_id, status, notes, decision[:200], actor=staff_actor()):
         return jsonify({"error": "個案不存在或狀態不正確"}), 400
     return jsonify({"success": True})
+
+
+def staff_actor():
+    name = session.get("staff_name")
+    return f"{name}（共用帳號）" if name else "已登入工作臺人員"
 
 
 @app.route("/api/stats")
 @staff_only
 def api_stats():
     cases = get_all_cases()
+    open_cases = [c for c in cases if c["status"] not in ("referred", "completed")]
     return jsonify({
         "total": len(cases),
-        **{level: sum(c["risk_level"] == level for c in cases) for level in RISK_LEVEL_WEIGHTS},
+        # Level counts are open cases only: a closed red case is no longer waiting for anyone.
+        **{level: sum(c["risk_level"] == level for c in open_cases) for level in RISK_LEVEL_WEIGHTS},
         "pending": sum(c["status"] in ("pending", "student_requested_referral", "student_shared_summary") for c in cases),
         "in_progress": sum(c["status"] in ("reviewing", "contacted") for c in cases),
         "completed": sum(c["status"] in ("referred", "completed") for c in cases),
@@ -795,6 +831,21 @@ def api_get_resources():
     return jsonify({"resources": matches, "total": len(matches)})
 
 
+DRAFT_EXTRA = r"睡不好|睡不著|失眠|壓力|心情不好|焦慮|人際|被排擠|被笑|霸凌|課業"
+
+
+def draft_topics(context):
+    """Up to three topic words the student used (「數學、睡不好」), never their sentences."""
+    texts = [t.get("text", "") for t in (context.get("dialogue_state") or {}).get("history", []) if t.get("role") == "user"]
+    texts = texts or (context["draft"].get("dialogue_snippet", "").split("\n"))
+    found = []
+    for text in texts:
+        for match in re.finditer(TOPIC_PATTERN + "|" + DRAFT_EXTRA, text):
+            if match.group(0) not in found:
+                found.append(match.group(0))
+    return "、".join(found[:3])
+
+
 @app.route("/api/generate-draft", methods=["POST"])
 def api_generate_draft():
     error = require_csrf()
@@ -810,7 +861,7 @@ def api_generate_draft():
     if target not in ("輔導老師", "班導師", "家長"):
         return jsonify({"error": "求助對象不正確"}), 400
     draft = context["draft"]
-    case_info = {**draft, "category": draft.get("dialogue_snippet", "")[-300:] or "最近的困擾"}
+    case_info = {**draft, "category": draft_topics(context)}
     return jsonify({"target": target, "draft": generate_help_seeking_draft(case_info, target),
                     "next_steps": student_next_steps(context),
                     "show_urgent_help": context["draft"].get("risk_level") == "red"})

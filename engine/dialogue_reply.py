@@ -140,12 +140,42 @@ def local_reply(message, state):
     if state["current_goal"] == "configure_role":
         return role_acknowledgement(state)
     if state["current_goal"] == "clarify_identity":
-        return "我是 AI，可以用你描述的角色語氣陪你聊，但不是那位真人。你可以隨時修改或取消這個角色設定。"
+        return identity_reply(message, state)
     attempts = detect_injection(message)
     notice = ("網站的內部設定和提示詞不會提供喔。" if "reveal" in attempts
               else "這些設定沒辦法從對話裡更改，我還是用原本的方式陪你。" if attempts else "")
     return _styled(notice + role_notice(state) + _local_reply(state.get("dialogue_content") or message, state),
                    state, message)
+
+
+def identity_reply(message, state):
+    """Honest answer about being an AI; mentions a role only when the student set one, and never a model name."""
+    role = (state.get("companion_role") or {}).get("description")
+    text = "我是 AI 陪伴夥伴，不是真人" + ("，可以用你描述的角色語氣陪你聊，但不是那位真人" if role else "，也不會假裝是真人") + "。"
+    if re.search(r"模型|ChatGPT|GPT|Gemini|Claude|誰(?:做|開發|寫)|哪家", message, re.I):
+        text += "背後用哪一套 AI 由網站管理者設定，你不用選，也不影響我陪你的方式。"
+    if re.search(r"記(?:得|住)|會不會忘", message):
+        text += "這次聊過的內容我會記得，最後一次使用後 24 小時自動失效。"
+    return text + ("你可以隨時修改或取消這個角色設定。" if role else "想聊什麼都可以接著說。")
+
+
+def _recent_replies(state, turns=3):
+    """The assistant's last few replies (for avoiding repeats)."""
+    replies = [t.get("text", "") for t in state.get("history", []) if t.get("role") == "assistant"][-turns:]
+    return replies + [state.get("last_reply", "")]
+
+
+def _fresh(state, options):
+    """First wording not used in the last few replies (2026-10-23 simulation: one sentence was 48% of replies)."""
+    recent = "".join(_recent_replies(state))
+    return next((o for o in options if o not in recent), options[-1])
+
+
+LISTENING = ("這件事我有在聽，不用急著一次說清楚。", "我在，慢慢說就好。", "嗯，我有在聽，想到哪裡說到哪裡都可以。",
+             "我還在這裡，你可以接著說。")
+STAYING = ("我有注意到你這一輪想表達的重點。先不用急著找結論，我們可以留在這裡。",
+           "嗯，我在聽。不用急著整理成答案。", "這些話我有接到，先放在這裡也沒關係。")
+FAREWELL_STUDENT = r"掰掰|拜拜|bye|晚安|先這樣|先走了|下次(?:再)?聊|先去(?:睡|洗澡|吃飯|寫作業)|我要去(?:睡|洗澡|吃飯)|我先睡了"
 
 
 def _styled(text, state, message):
@@ -159,11 +189,15 @@ def _styled(text, state, message):
     return text
 
 
-def _rational_plan(message):
-    """Rational style: 1. points 2. sticking point 3. one optional step, built from the student's own words."""
-    topic = _first(TOPIC_PATTERN, message) or "這件事"
+def _rational_plan(message, state=None):
+    """Rational style: 1. points 2. sticking point 3. one optional step, built from the student's own words.
+    Facts from the last few turns count too (2026-10-23 simulation: 「1. 重點整理：這件事。」)."""
+    earlier = [t.get("text", "") for t in (state or {}).get("history", []) if t.get("role") == "user"][-4:]
+    topic = _first(TOPIC_PATTERN, message) or next((_first(TOPIC_PATTERN, t) for t in reversed(earlier)
+                                                     if _first(TOPIC_PATTERN, t)), "") or "這件事"
+    message = "，".join(earlier + [message])
     facts = [f for f in (
-        _first(r"(?:只剩|剩下?)[一二三四五六七八九十兩\d]+(?:天|週|個禮拜)", message),
+        _first(r"(?:只剩|剩下?)[一二三四五六七八九十兩百\d]+(?:天|週|個禮拜)", message),
         _first(r"(?:翻|熬|拖)到凌晨[一二三四五六\d]點(?:才睡著?)?|睡不好|睡不著|失眠", message),
         _first(r"上課[^，。！？]{0,4}(?:恍神|分心|聽不懂)[^，。！？]{0,4}", message),
         _first(r"(?:爸媽|家人|老師)[^，。！？]{0,6}(?:逼問|一直問|催|唸|比較)[^，。！？]{0,8}", message),
@@ -183,6 +217,8 @@ def _first(pattern, text):
 def is_positive_only(message):
     """開心／期待且沒有困擾字詞：回應那份好心情，不替對方補上壓力。"""
     message = re.sub(HAPPY_SLEEPLESS, "開心", message)  # 「開心到睡不著」 is good news, not insomnia
+    # Someone else's quoted words are not the student's mood: 「『你們原住民有加分很爽齁』，我超不爽」.
+    message = re.sub(QUOTED, "", message)
     return bool(re.search(POSITIVE_PATTERN, message) and not re.search(NEGATED_POSITIVE, message)
                 and not re.search(NEGATIVE_PATTERN, message))
 
@@ -239,7 +275,7 @@ def _natural_reflection(message, state=None):
         return topic + "的事讓你" + feel + ("，不過你也說" + contrast if contrast else "") + "。"
     if topic:
         return topic + "的事，你可以慢慢說，我在聽。"
-    return "這件事我有在聽，不用急著一次說清楚。"
+    return _fresh(state, LISTENING)
 
 
 def _local_reply(message, state):
@@ -250,8 +286,11 @@ def _local_reply(message, state):
     if goal == "stabilize":
         return echo + "現在先不用整理原因，也不急著做決定。我先聽，這輪不再加問題。"
     if goal == "establish_safety":
-        return ("你在意誰會知道這些話，這點需要先說清楚。這個網站會暫存對話與整理，雲端 AI 啟用時也會收到對話文字；只有你同意分享的摘要才進工作臺，目前沒有自動通知學校。"
-                "我不能保證絕對保密，有立即危險時仍需要真人協助。")
+        specific = ("系統不會通知你的家人。" if re.search(r"爸|媽|家人", message) else "")
+        if re.search(r"刪|關掉|錄|記錄|紀錄|保存|存", message):
+            specific += "對話會暫存在這個網站，最後一次使用後 24 小時自動失效；目前沒有手動刪除的按鈕。"
+        return (specific + "你在意誰會知道這些話，這點需要先說清楚。這個網站會暫存對話與整理，雲端 AI 啟用時也會收到對話文字；"
+                "只有你同意分享的摘要才進工作臺，目前沒有自動通知學校。我不能保證絕對保密，有立即危險時仍需要真人協助。")
     if state["safety_denied"]:
         # The review level stays for a human; the student gets the conversation back, with the door left open.
         door = "之後如果哪天真的冒出這種念頭，隨時可以跟我說，1925 二十四小時都有人接。"
@@ -271,7 +310,9 @@ def _local_reply(message, state):
     if re.search(r"活著的意義|人生.*意義|生命.*意義", message):
         return echo + "活著的意義未必只有一個答案，也不一定要靠成績或成就來證明。現在還沒找到，也不用急著替自己下結論。"
     if goal == "support_choice" and state.get("effective_style") == "rational":
-        return _rational_plan(message)
+        return _rational_plan(message, state)
+    if len(message) <= 25 and re.search(FAREWELL_STUDENT, message, re.I):
+        return "好，謝謝你今天願意聊。想再說的時候隨時回來" + ("，晚安。" if re.search(r"晚安|睡", message) else "。")
     if goal == "support_choice":
         # A concrete, reversible communication step after implicit help-seeking.
         context = message + " ｜ " + state.get("event_summary", "") + " ｜ " + state.get("expectation_summary", "")
@@ -283,7 +324,8 @@ def _local_reply(message, state):
             need = state.get("yearning_summary") or state.get("expectation_summary")
             return "你已經提到自己很在意什麼了。可以先寫下一句最想說的話，或先練習怎麼開口；不用急著真的去說。"
         return echo + "可以先挑一個你做得到的小步驟，例如寫下一句最想表達的話；要不要使用由你決定。"
-    if state.get("known_self") and re.search(r"沒用|超廢|沒人要|不夠好|不值得|失敗|沒有人會喜歡", message):
+    # 「分組都沒人要跟我」 is about being left out, not self-blame.
+    if state.get("known_self") and re.search(r"沒用|超廢|很廢|沒人要(?!跟)|很爛|好爛|不夠好|不值得|失敗|沒有人會喜歡", message):
         return echo + "這件事好像讓你把很多責怪都放到自己身上。一件事的結果，和你整個人的價值，是兩件不同的事；現在不用急著逼自己相信正面的話。"
     if state.get("meta_feeling_summary") == message[:240]:
         return echo + "除了原來的不好受，好像還多了對自己有這種感受的責怪。這兩份感受都可以先放在這裡，不用立刻改掉。"
@@ -297,7 +339,7 @@ def _local_reply(message, state):
                 return (("能" if wish.startswith("被") else "") + wish
                         + "，對你來說很重要，你已經把它說出來了。先停在這裡也可以，不用馬上想下一步。")
             return "你已經說出自己很在意的事了。先停在這裡也可以，不用馬上想下一步。"
-        return "我有注意到你這一輪想表達的重點。先不用急著找結論，我們可以留在這裡。"
+        return _fresh(state, STAYING)
     if state["uncertainty_streak"]:
         return "沒關係，有時候真的很難一下講清楚。我們先不用替感受取名字。"
     if message.strip().strip("。！!，, ") in ("好", "好喔", "好啊", "好吧", "謝謝", "沒有"):
@@ -321,7 +363,8 @@ def _local_reply(message, state):
         body = "你可以只說現在最想談的部分。"
     questions = {
         "clarify_event": "哪一件事讓你最在意？",
-        "explore_feeling": "那一刻比較像失望，還是另一種感覺？",
+        # Open, not leading: 「比較像失望」 chose the answer for the student (counselling review).
+        "explore_feeling": "那時候你心裡是什麼感覺？想說再說。",
         "explore_perception": "這件事讓你怎麼看自己或對方？",
         "explore_expectation": "你原本希望對方怎麼回應你？",
         "explore_yearning": "如果對方願意這樣做，對你最重要的是什麼？",
@@ -329,8 +372,8 @@ def _local_reply(message, state):
     ask = questions.get(goal, "") if state["ask_question"] else ""
     if ask and positive_context(message, state):
         ask = "想多說說這件事嗎？"  # Good news is not a cue to explore perceptions or problems.
-    if ask and ask in state.get("last_reply", ""):
-        ask = ""  # Do not rephrase and ask the same thing after a short answer.
+    if ask and any(ask in reply for reply in _recent_replies(state)):
+        ask = ""  # Not the same question again within a few turns (A, B, A rotation included).
     return echo + body + ask
 
 
@@ -338,13 +381,16 @@ FEELING_PATTERN = r"心情不好|難過|生氣|累|委屈|心慌|慌|不敢|害�
 POSITIVE_PATTERN = r"開心|高興|快樂|期待|興奮|好玩|滿足|幸福|感動|好爽|超爽|很爽|太棒|好棒"
 NEGATED_POSITIVE = r"(?:不|沒有?|沒那麼|不太|一點也不)(?:很|太|那麼)?(?:開心|高興|快樂|期待|興奮|好玩)"
 NEGATIVE_PATTERN = (r"心情不好|難過|生氣|累|委屈|慌|不敢|怕|痛|煩|焦慮|擔心|壓力|失望|緊張|低落|孤單|哭|討厭"
-                    r"|睡不好|睡不著|失眠|吵架|被罵|不想|撐不|受不了")
+                    r"|睡不好|睡不著|失眠|吵架|被罵|不想|撐不|受不了|不爽|袂爽|歧視|被笑|嘲笑")
+QUOTED = r"「[^」]*」|『[^』]*』|“[^”]*”"
 ACTIVITY_PATTERN = r"羽球|籃球|桌球|排球|棒球|比賽|表演|旅行|出去玩|生日|畢業旅行|園遊會"
 BODY_PATTERN = r"胃痛|頭痛|肚子痛|胸口悶|身體不舒服|睡不好|睡不著|失眠"
 HAPPY_SLEEPLESS = r"(?:開心|興奮|期待|高興)(?:到|得)睡不著"
 DEGREE = r"(?:最近|還是|一直|真的|有點|有一點|很|好|超|非常|蠻|滿|太)*"
-TOPIC_PATTERN = (r"告白被打槍|告白被拒絕|告白|段考|期中考|期末考|會考|考試|成績|作業|功課|分組|社團|輔導室"
-                 r"|同學|朋友|老師|爸媽|爸爸|媽媽|家人|家裡|分手|吵架|升學|科系|羽球|籃球|比賽|表演")
+TOPIC_PATTERN = (r"告白被打槍|告白被拒絕|告白|段考|期中考|期末考|模擬考|會考|學測|統測|考試|成績|作業|功課|分組|社團|輔導室"
+                 r"|數學|英文|國文|理化|物理|化學|自然|社會|補習|志願|設計|音樂|畫畫|轉學|宿舍|部落|手機|遊戲|抽卡"
+                 r"|同學|朋友|老師|爸媽|爸爸|媽媽|家人|家裡|哥哥|姊姊|姐姐|弟弟|妹妹|喜歡的人|分手|吵架|升學|科系"
+                 r"|羽球|籃球|冠軍|比賽|表演")
 # Psychological states a model may add on its own; flagged only when the student shared good news.
 INVENTED_DISTRESS = r"壓力|緊繃|喘息|不好受|難受|委屈|沉重|焦慮|不容易|辛苦|煩惱|擔心|累積|撐|逃離|放鬆一下|承接|內在|負荷|課題"
 EMBEDDED_QUESTION = (r"(?:不知道|不曉得|想知道|不確定|再來看|來看看|看看要|決定|想想|討論|規劃)[^。！？!?\n]{0,6}"

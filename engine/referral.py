@@ -9,6 +9,8 @@ from engine.triage import RISK_LEVEL_WEIGHTS
 from models.database import append_audit, get_connection, get_case_by_id, save_case, seal, unseal
 
 CONTEXT_TTL = 24 * 60 * 60
+PURGE_EVERY = 10 * 60  # expired contexts are removed at most this often, not inside every write
+_last_purge = [0.0]
 
 
 def _read(conn, context_id, email_hash):
@@ -21,7 +23,10 @@ def _read(conn, context_id, email_hash):
 
 def _write(conn, context_id, email_hash, context):
     now = int(time.time())
-    conn.execute("DELETE FROM student_contexts WHERE updated_at<?", (now - CONTEXT_TTL,))
+    if now - _last_purge[0] >= PURGE_EVERY:
+        # Reads already ignore expired rows (see _read); deleting them is housekeeping.
+        conn.execute("DELETE FROM student_contexts WHERE updated_at<?", (now - CONTEXT_TTL,))
+        _last_purge[0] = now
     conn.execute(
         "INSERT OR REPLACE INTO student_contexts VALUES (?, ?, ?, ?)",
         (context_id, email_hash, seal(json.dumps(context, ensure_ascii=False)), now),

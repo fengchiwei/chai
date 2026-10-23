@@ -26,6 +26,7 @@
 > **進度**：
 > - 第 1–3 項已在 v2.5.3 修正，見 `tests/test_sim_safety_regressions_v253.py`。
 > - 第 4–8 項已在 v2.5.4 修正，見 `tests/test_safety_flow_v254.py`。
+> - P1 與 P2 的大部分項目已在 v2.5.5 修正，未完成的項目列在 CHANGELOG。
 > - 安全措辭仍需真人輔導專業審閱；在地電話仍需核實。詳見 CHANGELOG。
 
 1. **明確自殺說法漏判** ✅
