@@ -1,6 +1,6 @@
 # 少年仔、安啦會客室：AI 陪伴與風險預警原型
 
-目前原始碼版本：**v2.9.0**。決賽展示準備見 [docs/FINALS_READINESS.md](docs/FINALS_READINESS.md)。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)，與計畫書的逐項對照見 [docs/PROPOSAL_ALIGNMENT.md](docs/PROPOSAL_ALIGNMENT.md)，專業人員審閱包見 [docs/PROFESSIONAL_REVIEW.md](docs/PROFESSIONAL_REVIEW.md)。
+目前原始碼版本：**v2.9.1**。決賽展示準備見 [docs/FINALS_READINESS.md](docs/FINALS_READINESS.md)。開發依據為重新撰寫的 [docs/專案開發計畫_v3.md](docs/專案開發計畫_v3.md)（取代 Gemini 撰寫的 v2.3 計畫）。版本變更見 [docs/CHANGELOG.md](docs/CHANGELOG.md)，9.5 分閉環審查結果見 [EVALUATION_REPORT_95.md](EVALUATION_REPORT_95.md)，文獻依據見 [docs/THEORETICAL_FOUNDATIONS.md](docs/THEORETICAL_FOUNDATIONS.md)，各平台安裝見 [docs/PLATFORMS.md](docs/PLATFORMS.md)，線上網站（Render）與下載安裝版（GitHub Releases）的部署見 [docs/DEPLOY.md](docs/DEPLOY.md)，與計畫書的逐項對照見 [docs/PROPOSAL_ALIGNMENT.md](docs/PROPOSAL_ALIGNMENT.md)，專業人員審閱包見 [docs/PROFESSIONAL_REVIEW.md](docs/PROFESSIONAL_REVIEW.md)。
 
 提供學生對話（四種回覆風格）、語音輸入／朗讀、南投資源、離線求助卡、模擬案例測試、燈號判讀說明，以及需密碼登入的真人覆核工作臺。
 
@@ -120,7 +120,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\run_tests.ps1
 .\.venv\Scripts\python.exe tests\eval_mutation_check.py
 ```
 
-2026-10-23 本機結果：單元測試 **498 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
+2026-10-23 本機結果：單元測試 **501 項全部通過**；P01–P10 閘門 **10.00 / 10、高危漏報 0**；突變測試 6/6 防護被偵測。這些只驗證程式行為，雲端模型實際輸出、離線快取與 macOS／Android／iOS 封裝尚未實測（見 `EVALUATION_REPORT_95.md` 第五節）。
 
 ## 資料與部署
 

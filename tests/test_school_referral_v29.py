@@ -9,7 +9,9 @@ from unittest.mock import patch
 from urllib.parse import unquote
 
 from engine import school_referral
+from engine.dialogue_reply import safety_reply
 from models import database
+from tests.test_ai_only_v259 import Base, single
 from tests.test_finals_v29 import ROOT, RouteBase
 
 SCHOOLS = {"schools": [
@@ -86,15 +88,18 @@ class RouteTests(RouteBase):
     def chat(self, client, headers, message):
         return client.post("/api/chat", headers=headers, json={"message": message}).json
 
-    def test_any_risk_level_gets_the_card_once_per_topic(self):
+    def test_any_risk_level_gets_the_card_with_every_mention(self):
         client, headers = self.student()
         first = self.chat(client, headers, "班上同學一直排擠我，下課都沒人理我")
         self.assertFalse(first["show_support_help"])                     # an everyday (not urgent) message
         self.assertEqual(first["school_referral"]["topics"], ["霸凌"])
         self.assertIn("1953", first["school_referral"]["notices"][0]["text"])
         self.assertIsNone(first["school_referral"]["school"])
+        # Sent again with every mention (the page shows each topic once): a first reply lost to a network error
+        # left the student without the card (2026-10-23 live test 「被同學霸凌」).
         again = self.chat(client, headers, "今天又被排擠了")
-        self.assertIsNone(again["school_referral"])                       # no repeat for the same topic
+        self.assertEqual(again["school_referral"]["topics"], ["霸凌"])
+        self.assertIsNone(self.chat(client, headers, "今天午餐吃咖哩")["school_referral"])
         self.assertTrue(again["school_referral_available"])               # the header button stays
         both = self.chat(client, headers, "還有學長在走廊摸我屁股")
         self.assertEqual(both["school_referral"]["topics"], ["霸凌", "性平事件"])
@@ -132,6 +137,31 @@ class RouteTests(RouteBase):
         client.post("/api/chat/reset", headers=headers, json={})
         self.assertFalse(client.get("/api/chat/state").json["school_referral_available"])
         self.assertEqual(self.chat(client, headers, "又被霸凌了")["school_referral"]["topics"], ["霸凌"])
+
+
+class BullyingIsNotASuicideQuestionTests(Base):
+    """2026-10-23 live test: 「被同學霸凌」 → the model labelled it a suicide signal → 「你最近有沒有不想活了」."""
+
+    def hint(self, kind, evidence):
+        return {"risk": {"signal": "ambiguous", "type": kind, "danger": "possible", "subject": "self",
+                         "affirmed": True, "evidence": evidence}}
+
+    def test_a_suicide_hint_quoting_only_the_bullying_is_ignored(self):
+        reply = "被同學霸凌真的很難受，這不是你的錯。願意說說發生了什麼事嗎？"
+        result, _, state = self.turn("被同學霸凌", {"return_value": single(reply, self.hint("suicide", "被同學霸凌"))})
+        self.assertFalse(state["safety_check_required"])
+        self.assertEqual(result["reply"], reply)
+
+    def test_death_words_next_to_the_bullying_still_count(self):
+        text = "被同學霸凌，我真的不想活了"
+        _, _, state = self.turn(text, {"return_value": single("我在。", self.hint("suicide", text))})
+        self.assertTrue(state["safety_check_required"])
+
+    def test_a_bullying_safety_check_asks_about_safety_not_dying(self):
+        _, _, state = self.turn("被同學霸凌", {"return_value": single("我在。", self.hint("abuse", "被同學霸凌"))})
+        text = safety_reply("被同學霸凌", {**state, "safety_action": "brief_safety_check"})
+        self.assertIn("現在安全嗎", text)
+        self.assertNotIn("不想活", text)
 
 
 if __name__ == "__main__":

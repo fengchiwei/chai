@@ -47,6 +47,10 @@ def safety_reply(message, state):
             # Never a question about dying for angry words about someone else.
             return ("聽得出來你真的氣到不行。想先確認一下：你是氣到這樣說說，還是真的有打算動手？"
                     "不管是哪一種，都可以先說說發生了什麼事。")
+        if state.get("risk_type") in ("abuse", "digital_sexual_violence"):
+            # Being hurt by others (bullying, abuse, leaked images): ask about safety now, not about dying.
+            return (f"這不是{who}的錯，願意說出來很不容易。想先確認一下：{who}現在安全嗎？這件事現在還在發生嗎？"
+                    "想說的話，可以慢慢說發生了什麼。")
         if state.get("pending_disambiguation") and state.get("risk_evidence") in message:
             # LIN-01: name the hyperbole as probably figurative, then check once, gently.
             return (f"「{quote(state['risk_evidence'], 20)}」聽起來比較像很誇張的形容，"

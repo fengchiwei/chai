@@ -107,8 +107,11 @@ window.AnlaSchoolReferral = (() => {
     return card;
   }
 
+  const shownTopics = new Set();  // each topic's card once per page; the header button reopens it
+
   function show(data) {
-    if (!data) return;
+    if (!data || !(data.topics || []).some(t => !shownTopics.has(t))) return;
+    data.topics.forEach(t => shownTopics.add(t));
     const chat = document.getElementById("chatMessages");
     chat.appendChild(render(data));
     chat.scrollTop = chat.scrollHeight;
@@ -121,7 +124,10 @@ window.AnlaSchoolReferral = (() => {
 
   async function open() {
     try {
-      show(await lookup());
+      const data = await lookup();
+      const chat = document.getElementById("chatMessages");
+      chat.appendChild(render(data));
+      chat.scrollTop = chat.scrollHeight;
     } catch (error) {
       alert(error.message);
     }

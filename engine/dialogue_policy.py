@@ -7,6 +7,7 @@ from copy import deepcopy
 import re
 from engine.dialogue_role import asks_identity, resolve_role
 from engine.knowledge import asks_information
+from engine.school_referral import detect_topics
 
 POLICY_VERSION = "satir-2026-10-19.2"
 WEIGHTS = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
@@ -134,6 +135,14 @@ FILLER = (r"怎麼辦|怎麼|該怎麼|要怎麼|有點|一直|最近|每天|晚
 # the student was asked about suicide). A model violence hint counts only with a plan, weapon, time or a lethal verb.
 VIOLENCE_PLAN = (r"刀|槍|武器|棍|球棒|鐵條|已經準備|準備好|計畫|打算|明天|今天|今晚|等一下|放學|下課後|堵他|堵她|約他出來"
                  r"|約她出來|帶.{0,4}(?:去|到)學校|殺|砍|捅|弄死|打死|同歸於盡")
+
+
+# 「被同學霸凌」 was labelled a suicide signal and the student was asked whether they wanted to die (2026-10-23 live
+# test). A model suicide / self-harm hint that quotes only a bullying or gender-equity event, with no word about
+# dying, hurting oneself or giving up, is ignored; the student gets the counseling-office card and is heard first.
+# New wording for ending one's life (「把人生關機」) is not an event, so it still counts.
+SELF_HARM_WORDS = (r"死|活|自殺|自傷|傷害自己|割|劃|跳|吞|藥|消失|結束|撐不下去|撐不住|醒來|遺書|解脫|離開|沒有我|不在了"
+                   r"|走了|沒意義|沒有意義|不如|算了|放棄|受不了|崩潰|痛苦|絕望|沒希望|沒救|拖累|負擔|再見|告別|最後")
 
 
 def everyday_distress_only(evidence):
@@ -475,6 +484,10 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
         observation = {}  # 「睡不著」「好累」 alone are not a risk signal, whatever the model labels them
     if observation.get("type") == "violence" and not re.search(VIOLENCE_PLAN, message):
         observation = {}  # angry words without a plan: listen to the anger instead of starting a safety check
+    evidence = observation.get("evidence", "")
+    if (observation.get("type") in ("suicide", "self_harm") and detect_topics(evidence)
+            and not re.search(SELF_HARM_WORDS, evidence)):
+        observation = {}  # being bullied or harassed is not, by itself, a wish to die
     if observation.get("affirmed") is True and not (pending and denied and not candidates):
         kind, signal, danger = observation.get("type"), observation.get("signal"), observation.get("danger")
         if kind in RISK_TYPES[1:] and signal in ("ambiguous", "indirect", "direct") and danger in ("none", "possible", "imminent"):

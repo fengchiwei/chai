@@ -507,7 +507,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.9.0"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.9.1"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -695,11 +695,12 @@ def process_chat_turn(message):
     if session.get("case_id"):
         flag_risk_after_consent(session["case_id"], level)
     alert = safety_alert(level)
-    # 性平／霸凌: point to the school counseling office at every risk level, once per new topic.
+    # 性平／霸凌: point to the school counseling office at every risk level. Sent with every message that names
+    # the topic (the page shows each topic's card once), so a reply lost to a network error is not the only chance.
     seen = session.get("school_referral_topics", [])
-    new_topics = [t for t in school_referral.detect_topics(message) if t not in seen]
-    if new_topics:
-        session["school_referral_topics"] = seen + new_topics
+    topics = school_referral.detect_topics(message)
+    if topics:
+        session["school_referral_topics"] = seen + [t for t in topics if t not in seen]
     return jsonify({
         "reply": reply["reply"],
         # Model names are backend-only; the student page only needs to know where the reply came from.
@@ -718,9 +719,9 @@ def process_chat_turn(message):
         "notification_connected": False,
         "safety_alert": alert,
         "next_steps": student_next_steps(context),
-        "school_referral": (school_referral.payload(seen + new_topics, context["profile"].get("student_school", ""))
-                            if new_topics else None),
-        "school_referral_available": bool(seen or new_topics),
+        "school_referral": (school_referral.payload(session["school_referral_topics"], context["profile"].get("student_school", ""))
+                            if topics else None),
+        "school_referral_available": bool(session.get("school_referral_topics")),
     })
 
 

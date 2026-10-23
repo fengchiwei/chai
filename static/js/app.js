@@ -338,8 +338,10 @@ async function sendMessage() {
     }
     window.AnlaNextSteps.update(data);
     if (replyBubble) window.AnlaNextSteps.suggestInReply(replyBubble, data.support_offer);
-    window.AnlaSchoolReferral.setAvailable(data.school_referral_available);
-    window.AnlaSchoolReferral.show(data.school_referral);
+    try {  // the counseling-office card must never turn a delivered reply into a send error
+      window.AnlaSchoolReferral.setAvailable(data.school_referral_available);
+      window.AnlaSchoolReferral.show(data.school_referral);
+    } catch (_) { /* the header button still reopens it */ }
   } catch (err) {
     removeTypingIndicator(typingId);
     const offlineHint = navigator.onLine === false ? "目前沒有網路，可以先點上方提示打開離線呼吸練習與求助電話。" : "";
