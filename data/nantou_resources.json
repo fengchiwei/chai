@@ -6,7 +6,7 @@
     "category": "主管機關 / 心衛主管",
     "address": "南投縣南投市復興路6號",
     "phone": "049-2222473",
-    "service_hours": "週一至週五 08:00 - 17:30",
+    "service_hours": "週一至週五 08:00–12:00、13:30–17:30",
     "services": [
       "心理衛生政策推動",
       "心理諮商服務轉介",
@@ -14,8 +14,10 @@
       "安心專線宣導"
     ],
     "is_free": true,
-    "has_online_counseling": true,
-    "target": "全南投縣民、青少年與家長"
+    "has_online_counseling": null,
+    "target": "全南投縣民、青少年與家長",
+    "source_url": "https://www.ntshb.gov.tw/content_type/Details?Parser=15,4,37,,,,361",
+    "phone_checked_at": "2026-10-23"
   },
   {
     "id": "cmhc_nantou",
@@ -132,7 +134,7 @@
     "name": "南投縣學生輔導諮商中心 (學生輔諮中心)",
     "township": "南投市",
     "category": "校園輔導主管機構",
-    "address": "南投縣南投市育樂路62號 (南投國中內)",
+    "address": "南投縣南投市祖祠路361號",
     "phone": "049-2222549#317",
     "service_hours": "週一至週五 08:00 - 17:00",
     "services": [
@@ -144,8 +146,9 @@
     "is_free": true,
     "has_online_counseling": false,
     "target": "南投縣各國中、高中職學生及輔導室",
-    "source_url": "https://gcc.ntct.edu.tw/cs_nantou/index2.aspx?flag=ContactUs",
-    "phone_checked_at": "2026-10-09"
+    "source_url": "https://r11.ntct.edu.tw/var/file/11/1011/img/4-1-1.pdf",
+    "phone_checked_at": "2026-10-23",
+    "note": "原網站 gcc.ntct.edu.tw 已無法連線；地址與電話依南投縣學校輔導資源文件（2026-10-23 核對）"
   },
   {
     "id": "ph_nantou",
@@ -636,24 +639,25 @@
   },
   {
     "id": "hosp_zhushan_show",
-    "name": "竹山秀傳醫院 身心內科",
+    "name": "竹山秀傳醫院",
     "township": "竹山鎮",
-    "category": "區域醫院身心科",
-    "address": "南投縣竹山鎮集祥里集祥街75號",
+    "category": "地區醫院（24 小時急診）",
+    "address": "南投縣竹山鎮集山路二段75號",
     "phone": "049-2624266",
     "service_hours": "門診時段 / 急診 24 小時",
     "services": [
-      "南投西南區身心科門診",
-      "情緒與睡眠困擾評估",
-      "緊急危機通報處置"
+      "24 小時急診",
+      "一般門診（身心相關門診請先電話詢問）"
     ],
     "is_free": false,
     "has_online_counseling": false,
-    "target": "竹山、鹿谷、名間地區學生與居民"
+    "target": "竹山、鹿谷、名間地區學生與居民",
+    "source_url": "https://mohw.gov.tw/dl-52279-4516a9e4-ae23-4581-94fc-7d1f57127b1e.html",
+    "phone_checked_at": "2026-10-23"
   },
   {
     "id": "crisis_1925",
-    "name": "衛福部 1925 安心專線 (自殺防治守門員)",
+    "name": "衛福部 1925 安心專線（依舊愛我）",
     "township": "全國通用",
     "category": "24小時免費緊急求助專線",
     "address": "免付費直撥 1925 (依舊愛我)",
@@ -672,10 +676,10 @@
   },
   {
     "id": "crisis_1995",
-    "name": "生命線協談專線 (南投縣生命線協會)",
+    "name": "生命線協談專線 1995（南投縣生命線協會）",
     "township": "南投市 / 全國",
     "category": "24小時生命線協談專線",
-    "address": "直撥市話或手機 1995 (南投電話: 049-2231995)",
+    "address": "直撥 1995；南投縣生命線協會服務電話 049-2239595（南投市三和二路一街14號）",
     "phone": "1995",
     "service_hours": "全年無休 24 小時服務",
     "services": [
@@ -683,27 +687,33 @@
       "生命危機緊急救援協調",
       "家庭與人際關係調解諮詢"
     ],
-    "is_free": true,
+    "is_free": null,
     "has_online_counseling": false,
-    "target": "有自殺意念、絕望無助或需連繫夜間志工協談者"
+    "target": "有自殺意念、絕望無助或需連繫夜間志工協談者",
+    "source_url": "https://www.life1995.org.tw/?aid=2",
+    "phone_checked_at": "2026-10-23",
+    "note": "撥打費用依電信業者計費"
   },
   {
     "id": "crisis_1980",
-    "name": "張老師輔導專線 (南投張老師中心)",
+    "name": "張老師專線 1980（張老師基金會）",
     "township": "南投市 / 全國",
-    "category": "青少年專屬心理輔導專線",
+    "category": "心理輔導協談專線",
     "address": "直撥市話或手機 1980 (依舊幫您)",
     "phone": "1980",
-    "service_hours": "週一至週六 09:00 - 21:00，週日 09:00 - 17:00",
+    "service_hours": "週一至週六 09:00–12:00、14:00–17:00、18:00–21:30；週日 09:00–12:00、14:00–17:00（各地依人力調整）",
     "services": [
       "青少年同儕困擾協談",
       "課業壓力與生涯輔導",
       "感情人際議題專線引導",
       "面談諮商預約"
     ],
-    "is_free": true,
+    "is_free": null,
     "has_online_counseling": false,
-    "target": "國中、高中職學生、大專青年與家長"
+    "target": "青少年、家長與一般民眾",
+    "source_url": "https://www.1980.org.tw/service_item_show.php?service_item_id=1",
+    "phone_checked_at": "2026-10-23",
+    "note": "張老師基金會在南投沒有據點，由中部（台中、彰化）中心服務；撥打費用依電信業者計費"
   },
   {
     "id": "crisis_110_119",
@@ -809,7 +819,7 @@
     "township": "南投市",
     "category": "心理及聯合治療所",
     "address": "南投市文化南路106號2樓",
-    "phone": "0931868809",
+    "phone": "0958372049",
     "service_hours": null,
     "services": [],
     "is_free": null,
@@ -828,7 +838,9 @@
       "心理諮商機構名稱": "生命樹職能心理聯合治療所",
       "連絡電話": "0931868809",
       "地址": "南投市文化南路106號2樓"
-    }
+    },
+    "phone_source_url": "https://www.ntshb.gov.tw/form/Details?Parser=2,7,158,57,85,,2401",
+    "phone_checked_at": "2026-10-23"
   },
   {
     "id": "therapy_weisheng",

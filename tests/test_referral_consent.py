@@ -8,6 +8,7 @@ from unittest.mock import patch
 from app import app, TOWNSHIPS, referral_resources
 from config import Config
 from models import database
+from tests.helpers import consented_cases
 
 
 class ReferralConsentTests(unittest.TestCase):
@@ -65,7 +66,7 @@ class ReferralConsentTests(unittest.TestCase):
         self.assertNotIn("referral_form", result)
         forged = self.consent(consent_kind="referral")
         self.assertEqual(forged.status_code, 409)
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
         self.assertNotIn("risk_level", json.dumps(result))
 
     def test_green_assessment_does_not_save_a_completed_case(self):
@@ -74,7 +75,7 @@ class ReferralConsentTests(unittest.TestCase):
             "bsrs5": dict.fromkeys(("sleep", "anxiety", "anger", "depression", "inferiority", "suicide"), 0),
         })
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
 
     def test_yellow_note_does_not_share_until_explicit_consent(self):
         self.yellow()
@@ -86,9 +87,9 @@ class ReferralConsentTests(unittest.TestCase):
         self.assertIn("睡不好", note.json["draft"])
         self.assertNotIn("尚未提及", note.json["draft"])
         self.assertNotIn("偽造內容", note.json["draft"])
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
         self.assertEqual(self.consent(consent=False).status_code, 200)
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
         response = self.consent()
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("referral_form", response.json)
@@ -100,10 +101,10 @@ class ReferralConsentTests(unittest.TestCase):
         result = self.chat("最近壓力大到想傷害自己，但還沒有計畫")
         self.assertEqual(result["next_steps"]["consent_kind"], "referral")
         self.assertFalse(result["show_urgent_help"])
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
         declined = self.consent(consent=False)
         self.assertNotIn("referral_form", declined.json)
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
         accepted = self.consent(preferred_name="阿安")
         self.assertEqual(accepted.status_code, 200)
         self.assertIn("阿安", accepted.json["referral_form"])
@@ -133,7 +134,7 @@ class ReferralConsentTests(unittest.TestCase):
     def test_red_keeps_phones_after_decline_consent_and_refresh(self):
         result = self.chat("我已經把工具準備好，今晚等家人睡著就行動")
         self.assertTrue(result["show_urgent_help"])
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
         self.consent(consent=False)
         self.consent()
         self.assertTrue(self.client.get("/api/chat/state").json["show_urgent_help"])
@@ -151,7 +152,7 @@ class ReferralConsentTests(unittest.TestCase):
         response = self.client.post("/api/referral/consent", headers=self.headers, json=old)
         self.assertEqual(response.status_code, 409)
         self.assertTrue(response.json["show_urgent_help"])
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
 
     def test_csrf_strict_boolean_and_session_identity(self):
         self.yellow()
@@ -167,7 +168,7 @@ class ReferralConsentTests(unittest.TestCase):
         with other.session_transaction() as sess:
             headers = {"X-CSRF-Token": sess["csrf_token"]}
         self.assertEqual(other.post("/api/referral/consent", headers=headers, json=self.consent_body()).status_code, 403)
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
 
     def test_all_townships_have_one_local_center_student_center_and_1925(self):
         for township in TOWNSHIPS:

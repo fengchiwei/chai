@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 from app import NANTOU_RESOURCES, TOWNSHIPS, app, referral_resources
 from models import database
+from tests.helpers import consented_cases
 
 
 class OpenDataResourcesTests(unittest.TestCase):
@@ -87,7 +88,7 @@ class OpenDataResourcesTests(unittest.TestCase):
                 response = self.client.get('/resources')
                 self.assertEqual(response.status_code, 200)
                 self.assertIn(b'const initialTownship = "\\u4ec1\\u611b\\u9109";', response.data)
-                self.assertEqual(database.get_all_cases(), [])
+                self.assertEqual(consented_cases(), [])
 
 
 if __name__ == '__main__':

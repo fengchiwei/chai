@@ -98,7 +98,7 @@ function renderModels(data) {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
-  loadModels();
+  if ($("modelPanel")) loadModels();  // administrators only
   $("refreshModels")?.addEventListener("click", () => loadModels(true));
   loadCases();
   $("casesTableBody").addEventListener("click", event => {
@@ -138,12 +138,13 @@ function renderCasesTable(cases) {
     return;
   }
   const levels = {red: "🚨 紅色", orange: "⚠️ 橙色", yellow: "📋 黃色", green: "🌱 綠色"};
-  const statuses = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
+  const statuses = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", auto_safety_alert: "系統安全通報，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
   $("casesTableBody").innerHTML = cases.map(c => {
     const done = hasCompleteBsrs(c.bsrs5);
     const bsrs = done ? `${bsrsScore(c.bsrs5)} / 20；附加題 ${c.bsrs5.suicide} 分` : "未施測";
     const consent = c.summary?.student_consent;
-    const consentLabel = consent?.kind === "referral" ? "學生同意轉介" : consent?.kind === "summary" ? "學生同意分享摘要" : "";
+    const consentLabel = consent?.kind === "referral" ? "學生同意轉介" : consent?.kind === "summary" ? "學生同意分享摘要"
+      : c.summary?.auto_alert ? "未經同意的必要安全資訊" : "";
     const raised = c.summary?.raised_after_consent;
     return `<tr>
       <td>${escapeHtml(c.case_id)}</td><td>${escapeHtml(c.student_alias)}</td>
@@ -185,6 +186,7 @@ const SOURCE_LABELS = {ai: "AI 回覆", safety: "固定安全文字", rules: "�
 function renderTranscript(c, E) {
   const transcript = (c.summary || {}).transcript;
   if (!Array.isArray(transcript)) {
+    if ((c.summary || {}).auto_alert) return '<p class="explain-meta">學生尚未同意分享完整對話；這裡只有上方引發警訊的原話。</p>';
     return '<p class="explain-meta">這個個案建立於「完整對話紀錄」功能之前，只有上方的原話節錄。</p>';
   }
   if (!transcript.length) return '<p class="explain-meta">沒有對話紀錄。</p>';
@@ -260,7 +262,7 @@ function renderOnePageSummary(c) {
   const rule = c.triage?.rule_details || {};
   const done = hasCompleteBsrs(c.bsrs5);
   const E = escapeHtml;
-  const statusLabels = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
+  const statusLabels = {pending: "待覆核", student_requested_referral: "學生提出轉介，待覆核", student_shared_summary: "學生分享摘要，待覆核", auto_safety_alert: "系統安全通報，待覆核", reviewing: "審查中", contacted: "已聯絡", referred: "已轉介", completed: "已結案"};
   const consent = sum.student_consent;
   const fields = done ? ["sleep", "anxiety", "anger", "depression", "inferiority", "suicide"]
     .map((key, i) => `<span>${["睡眠", "緊張", "易怒", "低落", "自我價值", "自殺想法"][i]}：${c.bsrs5[key]}</span>`).join("　") : "未施測（自然對話不等於正式 BSRS-5）";
@@ -274,6 +276,11 @@ function renderOnePageSummary(c) {
       ${raised ? `<p class="risk-raised-banner" style="background:#fee2e2;color:#991b1b;padding:.6rem .8rem;border-radius:8px">
         ⚠ 學生同意分享後，對話燈號在 ${E(raised.at)} 升至<b>${E(LEVEL_NAMES[raised.level] || raised.level)}</b>。新的內容沒有分享給工作臺；
         請依校內流程主動關心，或請學生再次同意分享。</p>` : ""}
+      ${sum.auto_alert && !consent ? `<p class="auto-alert-banner" style="background:#fff7ed;color:#9a3412;padding:.6rem .8rem;border-radius:8px">
+        🛟 系統安全通報：對話燈號在 ${E(localTime(sum.auto_alert.at))} 達<b>${E(LEVEL_NAMES[sum.auto_alert.level] || sum.auto_alert.level)}</b>，
+        依計畫書自動送出必要安全資訊（${E((sum.auto_alert.fields || []).join("、"))}）。學生已在畫面上被告知；
+        尚未同意分享暱稱、學校、聯絡方式與完整對話，所以目前無法主動聯絡，請留意學生是否再同意分享。</p>` : ""}
+      ${sum.auto_alert && consent ? `<p class="explain-meta">此個案先由系統安全通報建立（${E(localTime(sum.auto_alert.at))}），之後學生同意分享。</p>` : ""}
       <h2>真人覆核摘要：${E(c.case_id)}</h2>
       <p><b>暫定風險：</b>${E((({red:"紅色",orange:"橙色",yellow:"黃色",green:"綠色"})[c.risk_level] || "待確認"))}；
       <b>處理狀態：</b>${E(statusLabels[c.status] || "待覆核")}</p>
@@ -287,7 +294,8 @@ function renderOnePageSummary(c) {
       ${renderTranscript(c, E)}
       <p><b>持續時間：</b>${E(c.duration || "尚未確認")}　<b>生活影響：</b>${E(c.life_impact || "尚未確認")}</p>
       <p><b>支持系統：</b>${E(c.support_system || "尚未確認")}</p>
-      <p><b>BSRS-5：</b>${done ? E(bsrsScore(c.bsrs5)) + " / 20；" : ""}${fields}</p>
+      <p><b>BSRS-5：</b>${done ? E(bsrsScore(c.bsrs5)) + " / 20；" : ""}${fields}${sum.checkin_seconds
+        ? `<br><span class="explain-meta">學生自填檢核用時 ${E(Math.floor(sum.checkin_seconds / 60))} 分 ${E(sum.checkin_seconds % 60)} 秒</span>` : ""}</p>
       <p><b>風險訊號：</b>${E((sum.self_harm_signals || []).join("；") || "沒有足夠資料；仍需真人了解")}</p>
       ${renderExplainable(c, E)}
       <p><b>即時安全：</b>${E(sum.current_safety || "尚未確認")}</p>

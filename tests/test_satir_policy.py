@@ -14,6 +14,7 @@ from engine.dialogue_reply import local_reply, response_violations
 from engine.referral import get_student_context, save_dialogue_state
 from engine.triage import perform_triage
 from models import database
+from tests.helpers import consented_cases
 
 
 def turn(message, previous=None, hints=None):
@@ -272,7 +273,7 @@ class ServerMemoryScenarios(unittest.TestCase):
         self.assertFalse(second['show_support_help'])
         self.assertNotIn('？', second['reply'])
         self.assertIsNone(second['support_offer'])
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
 
     def test_no_automatic_offer_on_boundary_high_emotion_or_unknown(self):
         for message in ('我告白被打槍', '我很難過', '我很生氣', '不要問了', '不知道', '不知道', '我哭到停不下來'):

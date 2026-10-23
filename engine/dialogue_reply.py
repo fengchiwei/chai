@@ -16,8 +16,8 @@ THOUGHTS_QUESTION = "我想直接問你：你有想過結束自己的生命嗎�
 MEANS_QUESTION = "現在有已經準備好的工具或打算行動的時間嗎？"
 COMPANY_QUESTION = "現在有人能到你身邊陪你嗎？"
 # Answer to 「你會通報學校嗎」; honest about what consent to share means.
-PRIVACY_LIMIT = ("這個網站不會自動通知學校或任何人；如果你同意分享摘要和對話紀錄，輔導老師為了你的安全，"
-                 "可能需要和其他大人合作，這部分我沒辦法保證不讓人知道。")
+PRIVACY_LIMIT = ("這個網站不會自動通知學校或家人；如果你說的內容可能有安全危險，系統會把必要的安全資訊（不含你的暱稱和聯絡方式）送到真人工作臺，讓受過訓練的人優先查看。如果你同意分享摘要和對話紀錄，"
+                 "輔導老師為了你的安全，可能需要和其他大人合作，這部分我沒辦法保證不讓人知道。")
 SECRECY_ASKED = r"不要(?:告訴|跟.{0,6}(?:說|講))|保密|別說出去|不准說|怕他知道|不能讓.{0,6}知道"
 
 
@@ -293,7 +293,8 @@ def _local_reply(message, state):
         if re.search(r"刪|關掉|錄|記錄|紀錄|保存|存", message):
             specific += "對話會暫存在這個網站，最後一次使用後 24 小時自動失效；目前沒有手動刪除的按鈕。"
         return (specific + "你在意誰會知道這些話，這點需要先說清楚。這個網站會暫存對話與整理，雲端 AI 啟用時也會收到對話文字；"
-                "只有你同意分享時，摘要和這次的對話紀錄才會進工作臺，目前沒有自動通知學校。我不能保證絕對保密，有立即危險時仍需要真人協助。")
+                "一般情況下，要你同意分享，摘要和這次的對話紀錄才會進工作臺；如果你說的內容可能有安全危險，系統會把必要的安全資訊（不含你的暱稱和聯絡方式）送到真人工作臺，讓受過訓練的人優先查看。"
+                "目前沒有自動通知學校。我不能保證絕對保密，有立即危險時仍需要真人協助。")
     if state["safety_denied"]:
         # The review level stays for a human; the student gets the conversation back, with the door left open.
         door = "之後如果哪天真的冒出這種念頭，隨時可以跟我說，1925 二十四小時都有人接。"
@@ -398,6 +399,10 @@ TOPIC_PATTERN = (r"告白被打槍|告白被拒絕|告白|段考|期中考|期�
 INVENTED_DISTRESS = r"壓力|緊繃|喘息|不好受|難受|委屈|沉重|焦慮|不容易|辛苦|煩惱|擔心|累積|撐|逃離|放鬆一下|承接|內在|負荷|課題"
 EMBEDDED_QUESTION = (r"(?:不知道|不曉得|想知道|不確定|再來看|來看看|看看要|決定|想想|討論|規劃)[^。！？!?\n]{0,6}"
                      r"(?:怎麼|如何|什麼|哪[個一裡種]|是不是|有沒有|是否)")
+# Proposal ethics 2: no medication or medical-treatment advice (what to take, how much, when to stop).
+MEDICAL_ADVICE = (r"(?:建議|可以|試試|不妨|記得|最好|先)(?:你)?.{0,6}(?:吃|服用|吞|加量|減量|停掉|停用|戒掉).{0,8}"
+                  r"(?:藥|安眠藥|褪黑激素|抗憂鬱|鎮定劑|止痛藥|保健食品)|\d+\s*(?:毫克|mg|顆|粒|錠)"
+                  r"|(?:自己)?(?:停藥|減藥|加藥)(?:看看|試試|也可以|沒關係)")
 OVERPSYCHOLOGIZING = r"喘息空間|緊繃感|內在負荷|承接(?:情緒|你的情緒)|生命課題|內在小孩|療癒自己"
 
 
@@ -470,6 +475,8 @@ def response_violations(reply, state, message="", offer=None):
             issues.append("invented_distress")
     if re.search(r"(?:已經|已|會幫你).{0,5}(?:通知|通報|聯絡)|絕對保密|保證.*(?:保密|沒事)|只有你和我.*(?:知道|看到)", body):
         issues.append("boundary")
+    if re.search(MEDICAL_ADVICE, body):
+        issues.append("medical_advice")
     if "give_advice" in state["forbidden_actions"] and re.search(r"建議你|你應該|你要先|試著|不如你|你可以(?:先|去|把|找|做|試)|先(?:做|寫|去找|深呼吸|喝水)", body):
         issues.append("premature_advice")
     # If the student has asked for practical help and policy permits it, a pure empathy

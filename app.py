@@ -37,12 +37,15 @@ from engine.explain import VERSION as EXPLAIN_VERSION, explain, load_scenarios
 from engine.wellbeing_signals import update_wellbeing_signals
 from engine.triage import RISK_LEVEL_WEIGHTS, perform_triage
 from engine.support import choose_support_offer
+from engine.bsrs5 import ITEMS as BSRS_ITEMS
 from engine.referral import (
-    consent_kind, get_student_context, record_student_consent,
+    STUDENT_ALERT_NOTICE, auto_safety_handoff, consent_kind, get_student_context, record_student_consent,
     set_student_profile, stage_student_summary,
     save_dialogue_state,
 )
 from models.database import (
+    STATUS_LABELS, STAFF_ROLES, authenticate_staff, count_active_admins, create_staff_user, list_staff_users, recent_audit_logs,
+    update_staff_user, verify_audit_chain,
     get_all_cases,
     flag_risk_after_consent,
     get_case_by_id,
@@ -186,6 +189,22 @@ def staff_only(view):
     return wrapper
 
 
+def admin_only(view):
+    """Accounts, the AI model panel and the audit log are for administrators; counsellors work on cases."""
+    @wraps(view)
+    @staff_only
+    def wrapper(*args, **kwargs):
+        # A session from before personal accounts signed in with the shared password, i.e. as the admin.
+        if session.get("staff_role", "admin") != "admin":
+            return jsonify({"error": "這個功能只有管理員可以使用"}), 403
+        return view(*args, **kwargs)
+    return wrapper
+
+
+BUILTIN_ADMIN = "admin"  # WORKBENCH_PASSWORD signs in as this built-in administrator (first login, recovery)
+USERNAME_PATTERN = r"[A-Za-z0-9_.-]{3,30}"
+
+
 def student_identity():
     # 身分只沿用伺服器 session；信箱是選填資料，不是登入憑證。
     if current_student_context() is None:
@@ -303,7 +322,7 @@ def resources():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if not Config.WORKBENCH_PASSWORD:
+    if not Config.WORKBENCH_PASSWORD and not list_staff_users():
         return render_template("login.html", disabled=True, csrf_token=csrf_token()), 503
     if request.method == "POST":
         error = require_csrf()
@@ -315,15 +334,27 @@ def login():
             return render_template("login.html", disabled=False, csrf_token=csrf_token(),
                                    error="嘗試次數過多，請 10 分鐘後再試"), 429
         password = request.form.get("password", "")
-        if hmac.compare_digest(password, Config.WORKBENCH_PASSWORD):
+        username = request.form.get("username", "").strip() or BUILTIN_ADMIN
+        account = None
+        if username == BUILTIN_ADMIN and Config.WORKBENCH_PASSWORD:
+            if hmac.compare_digest(password, Config.WORKBENCH_PASSWORD):
+                # The shared built-in administrator: ask who is working so the audit log says who did what.
+                name = re.sub(r"[\x00-\x1f<>]", "", request.form.get("staff_name", "")).strip()[:20]
+                account = {"username": BUILTIN_ADMIN, "display_name": name or "管理員", "role": "admin"}
+        elif re.fullmatch(USERNAME_PATTERN, username):
+            account = authenticate_staff(username, password)
+            if account:
+                update_staff_user(username, last_login=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        if account:
             limiter.forget_last(login_key)
             # 同一瀏覽器的學生頁可能仍在對話；保留當前對話的安全警訊與 CSRF。
             session["staff"] = True
-            # One shared password, so ask who is working: the audit log then says who did what.
-            name = re.sub(r"[\x00-\x1f<>]", "", request.form.get("staff_name", "")).strip()[:20]
-            session["staff_name"] = name
+            session["staff_user"] = account["username"]
+            session["staff_role"] = account["role"]
+            session["staff_name"] = account["display_name"]
+            log_audit(staff_actor(), "staff_login", "", f"角色：{STAFF_ROLES[account['role']]}")
             return redirect(url_for("counselor"))
-        return render_template("login.html", disabled=False, error="密碼錯誤", csrf_token=csrf_token()), 401
+        return render_template("login.html", disabled=False, error="帳號或密碼錯誤", csrf_token=csrf_token()), 401
     return render_template("login.html", disabled=False, csrf_token=csrf_token())
 
 
@@ -333,14 +364,17 @@ def logout():
     error = require_csrf()
     if error:
         return error
-    session.pop("staff", None)
+    for key in ("staff", "staff_user", "staff_role", "staff_name"):
+        session.pop(key, None)
     return redirect(url_for("login"))
 
 
 @app.route("/counselor")
 @staff_only
 def counselor():
-    return render_template("counselor.html", csrf_token=csrf_token())
+    return render_template("counselor.html", csrf_token=csrf_token(), staff_role=session.get("staff_role", "admin"),
+                           staff_name=session.get("staff_name", ""), staff_user=session.get("staff_user", BUILTIN_ADMIN),
+                           role_label=STAFF_ROLES.get(session.get("staff_role", "admin"), ""))
 
 
 @app.route("/demo")
@@ -600,6 +634,7 @@ def process_chat_turn(message):
     session["safety_pending"] = bool(dialogue_state.get("safety_check_required"))
     if session.get("case_id"):
         flag_risk_after_consent(session["case_id"], level)
+    alert = safety_alert(level)
     return jsonify({
         "reply": reply["reply"],
         # Model names are backend-only; the student page only needs to know where the reply came from.
@@ -614,8 +649,34 @@ def process_chat_turn(message):
         "show_urgent_help": level == "red",
         "show_support_help": level in ("orange", "red"),
         "notification_connected": False,
+        "safety_alert": alert,
         "next_steps": student_next_steps(context),
     })
+
+
+def safety_alert(level):
+    """Orange/red: send the necessary safety information to the workbench (no identity, contact or full
+    conversation) and tell the student exactly what was sent. None when nothing new was sent."""
+    if level not in ("orange", "red"):
+        return None
+    sent = auto_safety_handoff(session["student_context_id"], session["student_email_hash"])
+    return STUDENT_ALERT_NOTICE if sent else None
+
+
+def assessment_feedback(triage, level):
+    """What the student sees after the self-check: plain words and a next step, never a light, score band or
+    label (the student page shows no triage colours; scores are for trained staff)."""
+    bsrs = triage["bsrs_details"]
+    lines = {
+        "green": "謝謝你花時間填完。從你的回答看，最近的困擾還在你撐得住的範圍；如果哪天變重了，隨時回來聊，或找信任的大人說說。",
+        "yellow": "謝謝你願意填完。看起來最近有些事情讓你不太好受，而且已經影響到生活。可以考慮找輔導老師或信任的大人聊聊，我也可以幫你寫一張字條。",
+        "orange": "謝謝你老實回答。你最近承受的比想像中多，這不是你一個人要扛的事。想請你讓受過訓練的人一起幫忙；下方有現在就能撥的電話。",
+        "red": "謝謝你告訴我。你現在的安全最重要：如果有立即危險，請馬上撥 119；想找人談可以打 1925，二十四小時都有人接。",
+    }
+    text = lines[level]
+    if (bsrs.get("suicide_score") or 0) >= 1 and level != "red":
+        text += "你在最後一題有勾選，想直接問你：你現在安全嗎？想說的話可以在對話框跟我說；需要時也可以直接打 1925。"
+    return {"text": text, "ask_safety": (bsrs.get("suicide_score") or 0) >= 1}
 
 
 @app.route("/api/assessment", methods=["POST"])
@@ -651,14 +712,23 @@ def api_assessment():
             "duration": str(data.get("duration", "尚未提及"))[:100],
             "life_impact": str(data.get("life_impact", "尚未提及"))[:300],
             "support_system": str(data.get("support_system", "尚未提及"))[:300],
-            "bsrs5": data["bsrs5"],
+            "bsrs5": {key: int(data["bsrs5"][key]) for key in BSRS_ITEMS},
+            # How long the self-check took (proposal goal: under 3 minutes); shown to staff only.
+            **({"checkin_seconds": data["elapsed_seconds"]} if type(data.get("elapsed_seconds")) is int
+               and 0 < data["elapsed_seconds"] < 3600 else {}),
         },
         message=str(data.get("dialogue_snippet", ""))[:1200] or None,
     )
     level = context["draft"]["risk_level"]
     session["highest_risk"] = level
+    if session.get("case_id"):
+        flag_risk_after_consent(session["case_id"], level)
+    alert = safety_alert(level)
     return jsonify({
-        "message": "已完成自填檢核；你同意分享後，摘要才會進入真人工作臺。",
+        "message": ("已完成自填檢核。" + (STUDENT_ALERT_NOTICE if alert else
+                    "結果只存在這次的暫存；你同意分享後，摘要才會進入真人工作臺。")),
+        "safety_alert": alert,
+        "result": assessment_feedback(triage, level),
         "help_draft": generate_help_seeking_draft(context["draft"]),
         "show_urgent_help": level == "red", "notification_connected": False,
         "next_steps": student_next_steps(context),
@@ -720,7 +790,7 @@ def api_referral_consent():
 
 
 @app.route("/api/config/llm", methods=["GET", "POST"])
-@staff_only
+@admin_only
 def api_config_llm():
     """Staff-only model panel: which models the key can use, their ranking, health and the active one.
     POST {"action": "refresh"} re-reads the provider's model list (metadata only, no tokens);
@@ -810,8 +880,93 @@ def api_update_case_status(case_id):
 
 
 def staff_actor():
-    name = session.get("staff_name")
-    return f"{name}（共用帳號）" if name else "已登入工作臺人員"
+    user = session.get("staff_user") or BUILTIN_ADMIN
+    name = session.get("staff_name") or "未填名字"
+    return f"{name}（內建管理員帳號）" if user == BUILTIN_ADMIN else f"{name}（{user}）"
+
+
+@app.route("/api/staff/users", methods=["GET", "POST"])
+@admin_only
+def api_staff_users():
+    """GET lists accounts (never passwords). POST creates one: username, display_name, role, password."""
+    if request.method == "GET":
+        return jsonify({"users": list_staff_users(), "roles": STAFF_ROLES,
+                        "builtin_admin": bool(Config.WORKBENCH_PASSWORD)})
+    error = require_csrf()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    username = str(data.get("username", "")).strip()
+    name = re.sub(r"[\x00-\x1f<>]", "", str(data.get("display_name", ""))).strip()[:20]
+    password = data.get("password", "")
+    if not re.fullmatch(USERNAME_PATTERN, username) or username == BUILTIN_ADMIN:
+        return jsonify({"error": "帳號需為 3–30 個英數字、底線、點或連字號，且不能是 admin"}), 400
+    if not name or not isinstance(password, str) or len(password) < 10:
+        return jsonify({"error": "請填名字，密碼至少 10 個字元"}), 400
+    try:
+        create_staff_user(username, name, data.get("role"), password)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    log_audit(staff_actor(), "staff_user_created", "", f"新增帳號 {username}（{STAFF_ROLES[data['role']]}）")
+    return jsonify({"users": list_staff_users()})
+
+
+@app.route("/api/staff/users/<username>", methods=["POST"])
+@admin_only
+def api_staff_user_update(username):
+    """Change an account's role, switch it on or off, or set a new password."""
+    error = require_csrf()
+    if error:
+        return error
+    data = request.get_json(silent=True) or {}
+    changes = {key: data[key] for key in ("role", "active", "password") if key in data}
+    if "password" in changes and (not isinstance(changes["password"], str) or len(changes["password"]) < 10):
+        return jsonify({"error": "密碼至少 10 個字元"}), 400
+    if "active" in changes and type(changes["active"]) is not bool:
+        return jsonify({"error": "資料格式不正確"}), 400
+    removes_admin = changes.get("role", "admin") != "admin" or changes.get("active") is False
+    if removes_admin and not Config.WORKBENCH_PASSWORD and count_active_admins() <= 1 and any(
+            u["username"] == username and u["role"] == "admin" and u["active"] for u in list_staff_users()):
+        return jsonify({"error": "至少要保留一個可以登入的管理員"}), 400
+    try:
+        found = update_staff_user(username, **changes)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    if not found:
+        return jsonify({"error": "找不到這個帳號"}), 404
+    done = "、".join(label for key, label in (("role", "改角色"), ("active", "啟用／停用"), ("password", "重設密碼"))
+                    if key in changes)
+    log_audit(staff_actor(), "staff_user_updated", "", f"帳號 {username}：{done}")
+    return jsonify({"users": list_staff_users()})
+
+
+@app.route("/api/staff/me/password", methods=["POST"])
+@staff_only
+def api_staff_change_password():
+    """Personal accounts change their own password; the built-in admin's is WORKBENCH_PASSWORD."""
+    error = require_csrf()
+    if error:
+        return error
+    user = session.get("staff_user") or BUILTIN_ADMIN
+    if user == BUILTIN_ADMIN:
+        return jsonify({"error": "內建管理員的密碼是 WORKBENCH_PASSWORD，請在主機設定修改"}), 400
+    data = request.get_json(silent=True) or {}
+    new = data.get("new_password", "")
+    if not authenticate_staff(user, str(data.get("current_password", ""))):
+        return jsonify({"error": "目前的密碼不正確"}), 400
+    if not isinstance(new, str) or len(new) < 10:
+        return jsonify({"error": "新密碼至少 10 個字元"}), 400
+    update_staff_user(user, password=new)
+    log_audit(staff_actor(), "staff_password_changed", "", "本人修改密碼")
+    return jsonify({"ok": True})
+
+
+@app.route("/api/audit")
+@admin_only
+def api_audit():
+    """The latest operation records and whether the hash chain is intact (administrators only)."""
+    ok, bad_id = verify_audit_chain()
+    return jsonify({"logs": recent_audit_logs(100), "chain_ok": ok, "first_bad_id": bad_id})
 
 
 @app.route("/api/cases/<case_id>/printed", methods=["POST"])
@@ -836,11 +991,40 @@ def api_stats():
         "total": len(cases),
         # Level counts are open cases only: a closed red case is no longer waiting for anyone.
         **{level: sum(c["risk_level"] == level for c in open_cases) for level in RISK_LEVEL_WEIGHTS},
-        "pending": sum(c["status"] in ("pending", "student_requested_referral", "student_shared_summary") for c in cases),
+        "pending": sum(c["status"] in ("pending", "student_requested_referral", "student_shared_summary", "auto_safety_alert")
+                       for c in cases),
         "in_progress": sum(c["status"] in ("reviewing", "contacted") for c in cases),
         "completed": sum(c["status"] in ("referred", "completed") for c in cases),
         "townships_covered": len({c["township"] for c in cases}),
     })
+
+
+SMALL_CELL = 3  # counts below this are not shown exactly, so a small school cannot work out who a case is
+
+
+@app.route("/api/stats/breakdown")
+@staff_only
+def api_stats_breakdown():
+    """De-identified statistics (proposal: 去識別化統計): counts only, no case ids, names or words."""
+    from collections import Counter
+    from engine.ai_agent import RISK_TYPE_LABELS
+    cases = get_all_cases()
+    levels = {"red": "紅色", "orange": "橙色", "yellow": "黃色", "green": "綠色"}
+    counters = {
+        "燈號": Counter(levels.get(c["risk_level"], c["risk_level"]) for c in cases),
+        "來源": Counter("學生同意分享" if c["summary"].get("student_consent") else
+                        "系統安全通報（未同意）" if c["summary"].get("auto_alert") else "其他" for c in cases),
+        "處理狀態": Counter(STATUS_LABELS.get(c["status"], c["status"]) for c in cases),
+        "鄉鎮": Counter(c["township"] for c in cases),
+        "風險類型": Counter(RISK_TYPE_LABELS.get(t, t) for c in cases for t in set(
+            ((c["triage"].get("dialogue_safety") or {}).get("risk_types") or [])) if t not in ("none", "other")),
+        "建立月份": Counter((c["created_at"] or "")[:7] for c in cases),
+        "完成自填檢核": Counter("有" if c["bsrs5"] else "沒有" for c in cases),
+    }
+    show = lambda n: str(n) if n >= SMALL_CELL else f"少於 {SMALL_CELL}"
+    return jsonify({"total": show(len(cases)) if cases else "0", "groups": [
+        {"title": title, "rows": [[label, show(n)] for label, n in counter.most_common()]}
+        for title, counter in counters.items()]})
 
 
 @app.route("/api/mock-cases")

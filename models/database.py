@@ -5,6 +5,8 @@ SQLite 資料庫管理模組 (Database & Persistence Layer)
 """
 
 import hashlib
+import hmac
+import os
 import sqlite3
 import json
 from uuid import uuid4
@@ -101,6 +103,18 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_student_contexts_updated ON student_contexts(updated_at)")
     # Operator settings made in the workbench (e.g. the chosen model); no student data.
     cursor.execute("CREATE TABLE IF NOT EXISTS app_settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+    # Personal workbench accounts (proposal: 角色權限). Passwords are stored only as salted PBKDF2 hashes.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS staff_users (
+            username TEXT PRIMARY KEY,
+            display_name TEXT NOT NULL,
+            role TEXT NOT NULL,
+            password_hash TEXT NOT NULL,
+            active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT,
+            last_login TEXT
+        )
+    """)
 
     conn.commit()
     conn.execute("PRAGMA journal_mode=WAL")  # persistent per database file
@@ -129,6 +143,107 @@ def set_setting(key: str, value: str):
         conn.close()
 
     # 展示案例只從 data/mock_cases.json 讀取，不灌入真實個案資料表。
+
+
+STAFF_ROLES = {"admin": "管理員", "counselor": "輔導人員"}
+PASSWORD_ROUNDS = 200_000
+
+
+def hash_password(password: str) -> str:
+    salt = os.urandom(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, PASSWORD_ROUNDS)
+    return f"pbkdf2_sha256${PASSWORD_ROUNDS}${salt.hex()}${digest.hex()}"
+
+
+def password_matches(password: str, stored: str) -> bool:
+    try:
+        _, rounds, salt, expected = stored.split("$")
+        digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), int(rounds))
+    except (ValueError, AttributeError):
+        return False
+    return hmac.compare_digest(digest.hex(), expected)
+
+
+def _public_user(r):
+    return {"username": r["username"], "display_name": r["display_name"], "role": r["role"],
+            "active": bool(r["active"]), "created_at": r["created_at"], "last_login": r["last_login"] or ""}
+
+
+def list_staff_users():
+    conn = get_connection()
+    try:
+        return [_public_user(r) for r in conn.execute("SELECT * FROM staff_users ORDER BY role, username")]
+    finally:
+        conn.close()
+
+
+def create_staff_user(username: str, display_name: str, role: str, password: str):
+    if role not in STAFF_ROLES:
+        raise ValueError("角色只能是管理員或輔導人員")
+    conn = get_connection()
+    try:
+        with conn:
+            if conn.execute("SELECT 1 FROM staff_users WHERE username = ?", (username,)).fetchone():
+                raise ValueError("這個帳號已經存在")
+            conn.execute("INSERT INTO staff_users (username, display_name, role, password_hash, active, created_at) "
+                         "VALUES (?, ?, ?, ?, 1, ?)", (username, display_name, role, hash_password(password),
+                                                       datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    finally:
+        conn.close()
+
+
+def update_staff_user(username: str, **changes):
+    """changes: role, active (bool) or password. Returns False when the account does not exist."""
+    sets, values = [], []
+    if "role" in changes:
+        if changes["role"] not in STAFF_ROLES:
+            raise ValueError("角色只能是管理員或輔導人員")
+        sets.append("role = ?"); values.append(changes["role"])
+    if "active" in changes:
+        sets.append("active = ?"); values.append(1 if changes["active"] else 0)
+    if "password" in changes:
+        sets.append("password_hash = ?"); values.append(hash_password(changes["password"]))
+    if "last_login" in changes:
+        sets.append("last_login = ?"); values.append(changes["last_login"])
+    if not sets:
+        return True
+    conn = get_connection()
+    try:
+        with conn:
+            cursor = conn.execute(f"UPDATE staff_users SET {', '.join(sets)} WHERE username = ?", (*values, username))
+            return cursor.rowcount == 1
+    finally:
+        conn.close()
+
+
+def authenticate_staff(username: str, password: str):
+    """The account's public fields when the password matches an active account, else None."""
+    conn = get_connection()
+    try:
+        r = conn.execute("SELECT * FROM staff_users WHERE username = ?", (username,)).fetchone()
+    finally:
+        conn.close()
+    if not r or not r["active"] or not password_matches(password, r["password_hash"]):
+        return None
+    return _public_user(r)
+
+
+def count_active_admins() -> int:
+    conn = get_connection()
+    try:
+        return conn.execute("SELECT COUNT(*) FROM staff_users WHERE role = 'admin' AND active = 1").fetchone()[0]
+    finally:
+        conn.close()
+
+
+def recent_audit_logs(limit: int = 100):
+    conn = get_connection()
+    try:
+        return [dict(timestamp=r["timestamp"], actor=r["actor"], action=r["action"], case_id=r["case_id"],
+                     details=r["details"])
+                for r in conn.execute("SELECT * FROM audit_logs ORDER BY id DESC LIMIT ?", (limit,))]
+    finally:
+        conn.close()
 
 def _audit_hash(prev_hash, timestamp, actor, action, case_id, details):
     body = json.dumps([timestamp, actor, action, case_id, details], ensure_ascii=False)
@@ -260,7 +375,7 @@ def get_all_cases(risk_filter=None, township_filter=None, status_filter=None):
 
     if status_filter == "pending":
         # 「待覆核」 includes cases a student just shared or asked to be referred (2026-10-23 simulation: always 0).
-        query += " AND status IN ('pending', 'student_requested_referral', 'student_shared_summary')"
+        query += " AND status IN ('pending', 'student_requested_referral', 'student_shared_summary', 'auto_safety_alert')"
     elif status_filter and status_filter != "all":
         query += " AND status = ?"
         params.append(status_filter)
@@ -315,7 +430,8 @@ def get_case_by_id(case_id: str):
 
 
 STATUS_LABELS = {"pending": "待覆核", "reviewing": "審查中", "contacted": "已聯絡", "referred": "已轉介", "completed": "已結案",
-                 "student_requested_referral": "學生提出轉介", "student_shared_summary": "學生分享摘要"}
+                 "student_requested_referral": "學生提出轉介", "student_shared_summary": "學生分享摘要",
+                 "auto_safety_alert": "系統安全通報"}
 STAFF_STATUSES = {"reviewing", "contacted", "referred", "completed"}
 RISK_ORDER = {"green": 1, "yellow": 2, "orange": 3, "red": 4}
 

@@ -282,7 +282,7 @@
     panel.setAttribute("aria-label", "是否同意轉介");
     panel.replaceChildren(node("h3", "如果你願意，可以請真人一起幫忙"));
     if (steps.consent_kind === "referral") {
-      panel.appendChild(node("p", "同意後，當前摘要、登錄資料，以及這次的完整對話紀錄（你說的話和安啦的回覆，到按下同意為止）會存入本網站真人工作臺，產生尚未外送的轉介單。之後再聊的內容不會自動分享。尚未接通輔導中心，也不會自動通知學校。"));
+      panel.appendChild(node("p", "為了你的安全，系統會把必要的安全資訊（不含暱稱、學校、聯絡方式與完整對話）送到真人工作臺。同意後，當前摘要、登錄資料，以及這次的完整對話紀錄（你說的話和安啦的回覆，到按下同意為止）也會存入本網站真人工作臺，產生尚未外送的轉介單，工作人員才有辦法聯絡你。之後再聊的內容不會自動分享。尚未接通輔導中心，也不會自動通知學校。"));
       preview(panel, steps);
       optionalContact(panel, steps);
       const label = node("label", "希望被稱呼的名字（選填）");
@@ -311,6 +311,15 @@
     message.setAttribute("role", "status");
     panel.append(chips, message, output);
     placeChoices();
+  }
+  // The student is told, in the conversation itself, exactly what was sent to the workbench without consent.
+  function safetyNotice(text) {
+    const note = node("div", "", "system-notice");
+    note.setAttribute("role", "status");
+    note.append(node("b", "🛟 安全通知"), node("p", text));
+    const host = byId("chatMessages");
+    host.appendChild(note);
+    host.scrollTop = host.scrollHeight;
   }
   function suggestInReply(bubble, offer) {
     if (!current || current.consent_kind === "referral" || !offer) return;
@@ -353,10 +362,12 @@
   }
   window.AnlaNextSteps = {
     suggestInReply,
+    safetyNotice,
     openReferral() {
       if (current?.consent_kind === "referral") render(current, true);
     },
     update(data) {
+      if (data.safety_alert) safetyNotice(data.safety_alert);
       if (data.show_urgent_help) showUrgentHelp();
       if (data.next_steps) render(data.next_steps);
     }

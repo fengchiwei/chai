@@ -81,7 +81,7 @@ class ModelChoiceTests(unittest.TestCase):
             actions = [(r["actor"], r["action"]) for r in conn.execute("SELECT actor, action FROM audit_logs")]
         finally:
             conn.close()
-        self.assertIn(("資訊組（共用帳號）", "select_model"), actions)
+        self.assertIn(("資訊組（內建管理員帳號）", "select_model"), actions)
 
     def test_chosen_model_down_still_fails_over(self):
         self.choose("gemini-3.1-flash-lite")

@@ -10,6 +10,7 @@ from config import Config
 from engine.ai_agent import generate_youth_response
 from engine.support import choose_support_offer
 from models import database
+from tests.helpers import consented_cases
 
 
 class SupportTimingTests(unittest.TestCase):
@@ -100,7 +101,7 @@ class SupportTimingTests(unittest.TestCase):
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(bool(response.json['support_offer']), index == 4)
                 self.assertIsNone(response.json['next_steps']['consent_kind'])
-            self.assertEqual(database.get_all_cases(), [])
+            self.assertEqual(consented_cases(), [])
             client.get('/')
             response = client.post('/api/chat', headers=headers, json={**profile, 'message': '我還想繼續聊今天的事'})
             self.assertIsNone(response.json['support_offer'])

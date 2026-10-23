@@ -72,8 +72,9 @@ current_goal=repair_understanding 表示使用者在修正你的理解（「不�
 只有 current_goal=support_choice 才提供一般方法：必須給出一個小而具體、本人可控制的下一步（必要時給一句可修改的示範說法），而不只重述感受；也可提供最多兩個簡單選項。
 例如學生問「我不知道怎麼跟家人講才不會吵」：簡短理解後，提供一個低衝突開場說法，讓學生自由選擇是否使用；不保證家人一定接受。
 求建議不會越過安全、強烈情緒或界線。避免太早給「你應該」「建議你」。
-隱私顧慮先說明網站會暫存對話與整理、雲端開啟時會傳送對話文字；摘要需本人同意才進工作臺。
+隱私顧慮先說明網站會暫存對話與整理、雲端開啟時會傳送對話文字；摘要需本人同意才進工作臺，唯一例外是出現可能危及安全的內容時，系統會自動送出必要的安全資訊（不含暱稱與聯絡方式）給真人優先查看。
 不承諾絕對保密、不說已通知任何人、不假裝會監看、到現場或代打電話。
+不提供藥物、劑量、停藥或其他醫療處置建議，也不推薦保健食品；學生問到用藥時，請他詢問醫師、藥師或學校護理師。
 安全流程由系統控制；有安全訊號時停止冰山探索，不辯論活著理由、不用罪惡感勸阻。
 不把推測填成 BSRS-5 分數，不向學生顯示綠黃橙紅或心理分類。
 送出前檢查：有根據、承接新意思、1–4 短句、符合問題數、未太早建議、未替人定義。
@@ -546,7 +547,7 @@ SAFETY_TIMEOUT = 12  # seconds: a crisis reply never waits long for the model; t
 # Problems that make a model reply unsendable. Style slips (length, one question too many…) are logged, not blocked:
 # the project replies with AI, not canned text (2026-10-23 decision).
 HARD_ISSUES = {"boundary", "interpretation", "invented_risk", "false_identity", "exclusive_relationship",
-               "parental_pressure", "internal_leak", "jailbreak_ack"}
+               "parental_pressure", "internal_leak", "jailbreak_ack", "medical_advice"}
 UNAVAILABLE_LABEL = "AI 暫時無法回覆"
 PHONE_NUMBERS = r"119|110|113|1925|1995"
 # Test seam, never set in production: a deterministic stand-in for the model so the rule-owned pipeline (safety
@@ -567,7 +568,7 @@ def turn_task(message, state):
                 f"參考內容：「{safety_reply(message, state)}」")
     if state["current_goal"] in LOCAL_GOALS or state["safety_denied"]:
         return ("【本輪任務】請以下面參考內容的意思，用自然的口語回覆學生；可以調整用字與順序，"
-                "但事實（例如資料保存 24 小時、同意後才分享、不會自動通知學校或家人、你是 AI）不能改變，也不要加新的問題。\n"
+                "但事實（例如資料保存 24 小時、同意後才分享、有安全危險時會自動送出必要安全資訊、不會自動通知學校或家人、你是 AI）不能改變，也不要加新的問題。\n"
                 f"參考內容：「{local_reply(message, state)}」")
     if role_notice(state):
         return "【本輪任務】學生剛調整了陪伴角色：開頭用一句話確認你會照這個方式陪他，並記得你仍是 AI；不要重複介紹角色。"

@@ -14,6 +14,7 @@ from engine.dialogue_role import public_role, resolve_role
 from engine.referral import get_student_context
 from engine.triage import perform_triage
 from models import database
+from tests.helpers import consented_cases
 
 
 def step(message, previous=None):
@@ -217,7 +218,7 @@ class CustomRoleServerScenarios(unittest.TestCase):
         self.assertFalse(other.get('/api/chat/state').json['companion_role']['custom'])
         self.chat('我很難過', companion_role={'description': '惡意偽造的角色'})
         self.assertIn('館長', self.client.get('/api/chat/state').json['companion_role']['description'])
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
 
     def test_role_change_requires_same_onboarding_and_csrf_as_chat(self):
         response = self.client.post('/api/chat', json={'message': '你是我的媽媽'})

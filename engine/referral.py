@@ -78,6 +78,11 @@ def stage_student_summary(context_id, email_hash, triage, fields, message=None):
                 raise ValueError("對話資料已過期，請重新確認登錄資料")
             previous = context["draft"]
             previous_triage = previous.get("triage", {})
+            # The sentences that themselves raised orange/red: the only conversation text an automatic safety
+            # alert may carry before the student consents (see auto_safety_handoff).
+            risk_messages = list(previous.get("risk_messages", []))
+            if message and triage["level"] in ("orange", "red") and _has_evidence(triage):
+                risk_messages = (risk_messages + [message[:300]])[-5:]
             # 即使兩個分頁同時送出，也沿用原有「可升不可降」結果。
             before, now = RISK_LEVEL_WEIGHTS[previous_triage.get("level", "green")], RISK_LEVEL_WEIGHTS[triage["level"]]
             # 同一燈號的後續訊息若只是沿用先前燈號（沒有自己的證據），保留最危險那一輪的證據；
@@ -87,7 +92,7 @@ def stage_student_summary(context_id, email_hash, triage, fields, message=None):
             draft = {
                 "category": "想找老師聊聊最近的困擾", "duration": "尚未提及",
                 "life_impact": "尚未提及", "support_system": "尚未提及", "bsrs5": {},
-                **previous, **fields, "triage": triage, "risk_level": triage["level"],
+                **previous, **fields, "triage": triage, "risk_level": triage["level"], "risk_messages": risk_messages,
             }
             if message is not None:
                 draft["dialogue_snippet"] = (
@@ -129,6 +134,68 @@ def save_dialogue_state(context_id, email_hash, state, expected_turn, exchange=N
                 context["transcript"] = (context.get("transcript", []) + entries)[-TRANSCRIPT_LIMIT:]
             _write(conn, context_id, email_hash, context)
         return context
+    finally:
+        conn.close()
+
+
+AUTO_ALERT_STATUS = "auto_safety_alert"
+AUTO_ALERT_ALIAS = "未具名學生（尚未同意分享身分）"
+AUTO_ALERT_FIELDS = ["燈號與判斷理由", "引發警訊的原話（最多 5 句）", "BSRS-5 與自填檢核（有填時）", "時間", "鄉鎮"]
+STUDENT_ALERT_NOTICE = ("因為你剛剛說的話或檢核的回答可能和安全有關，系統已把必要的安全資訊送到真人工作臺，讓受過訓練的人員優先查看："
+                        "包含燈號、引發警訊的那幾句話、時間和鄉鎮，不含你的暱稱、學校、聯絡方式和完整對話。"
+                        "這不會自動通知學校或家人；要分享完整對話或留下聯絡方式，仍由你決定。")
+
+
+def auto_safety_handoff(context_id, email_hash):
+    """Orange/red put the necessary safety information on the workbench without waiting for consent (proposal:
+    中高風險時產生摘要並進入真人工作臺). Only the level, reasons, the sentences that raised it, the self-check
+    answers if any, time and township; nickname, school, contact and the full conversation still need consent.
+
+    Returns "created" or "raised" when the workbench received new information, else None (not orange/red, no
+    higher than already sent, or the student has already consented: flag_risk_after_consent covers that case)."""
+    conn = get_connection()
+    try:
+        with conn:
+            conn.execute("BEGIN IMMEDIATE")
+            context = _read(conn, context_id, email_hash)
+            if not context:
+                return None
+            draft = context["draft"]
+            level = draft.get("risk_level", "green")
+            if level not in ("orange", "red"):
+                return None
+            existing = get_case_by_id(context["case_id"])
+            if existing and existing["summary"].get("student_consent"):
+                return None
+            if existing and RISK_LEVEL_WEIGHTS[level] <= RISK_LEVEL_WEIGHTS[existing["risk_level"]]:
+                return None
+            now = datetime.now(timezone.utc).isoformat()
+            alert = {"level": level, "at": now, "fields": AUTO_ALERT_FIELDS, "student_informed": True,
+                     "history": ((existing or {}).get("summary", {}).get("auto_alert", {}).get("history", [])
+                                 + [{"level": level, "at": now}])}
+            payload = {
+                "case_id": context["case_id"],
+                # A case staff already took up keeps their status; otherwise it waits for review.
+                "status": existing["status"] if existing and existing["status"] != AUTO_ALERT_STATUS else AUTO_ALERT_STATUS,
+                "student_alias": AUTO_ALERT_ALIAS, "student_email": "",
+                "township": context["profile"]["township"], "risk_level": level,
+                "category": "系統自動安全通報", "duration": draft.get("duration", "尚未提及"),
+                "life_impact": draft.get("life_impact", "尚未提及"), "support_system": draft.get("support_system", "尚未提及"),
+                "dialogue_snippet": "\n".join(draft.get("risk_messages", [])) or "（燈號來自自填檢核，沒有對話原話）",
+                "bsrs5": draft.get("bsrs5", {}), "triage": draft["triage"],
+                "created_at": existing["created_at"] if existing else None,
+                "counselor_notes": existing["counselor_notes"] if existing else "",
+                "decision_action": existing["decision_action"] if existing else "",
+            }
+            payload["summary"] = generate_counselor_one_page_summary(payload, draft["triage"])
+            payload["summary"]["student_profile"] = {"township": context["profile"]["township"]}
+            payload["summary"]["auto_alert"] = alert
+            payload["summary"]["checkin_seconds"] = draft.get("checkin_seconds")
+            save_case(payload, connection=conn)
+            append_audit(conn, "system", "auto_safety_alert", context["case_id"],
+                         f"對話燈號達{ {'orange': '橙色', 'red': '紅色'}[level] }，自動送出必要安全資訊（不含身分、聯絡方式與完整對話）",
+                         timestamp=now)
+        return "raised" if existing else "created"
     finally:
         conn.close()
 
@@ -179,6 +246,9 @@ def record_student_consent(context_id, email_hash, revision, kind, preferred_nam
             }
             # The whole conversation up to this consent (the student was told it would be shared); nothing later.
             payload["summary"]["transcript"] = list(context.get("transcript", []))
+            payload["summary"]["checkin_seconds"] = draft.get("checkin_seconds")
+            if existing and existing["summary"].get("auto_alert"):
+                payload["summary"]["auto_alert"] = existing["summary"]["auto_alert"]  # keep when the alert came first
             save_case(payload, connection=conn)
             context["consented_revision"] = revision
             _write(conn, context_id, email_hash, context)

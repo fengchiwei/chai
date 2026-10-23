@@ -29,7 +29,7 @@
     </a>
     <div class="student-header-tools">
       <div class="nav-links" aria-label="需要時再用的求助入口">
-        <button type="button" class="nav-item header-tool" onclick="startConversationalCheckin()">聊聊近況</button>
+        <button type="button" class="nav-item header-tool" data-open-checkin>身心檢核</button>
         <button type="button" id="headerDraftButton" class="nav-item header-tool" onclick="quickSend('請幫我寫給輔導老師的字條')">寫求助字條</button>
         <button type="button" id="headerReferralButton" class="nav-item header-tool" onclick="window.AnlaNextSteps.openReferral()" hidden>查看轉介選項</button>
         <a href="/resources" target="_blank" rel="noopener" class="nav-item">看南投資源</a>
@@ -153,12 +153,15 @@
         
         <!-- 身心電力自然盤點卡 -->
         <div class="panel-card" style="border-top: 4px solid var(--primary);">
-          <h3>🔋 身心電力自然檢核</h3>
+          <h3>🔋 身心電力檢核</h3>
           <p class="panel-note">
-            可以從最近的睡眠、壓力和心情聊起。自然對話不等於正式量表，後台會顯示「未施測」。
+            6 題簡式健康量表（BSRS-5）加 4 個簡單問題，約 2–3 分鐘。不是診斷，只是幫你看看最近的狀態。
           </p>
-          <button class="btn-primary-action" onclick="startConversationalCheckin()" style="margin-top: 0.5rem;">
-            開始身心電力對話盤點 💬
+          <button type="button" class="btn-primary-action" data-open-checkin style="margin-top: 0.5rem;">
+            開始 3 分鐘檢核 📝
+          </button>
+          <button type="button" class="choice-chip" onclick="startConversationalCheckin()" style="margin-top: 0.5rem;">
+            用聊天的方式聊聊 💬
           </button>
         </div>
 
@@ -180,7 +183,7 @@
           <h3>🛡️ 安全與隱私承諾</h3>
           <ul class="panel-list">
             <li><b>對話無燈號標籤</b>：學生端不呈現任何疾病評分與風險燈號。</li>
-            <li><b>授權工作臺</b>：你明確同意後，授權人員才能在工作臺查看你分享的摘要；目前尚未接入正式學校值班機制。</li>
+            <li><b>授權工作臺</b>：你明確同意後，授權人員才能在工作臺查看你分享的摘要與對話；唯一例外是對話出現可能危及安全的內容時，系統會自動送出必要的安全資訊（燈號、引發警訊的那幾句話、時間、鄉鎮，不含暱稱、學校、聯絡方式與完整對話），並在畫面上告訴你。目前尚未接入正式學校值班機制。</li>
             <li><b>先用暱稱聊聊</b>：學校與信箱都可留白，需要分享摘要時再自行補充；填寫不會自動寄信或通報。</li>
           </ul>
         </div>
@@ -242,7 +245,7 @@
           🛡️ 資料使用說明
         </div>
         <div class="privacy-note-body">
-          本原型會在伺服器加密暫存這次的對話紀錄、你說過的事件與感受等整理，以及你選填的資料，供你查看待分享摘要；暫存於最後使用後 24 小時失效，後續使用時清理。只有你明確同意分享後，摘要和到那時為止的完整對話紀錄才會存入受密碼保護的真人工作臺；之後再聊的內容不會自動分享。若使用雲端 AI，對話文字會傳給該模型服務，請避免在對話中寫出姓名、電話或地址。學校與信箱可以不填；填寫不代表身分已驗證，也不會自動通知學校。目前沒有正式值班服務，若有立即危險，請直接使用下方電話求助。
+          本原型會在伺服器加密暫存這次的對話紀錄、你說過的事件與感受等整理，以及你選填的資料，供你查看待分享摘要；暫存於最後使用後 24 小時失效，後續使用時清理。只有你明確同意分享後，摘要和到那時為止的完整對話紀錄才會存入受密碼保護的真人工作臺；之後再聊的內容不會自動分享。唯一例外：對話或自填檢核出現可能危及安全的內容時，系統會自動把必要的安全資訊（燈號、引發警訊的那幾句話、自填檢核結果、時間、鄉鎮）送到真人工作臺讓受過訓練的人員優先查看，不含你的暱稱、學校、聯絡方式與完整對話，送出時畫面會告訴你。若使用雲端 AI，對話文字會傳給該模型服務，請避免在對話中寫出姓名、電話或地址。學校與信箱可以不填；填寫不代表身分已驗證，也不會自動通知學校。目前沒有正式值班服務，若有立即危險，請直接使用下方電話求助。
         </div>
       </div>
 
@@ -310,6 +313,42 @@
     </p>
   </footer>
 
+  <!-- 身心電力檢核：BSRS-5 六題＋四個結構化問題（static/js/checkin.js）。學生只看到白話說明，不看到燈號與分數。 -->
+  <dialog id="checkinDialog" class="install-dialog checkin-dialog" aria-labelledby="checkinTitle">
+    <div class="install-dialog-body">
+      <div class="install-dialog-head">
+        <h2 id="checkinTitle">🔋 身心電力檢核</h2>
+        <button type="button" id="checkinClose" class="install-close" aria-label="關閉檢核">×</button>
+      </div>
+      <form id="checkinForm" novalidate>
+        <p class="checkin-intro">大約 2–3 分鐘。前 6 題參考衛福部「簡式健康量表（BSRS-5）」，請回想<b>最近一星期（包括今天）</b>，這些問題讓你困擾的程度。這不是診斷，答案沒有對錯。</p>
+        <div id="checkinItems"></div>
+        <h3 class="checkin-subtitle">再多了解一點</h3>
+        <div id="checkinQuestions"></div>
+        <label class="voice-field" for="checkinNote">想補充的話（選填）
+          <textarea id="checkinNote" maxlength="500" rows="3" placeholder="例如：最近在擔心什麼、哪件事最卡"></textarea>
+        </label>
+        <p class="install-privacy">結果只會存在這次的暫存；一般情況下要你同意才會分享給真人工作臺。若回答顯示可能有安全危險，系統會自動送出必要的安全資訊（不含暱稱、學校與聯絡方式），並在畫面上告訴你。</p>
+        <div class="checkin-footer">
+          <span id="checkinProgress" class="checkin-progress" aria-live="polite"></span>
+          <button type="submit" id="checkinSubmit" class="btn-primary-action" disabled>完成檢核</button>
+        </div>
+        <p id="checkinError" class="voice-notice" role="alert"></p>
+      </form>
+      <div id="checkinResult" hidden>
+        <p id="checkinResultText" class="checkin-result-text" role="status"></p>
+        <p id="checkinAlert" class="system-notice" hidden></p>
+        <div id="checkinDraft" hidden>
+          <p>想找輔導老師聊聊的話，這是可以修改後自己傳出去的字條（還沒有寄出）：</p>
+          <textarea id="checkinDraftText" rows="5" class="choice-text" aria-label="給輔導老師的字條"></textarea>
+          <button type="button" id="checkinCopyDraft" class="choice-chip">複製字條</button>
+        </div>
+        <p class="checkin-phones">需要時隨時可以打：<a href="tel:1925">1925 安心專線</a>　<a href="tel:119">119</a></p>
+        <button type="button" id="checkinDone" class="btn-primary-action">回到對話</button>
+      </div>
+    </div>
+  </dialog>
+
   <!-- 朗讀聲音：雲端自然語音（伺服器有設定金鑰時）或裝置內建語音；選擇只存在這台裝置。 -->
   <dialog id="voiceDialog" class="install-dialog voice-dialog" aria-labelledby="voiceTitle">
     <div class="install-dialog-body">
@@ -372,6 +411,7 @@
   <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
   <script src="{{ asset('js/app.js') }}"></script>
   <script src="{{ asset('js/referral.js') }}"></script>
+  <script src="{{ asset('js/checkin.js') }}"></script>
   <script src="{{ asset('js/pwa.js') }}"></script>
 </body>
 </html>

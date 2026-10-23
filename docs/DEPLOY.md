@@ -14,6 +14,7 @@ GitHub Pages 只能放靜態網頁，跑不了這個專案的 Python 後端（AI
    - `LLM_API_KEY`：AI 服務的金鑰（Gemini、Claude、OpenAI 相容服務皆可，會依開頭自動判斷）。
 4. （選用）想要自然的雲端朗讀聲音，在 Render 服務的 **Environment** 加上 `AZURE_SPEECH_KEY` 與 `AZURE_SPEECH_REGION`（Azure 入口網站建立「語音服務」資源即可取得，有免費額度）。主要金鑰是 Gemini 或 OpenAI 時，不用另外設定就有該家的語音可選。
 5. 按 **Apply**。建置完成後，網址會是 `https://anla-youth-xxxx.onrender.com` 這類格式，學生頁在 `/`，工作臺在 `/login`。
+6. 第一次登入工作臺時帳號留白（內建管理員 `admin`），密碼是 `WORKBENCH_PASSWORD`；登入後到「👥 工作臺帳號」為每位老師建立個人帳號。**免費方案重新部署會清空資料庫，個人帳號也會一起不見**，內建管理員不受影響。
 
 `render.yaml` 已經設定好：
 

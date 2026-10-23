@@ -7,6 +7,7 @@ from unittest.mock import patch
 from app import app
 from config import Config
 from models import database
+from tests.helpers import consented_cases
 
 
 class AnonymousEntryTests(unittest.TestCase):
@@ -50,7 +51,7 @@ class AnonymousEntryTests(unittest.TestCase):
         assessment = self.client.post("/api/assessment", headers=self.headers, json={
             "bsrs5": dict.fromkeys(("sleep", "anxiety", "anger", "depression", "inferiority", "suicide"), 0)})
         self.assertEqual(assessment.status_code, 200)
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
 
     def test_empty_email_does_not_join_students_and_request_body_cannot_change_owner(self):
         self.onboard()
@@ -69,7 +70,7 @@ class AnonymousEntryTests(unittest.TestCase):
         self.assertEqual(result.status_code, 200)
         self.assertFalse(result.json["show_urgent_help"])
         self.assertNotIn("今天很開心", self.client.get("/api/chat/state").json["next_steps"]["summary_preview"])
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
 
     def test_contact_edits_keep_crisis_and_dialogue_and_invalidate_old_consent(self):
         self.onboard(township="埔里鎮")
@@ -84,7 +85,7 @@ class AnonymousEntryTests(unittest.TestCase):
             with self.client.session_transaction() as sess:
                 self.assertEqual(sess["student_context_id"], original_id)
         self.assertEqual(self.consent(old).status_code, 409)
-        self.assertEqual(database.get_all_cases(), [])
+        self.assertEqual(consented_cases(), [])
         fresh = self.client.get("/api/chat/state").json["next_steps"]
         accepted = self.consent(fresh)
         self.assertEqual(accepted.status_code, 200)

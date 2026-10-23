@@ -107,7 +107,7 @@ class TranscriptTests(unittest.TestCase):
             rows = [(r["actor"], r["action"]) for r in conn.execute("SELECT actor, action FROM audit_logs")]
         finally:
             conn.close()
-        self.assertIn(("林老師（共用帳號）", "print_case"), rows)
+        self.assertIn(("林老師（內建管理員帳號）", "print_case"), rows)
 
 
 class PrintStyleTests(unittest.TestCase):

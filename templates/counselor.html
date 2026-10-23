@@ -23,6 +23,8 @@
       <a href="/counselor" class="nav-item active counselor-btn">🧑‍⚕️ 工作臺總覽</a>
       <a href="/demo" class="nav-item demo-btn">⚡ 評審展示區</a>
       <a href="/explain" class="nav-item">🔍 燈號判讀說明</a>
+      <span class="nav-item staff-badge" title="目前登入的帳號">👤 {{ staff_name or staff_user }}（{{ role_label }}）</span>
+      <button type="button" id="myPasswordButton" class="nav-item" style="border:0;cursor:pointer"{% if staff_user == "admin" %} hidden{% endif %}>改密碼</button>
       <form method="post" action="/logout" style="display:inline">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit" class="nav-item" style="border:0;cursor:pointer">登出</button>
@@ -129,6 +131,38 @@
       </table>
     </div>
 
+    <!-- 去識別化統計：只有數量，沒有個案編號、暱稱或原話（計畫書：去識別化統計） -->
+    <section class="panel-card" id="statsPanel" style="margin-top: 1.5rem;" aria-labelledby="statsPanelTitle">
+      <h3 id="statsPanelTitle" style="margin: 0;">📊 去識別化統計</h3>
+      <p class="explain-meta">只統計數量，不含個案編號、暱稱或原話；人數少於 3 的格子顯示「少於 3」，避免從小數字反推是誰。</p>
+      <div id="statsPanelBody" class="stats-breakdown">讀取中…</div>
+    </section>
+
+    {% if staff_role == "admin" %}
+    <!-- 帳號管理（管理員） -->
+    <section class="panel-card" id="staffPanel" style="margin-top: 1.5rem;" aria-labelledby="staffPanelTitle">
+      <h3 id="staffPanelTitle" style="margin: 0;">👥 工作臺帳號（管理員）</h3>
+      <p class="explain-meta">管理員：帳號管理、AI 模型面板、操作紀錄，以及所有個案功能。輔導人員：查看個案、寫處理紀錄、列印。每個人用自己的帳號登入，操作紀錄才分得清楚是誰。</p>
+      <div id="staffList">讀取中…</div>
+      <form id="staffCreateForm" class="staff-form">
+        <input name="username" required pattern="[A-Za-z0-9_.\-]{3,30}" placeholder="帳號（英數字）" aria-label="帳號">
+        <input name="display_name" required maxlength="20" placeholder="名字（記在操作紀錄）" aria-label="名字">
+        <select name="role" aria-label="角色"><option value="counselor">輔導人員</option><option value="admin">管理員</option></select>
+        <input name="password" type="password" required minlength="10" autocomplete="new-password" placeholder="初始密碼（至少 10 字元）" aria-label="初始密碼">
+        <button type="submit" class="btn-primary-action" style="width:auto;margin:0;padding:.45rem .9rem">新增帳號</button>
+      </form>
+      <p id="staffMessage" class="explain-meta" role="status"></p>
+    </section>
+
+    <!-- 操作紀錄（管理員） -->
+    <section class="panel-card" id="auditPanel" style="margin-top: 1.5rem;" aria-labelledby="auditPanelTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+        <h3 id="auditPanelTitle" style="margin: 0;">🧾 操作紀錄（最近 100 筆）</h3>
+        <button type="button" id="reloadAudit" class="btn-primary-action" style="padding:.4rem .8rem;width:auto;margin:0">重新整理</button>
+      </div>
+      <div id="auditBody" class="explain-meta">讀取中…</div>
+    </section>
+
     <!-- AI 模型：只在後台顯示，放在個案清單之後（給管理者看；輔導老師平常用不到） -->
     <section class="panel-card" id="modelPanel" style="margin-top: 1.5rem;" aria-labelledby="modelPanelTitle">
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap;">
@@ -137,6 +171,18 @@
       </div>
       <div id="modelPanelBody" class="explain-meta" style="margin-top: .6rem;">讀取中…</div>
     </section>
+    {% endif %}
+
+    <dialog id="passwordDialog" class="install-dialog" aria-labelledby="passwordTitle">
+      <form id="passwordForm" class="install-dialog-body">
+        <div class="install-dialog-head"><h2 id="passwordTitle">修改我的密碼</h2>
+          <button type="button" class="install-close" data-close-password aria-label="關閉">×</button></div>
+        <label class="voice-field">目前的密碼<input name="current_password" type="password" required autocomplete="current-password"></label>
+        <label class="voice-field">新密碼（至少 10 字元）<input name="new_password" type="password" required minlength="10" autocomplete="new-password"></label>
+        <button type="submit" class="btn-primary-action">儲存</button>
+        <p id="passwordMessage" class="voice-notice" role="status"></p>
+      </form>
+    </dialog>
 
   </div>
 
@@ -160,5 +206,6 @@
 
   <script>window.ANLA_CSRF_TOKEN = {{ csrf_token|tojson }};</script>
   <script src="{{ asset('js/counselor.js') }}"></script>
+  <script src="{{ asset('js/staff.js') }}"></script>
 </body>
 </html>

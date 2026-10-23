@@ -11,6 +11,7 @@ from config import Config
 from engine.ai_agent import generate_youth_response
 from engine.triage import perform_triage
 from models import database
+from tests.helpers import consented_cases
 
 
 class SemanticAndPromptingTests(unittest.TestCase):
@@ -81,7 +82,7 @@ class SemanticAndPromptingTests(unittest.TestCase):
                 self.assertIsNone(result.json['support_offer'])
                 self.assertNotIn('學校輔導室', result.json['reply'])
                 history.extend([{'role': 'user', 'text': message}, {'role': 'assistant', 'text': result.json['reply']}])
-            self.assertEqual(database.get_all_cases(), [])
+            self.assertEqual(consented_cases(), [])
             def chat(message):
                 return client.post('/api/chat', headers=headers, json={'message': message}).json
             orange = chat('我想傷害自己，但還沒有計畫')
@@ -97,7 +98,7 @@ class SemanticAndPromptingTests(unittest.TestCase):
             self.assertTrue(red['next_steps']['prompt_referral'])
             self.assertFalse(chat('我还在')['next_steps']['prompt_referral'])
             self.assertTrue(client.get('/api/chat/state').json['show_urgent_help'])
-            self.assertEqual(database.get_all_cases(), [])
+            self.assertEqual(consented_cases(), [])
 
 
 if __name__ == '__main__':
