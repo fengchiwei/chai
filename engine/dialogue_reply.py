@@ -422,12 +422,14 @@ def tidy_surface(reply, message, state=None):
     return text.strip()
 
 
-def drop_trailing_questions(reply):
+def drop_trailing_questions(reply, keep=0):
     """Models often append one more question after an otherwise good reply ("…你覺得呢？").
-    Remove only question sentences at the very end; None if nothing substantial would remain: 「抱歉，我剛才誤會了你的
-    意思。」 alone, with the clarifying question cut off, read as a broken reply (2026-10-23 live test)."""
+    Remove question sentences at the very end until at most `keep` remain: cutting every question when one was
+    allowed left 「…可能已經陪你走了一陣子。」 with nothing to answer (2026-10-23 live test). None if nothing
+    substantial would remain: 「抱歉，我剛才誤會了你的意思。」 alone read as a broken reply."""
     sentences = re.findall(r"[^。！？!?\n]+[。！？!?]?\n?", reply)
-    while sentences and re.search(r"[？?]", sentences[-1]):
+    while (sentences and re.search(r"[？?]", sentences[-1])
+           and sum(bool(re.search(r"[？?]", s)) for s in sentences) > keep):
         sentences.pop()
     kept = "".join(sentences).strip()
     if len(kept) < max(20, len(reply.strip()) // 3):

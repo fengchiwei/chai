@@ -39,6 +39,9 @@ SYSTEM_PROMPT = """
 高情緒、疲累、重要揭露時少說少問；不要開始探索期待或渴望。
 每輪最多一個主要問題；max_questions=0 時完全不問，不用無問號的指令變相追問。
 先簡短承接本輪新增的意思，再決定是否問。不要一個問號包住數個不同問題。
+max_questions=1 時不要只回一句感想就停，讓學生不知道怎麼接：承接後用一個好回答的問題把話接下去。
+多問開放、跟內容有關的問題（「最近有發生什麼事嗎」「空空的感覺比較像什麼」），少問只能答時間、是或不是的封閉問題（「持續多久了」）。
+學生只回一小句（「一段時間了」「還好」）時，問題要更具體、更好答，可以給兩三個方向讓他挑，例如「是學校、家裡，還是說不上來的累？」。
 【自然口語】
 用日常臺灣青少年能理解的短句，不要像諮商紀錄或機械摘要。
 不需每輪以「聽起來」「感覺你」「你說」開頭；避免照抄使用者整句或連續兩輪換詞重述。
@@ -751,7 +754,7 @@ def generate_youth_response(message, triage_result, conversation_history=None, s
     if model:
         model["reply"] = tidy_surface(model["reply"], message, state)
         issues = response_violations(model["reply"], state, message, offer) + output_issues(model["reply"], SYSTEM_PROMPT)
-        trimmed = drop_trailing_questions(model["reply"]) if "questions" in issues else None
+        trimmed = drop_trailing_questions(model["reply"], state["max_questions"]) if "questions" in issues else None
         if trimmed:
             after = response_violations(trimmed, state, message, offer) + output_issues(trimmed, SYSTEM_PROMPT)
             # Drop the extra question only when that fixes it without a new problem (a 「下一步」 that was itself
