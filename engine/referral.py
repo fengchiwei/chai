@@ -1,5 +1,6 @@
 """學生同意前的暫存、明確同意後的摘要快照；不執行任何外部轉介。"""
 import json
+import re
 import time
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -102,7 +103,7 @@ def stage_student_summary(context_id, email_hash, triage, fields, message=None):
             if before > now or (before == now and _has_evidence(previous_triage) and not _has_evidence(triage)):
                 triage = previous_triage
             draft = {
-                "category": "想找老師聊聊最近的困擾", "duration": "尚未提及",
+                "category": DEFAULT_CATEGORY, "duration": "尚未提及",
                 "life_impact": "尚未提及", "support_system": "尚未提及", "bsrs5": {},
                 **previous, **fields, "triage": triage, "risk_level": triage["level"], "risk_messages": risk_messages,
             }
@@ -110,12 +111,37 @@ def stage_student_summary(context_id, email_hash, triage, fields, message=None):
                 draft["dialogue_snippet"] = (
                     previous.get("dialogue_snippet", "") + "\n" + message
                 ).strip()[-1200:]
+            if "category" not in fields and previous.get("category_auto", previous.get("category") in (None, DEFAULT_CATEGORY)):
+                draft["category"] = summary_category(draft.get("dialogue_snippet", ""), triage)
+                draft["category_auto"] = True
+            elif "category" in fields:
+                draft["category_auto"] = False
             context["draft"] = draft
             context["revision"] += 1
             _write(conn, context_id, email_hash, context)
         return context
     finally:
         conn.close()
+
+
+DEFAULT_CATEGORY = "想找老師聊聊最近的困擾"
+# 「主要困擾」 on the workbench list: the risk type and up to two everyday topics the student named (2026-10-23 live
+# test: an orange case about past suicidal thoughts and a fight with parents showed only the default sentence).
+RISK_LABELS = {"suicide": "自殺意念", "self_harm": "自傷", "abuse": "受虐／家暴", "violence": "暴力",
+               "digital_sexual_violence": "數位性暴力"}
+TOPIC_LABELS = (("家庭衝突", r"爸媽|爸爸|媽媽|家人|家裡|吵架"), ("課業壓力", r"段考|考試|課業|成績|功課|讀不完"),
+                ("同儕／霸凌", r"霸凌|排擠|孤立|笑我|欺負"), ("性平事件", r"性騷|性侵|偷拍|摸我|私密照|裸照"),
+                ("睡眠", r"睡不著|失眠|睡不好"), ("感情", r"分手|失戀|告白"), ("情緒低落", r"心情(?:很)?(?:差|不好)|低落|難過"))
+
+
+def summary_category(snippet, triage):
+    labels = []
+    if triage.get("level") in ("orange", "red"):
+        kind = (triage.get("dialogue_safety") or {}).get("risk_type")
+        labels.append(RISK_LABELS.get(kind) or ("自傷／自殺相關" if (triage.get("rule_details") or {}).get("has_self_harm_signal")
+                                                else "安全疑慮"))
+    labels += [label for label, pattern in TOPIC_LABELS if re.search(pattern, snippet or "")][:2]
+    return "、".join(dict.fromkeys(labels)) or DEFAULT_CATEGORY
 
 
 TRANSCRIPT_LIMIT = 400  # entries (200 exchanges); the context itself still expires after CONTEXT_TTL

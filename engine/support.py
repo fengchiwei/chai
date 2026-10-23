@@ -46,7 +46,9 @@ def choose_support_offer(message: str, level: str, previous: dict | None = None,
     state["offered"] = True
     if kind == "draft":
         label = "寫一張給老師的小字條"
-        text = f"可以一起{label}，看過後要不要傳由你決定。"
+        # The student asked for the note: the link makes it (2026-10-23 live test: the model wrote one in the reply
+        # and the offer then proposed writing another).
+        text = f"點「{label}」就會出現一張可以修改的字條，要不要傳由你決定。"
     else:
         label = "附近的輔導資源"
         text = (f"想找真人聊時，學校輔導室與{label}可以點開看看，要不要聯絡由你決定。"
@@ -57,6 +59,9 @@ def choose_support_offer(message: str, level: str, previous: dict | None = None,
 def support_turn_instruction(offer: dict | None) -> str:
     safety = ("以下邀請節奏僅適用一般困擾；若訊息透露自傷或立即危險，安全優先，"
               "直接關心安全並提供適當急救資訊，不受輪數或先前拒絕資源的限制。")
+    if offer and offer.get("kind") == "draft":
+        return (safety + "【本輪字條】學生想要一張給老師的字條。網站會在你的文字末尾接上可點選的連結，點了就會產生字條。"
+                "你不要自己在回覆裡寫字條內容、範本或格式，也不要引用資料來源；用 1–2 個短句接住學生想找老師談的這一步就好。")
     if offer:
         return (safety + "【本輪資源邀請】這一輪的文字末尾會由網站接上一句可點選的求助邀請。"
                 "你的部分用 1–3 個短句、120 字以內接住學生，依本輪決策最多一問或完全不問；"

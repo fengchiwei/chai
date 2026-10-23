@@ -21,11 +21,22 @@ PRIVACY_LIMIT = ("這個網站不會自動通知學校或家人；如果你說�
 SECRECY_ASKED = r"不要(?:告訴|跟.{0,6}(?:說|講))|保密|別說出去|不准說|怕他知道|不能讓.{0,6}知道"
 
 
+# The AI rewrites the reviewed questions in its own words (「昨天那時候，你有想過結束自己的生命嗎？」), so a question
+# counts as asked when its key phrase was asked, not only its exact text (2026-10-23 live test: asked twice).
+ASKED_KEYS = {THOUGHTS_QUESTION: r"結束自己的生命", MEANS_QUESTION: r"工具|打算行動|行動的時間",
+              COMPANY_QUESTION: r"(?:身邊|旁邊).{0,4}陪|陪在你身邊|有人.{0,4}陪你"}
+
+
 def _unasked(state, *questions):
     """First question not already asked in this conversation (assistant turns and the last reply)."""
     asked = state.get("last_reply", "") + "".join(t.get("text", "") for t in state.get("history", [])
                                                  if t.get("role") == "assistant")
-    return next((q for q in questions if q not in asked), "")
+    return next((q for q in questions if q not in asked and not re.search(ASKED_KEYS.get(q, r"(?!)"), asked)), "")
+
+
+def _reminder(state, text):
+    """A standing reminder only when the last few replies have not already said it."""
+    return "" if any(key in "".join(_recent_replies(state)) for key in ("一直都在", "隨時可以打開")) else text
 
 
 # The student is the one who might hurt someone (「我想揍他」), not the one in danger.
@@ -114,8 +125,9 @@ def safety_reply(message, state):
     # 「我可以跟誰說？」 in safety mode deserves an answer, not only the standing reminder.
     who = ("可以先找一位你信任的大人，例如導師、輔導老師或家人；也可以打 1925，和專人談談現在的感受。"
            if re.search(r"跟誰|找誰|可以找|能找|誰可以", message) else "")
-    return ("我還在，也記得你剛才說的。" + who + privacy + question
-            + "需要的時候，119、110 和 1925 一直都在，頁面上的求助資訊也隨時可以打開。")
+    opener = _fresh(state, ("謝謝你告訴我。", "我有聽到。", "嗯，我在。", "我還在，也記得你剛才說的。"))
+    return (opener + who + privacy + question
+            + _reminder(state, "需要的時候，119、110 和 1925 一直都在，頁面上的求助資訊也隨時可以打開。"))
 
 
 def _protection_reply(message, state, first):

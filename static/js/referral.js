@@ -424,6 +424,16 @@
     openReferral() {
       if (current?.consent_kind === "referral") render(current, true);
     },
+    // Header 「寫求助字條」: make the note directly instead of sending a chat message that the AI answered with
+    // its own draft plus an offer of another one (2026-10-23 live test).
+    openNote() {
+      if (current?.consent_kind === "referral") {
+        render(current, true);
+        return;
+      }
+      const bubble = appendMessage("ai", "好，這是一張可以給輔導老師的字條，可以先改成你自己的話：");
+      teacherNote(bubble);
+    },
     update(data) {
       if (data.safety_alert) safetyNotice(data.safety_alert);
       if (data.show_urgent_help) showUrgentHelp();

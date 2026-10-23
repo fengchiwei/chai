@@ -243,6 +243,11 @@ body {
 .school-referral-card textarea, .school-referral-card input { width: 100%; box-sizing: border-box; font: inherit; margin: .25rem 0; }
 .school-referral-card .choice-chip { display: inline-block; margin: .25rem .4rem .25rem 0; text-decoration: none; }
 .school-referral-hint { font-size: .82rem; opacity: .85; }
+.school-referral-name { font-weight: 700; margin-bottom: .1rem; }
+.school-referral-more { margin-top: .4rem; }
+.school-referral-more > summary { cursor: pointer; font-weight: 600; padding: .25rem 0; }
+/* After the first exchange the long role hint folds to its one-line status, leaving room for the conversation. */
+.chat-card.is-chatting .companion-role-note > p { display: none; }
 @media (max-width: 640px) { .school-referral-card { margin-left: 0; max-width: 100%; } }
 .demo-banner { background: #fef3c7; color: #78350f; padding: .5rem 1rem; text-align: center; font-size: .9rem; line-height: 1.6; }
 .btn-stop-voice {

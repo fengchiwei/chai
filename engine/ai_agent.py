@@ -9,19 +9,36 @@ def _known(value):
     return isinstance(value, str) and value.strip() and value.strip() not in ("尚未提及", "尚未確認", "未提及", "近期")
 
 
+def _impact_sentence(life_impact):
+    """The self-check answers are labels (「有一點」「明顯影響（例如…）」), not examples: 「生活上也有些影響，例如有一點。」
+    read badly (2026-10-23 live test). Free text from the conversation is still quoted as an example."""
+    if not _known(life_impact):
+        return ""
+    value = life_impact.strip()
+    if value.startswith(("沒有", "說不上來")):
+        return ""
+    if value.startswith("有一點"):
+        return "生活上也受到一點影響。"
+    if value.startswith("明顯影響"):
+        return "已經明顯影響到上學或日常生活。"
+    return f"生活上也有些影響，例如{value}。"
+
+
 def generate_help_seeking_draft(case_info: dict, target: str = "輔導老師") -> str:
     """A short note the student can edit and send. Only a short topic is used, never the conversation itself,
     and fields the student has not mentioned are left out (2026-10-23 simulation: the note copied the chat
     verbatim and kept 「【尚未提及】」 blanks)."""
-    concern = case_info.get("category") if _known(case_info.get("category")) else "最近的心情和生活"
+    # The workbench's own label (「自傷、家庭衝突」) never goes into a note the student hands to a teacher.
+    concern = (case_info.get("category") if _known(case_info.get("category")) and not case_info.get("category_auto")
+               else "心情和生活")
     duration = case_info.get("duration")
     life_impact = case_info.get("life_impact")
-    since = f"，大概持續了{duration}" if _known(duration) else ""
-    impact = f"生活上也有些影響，例如{life_impact}。" if _known(life_impact) else ""
+    since = f"，大概持續了{duration}" if _known(duration) and duration.strip() != "說不上來" else ""
+    impact = _impact_sentence(life_impact)
 
     if target == "輔導老師":
         return (
-            f"老師您好，我是班上的同學。\n"
+            f"老師您好，我是＿年＿班的同學。\n"
             f"我最近因為{concern}的事情有些困擾{since}。{impact}\n"
             f"我一直不知道該怎麼開口，但覺得自己需要找人談一談。"
             f"請問老師這週是否有方便的時間，我可以去輔導室跟您聊聊大約 20 分鐘嗎？謝謝老師！"

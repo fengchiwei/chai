@@ -119,7 +119,7 @@ let isAutoSpeech = localStorage.getItem("anla_auto_speech") === "true"; // 需�
 
 document.addEventListener("DOMContentLoaded", () => {
   updateTTSButtonUI();
-  fetch("/api/chat/state", {cache: "no-store"}).then(res => res.json()).then(data => {
+  window.anlaStateReady = fetch("/api/chat/state", {cache: "no-store"}).then(res => res.json()).then(data => {
     if (data.student_profile) applyStudentProfile(data.student_profile);
     else studentOnboarded = false;
     applyCompanionRole(data.companion_role);
@@ -274,11 +274,23 @@ async function startNewConversation() {
   }
 }
 
+// Panels added after a reply (safety notice, referral choices, counseling card) used to scroll the reply itself
+// out of the chat window (2026-10-23 live test). Show the start of the reply; the panels follow below it.
+function keepReplyInView(bubble) {
+  const chat = document.getElementById("chatMessages");
+  const message = bubble && bubble.closest(".message");
+  if (!chat || !message) return;
+  chat.scrollTop += message.getBoundingClientRect().top - chat.getBoundingClientRect().top - 8;
+  document.querySelector(".chat-card")?.classList.add("is-chatting");
+}
+
 // ==================== 發送對話訊息與 AI 最溫暖同理回覆 ====================
 
 async function sendMessage() {
   if (isSending) return;
   // 只確認已閱讀資料說明，不以信箱是否填寫阻擋對話。
+  // A message sent while the page is still loading waited for nothing and was dropped (2026-10-23 live test).
+  if (!studentOnboarded && window.anlaStateReady) await window.anlaStateReady.catch(() => {});
   if (!studentOnboarded) {
     openOnboardingModal(false);
     return;
@@ -342,6 +354,7 @@ async function sendMessage() {
       window.AnlaSchoolReferral.setAvailable(data.school_referral_available);
       window.AnlaSchoolReferral.show(data.school_referral);
     } catch (_) { /* the header button still reopens it */ }
+    keepReplyInView(replyBubble);
   } catch (err) {
     removeTypingIndicator(typingId);
     const offlineHint = navigator.onLine === false ? "目前沒有網路，可以先點上方提示打開離線呼吸練習與求助電話。" : "";

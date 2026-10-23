@@ -507,7 +507,7 @@ def api_tts():
     return Response(audio, mimetype=mime, headers={"Cache-Control": "no-store"})
 
 
-APP_VERSION = "2.9.1"  # shown on /health so you can tell which release a host (e.g. Render) is running
+APP_VERSION = "2.9.3"  # shown on /health so you can tell which release a host (e.g. Render) is running
 
 
 @app.route("/health")
@@ -635,6 +635,7 @@ def api_chat():
 
 
 def process_chat_turn(message):
+    started = time.monotonic()  # the whole turn, model call included (it runs in prepare_dialogue)
     context = current_student_context()
     if context is None:
         return jsonify({"error": "請重新確認登錄資料"}), 403
@@ -675,7 +676,6 @@ def process_chat_turn(message):
         dialogue_state.pop("_prepared_reply")  # the draft was written for a different offer
     # (A draft written before the model's own analysis changed the safety situation is dropped in
     # generate_youth_response, which then sends the reviewed safety text.)
-    started = time.monotonic()
     reply = generate_youth_response(message, triage, history, support_offer=offer, dialogue_state=dialogue_state)
     record_diagnostics(reply, level, started, dialogue_state.get("safety_action", "none"))
     sent_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -719,10 +719,14 @@ def process_chat_turn(message):
         "notification_connected": False,
         "safety_alert": alert,
         "next_steps": student_next_steps(context),
-        "school_referral": (school_referral.payload(session["school_referral_topics"], context["profile"].get("student_school", ""))
-                            if topics else None),
+        "school_referral": (school_referral.payload(session["school_referral_topics"], context["profile"].get("student_school", ""),
+                                                    county=STUDENT_COUNTY) if topics else None),
         "school_referral_available": bool(session.get("school_referral_topics")),
     })
+
+
+# Students choose a Nantou township, so among schools of the same name (中正國小) the Nantou one comes first.
+STUDENT_COUNTY = "南投縣"
 
 
 @app.route("/api/school-referral", methods=["POST"])
@@ -735,13 +739,18 @@ def api_school_referral():
     context = current_student_context()
     if context is None:
         return jsonify({"error": "請先閱讀資料使用說明"}), 403
-    data = request.get_json(silent=True) or {}
-    school = data.get("school") if isinstance(data, dict) else None
+    data = request.get_json(silent=True)
+    data = data if isinstance(data, dict) else {}
+    code = data.get("code")
+    if code is not None and (not isinstance(code, str) or not re.fullmatch(r"[0-9A-Za-z]{4,8}", code)):
+        return jsonify({"error": "學校代碼不正確"}), 400
+    school = data.get("school")
     if school is None:
-        school = context["profile"].get("student_school", "")
+        school = "" if code else context["profile"].get("student_school", "")
     if not isinstance(school, str) or len(school) > 100:
         return jsonify({"error": "學校名稱需為 100 字以內的文字"}), 400
-    return jsonify({"school_referral": school_referral.payload(session.get("school_referral_topics", []), school.strip())})
+    return jsonify({"school_referral": school_referral.payload(
+        session.get("school_referral_topics", []), school.strip(), code=code, county=STUDENT_COUNTY)})
 
 
 def safety_alert(level):
@@ -1282,7 +1291,7 @@ def api_generate_draft():
     if target not in ("輔導老師", "班導師", "家長"):
         return jsonify({"error": "求助對象不正確"}), 400
     draft = context["draft"]
-    case_info = {**draft, "category": draft_topics(context)}
+    case_info = {**draft, "category": draft_topics(context), "category_auto": False}
     return jsonify({"target": target, "draft": generate_help_seeking_draft(case_info, target),
                     "next_steps": student_next_steps(context),
                     "show_urgent_help": context["draft"].get("risk_level") == "red"})

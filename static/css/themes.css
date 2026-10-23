@@ -391,7 +391,7 @@ html[data-theme] .footer-links a:hover { color: var(--t-accent-ink); }
 
 /* ---------- 手機與 PWA ---------- */
 @supports (height: 100dvh) {
-  .student-page .chat-card { height: min(660px, calc(100dvh - 7rem)); min-height: 460px; }
+  .student-page .chat-card { height: min(780px, calc(100dvh - 5.5rem)); min-height: 520px; }
 }
 @media (max-width: 900px) {
   .student-page .chat-card { height: 620px; }

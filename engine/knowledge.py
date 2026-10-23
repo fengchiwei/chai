@@ -148,7 +148,7 @@ LOCAL_INTENT = r"南投|附近|在地|哪裡|去哪|哪邊|找誰|衛生所|心�
 PLACE_KINDS = ((r"身心科|精神科|看醫生|醫院|掛號", ("醫院", "身心科診所", "地區醫院")),
                (r"衛生所", ("鄉鎮市衛生所",)),
                (r"諮商|心理|輔導|聊|談", ("社區心衛中心", "心理及聯合治療所", "校園輔導主管機構", "鄉鎮市衛生所")))
-PUBLISHERS = (("data.gov.tw", "南投縣政府（政府資料開放平臺）"), ("ntshb.gov.tw", "南投縣政府衛生局"),
+PUBLISHERS = (("data.gov.tw", "南投縣政府"), ("ntshb.gov.tw", "南投縣政府衛生局"),
               ("mohw.gov.tw", "衛生福利部"), ("ntct.edu.tw", "南投縣政府教育處"), ("life1995.org.tw", "生命線協會"),
               ("1980.org.tw", "張老師基金會"))
 
@@ -190,7 +190,7 @@ def local_resource_cards(message, state, limit=3):
         cards.append({"id": "resource-" + r["id"], "topic": "local_resources", "title": r["name"],
                       "summary": f"{r.get('category', '')}，在{r.get('township', town)}。", "steps": steps,
                       "when_to_seek_help": "有立即危險請直接撥 119；想馬上找人談可以打 1925（24 小時）。",
-                      "sources": [{"publisher": publisher, "name": f"{r['name']}（{publisher}資料）", "url": r["source_url"],
+                      "sources": [{"publisher": publisher, "name": f"{r['name']}資料", "url": r["source_url"],
                                    "supports": "名稱、電話、地址與服務時間"}]})
     return cards
 
@@ -216,10 +216,14 @@ def prompt_block(selected):
     lines = [REFERENCE_HEADER + "（來源已核對；學生在問方法或資訊）】",
              "請從下面挑最合適的一張，用自己的話回答學生的問題，或給一個做得到的小步驟（最多兩個選項），不要整張照念。"
              "卡片沒寫到的數字、日期、法規細節不要自己補；電話、地址照卡片原樣寫，不要改動。",
-             "每張卡的來源各自支持不同重點（見「來源」）。句尾用「（資料來源：機構名稱）」標出你實際用到的那個重點的來源機構，"
-             "用到兩個來源的重點就標兩個；只能寫下面列出的機構，不要提到其他研究或機構，也不要加入用藥建議。"]
+             "每張卡的來源各自支持不同重點（見「來源」）。只有用到卡片上的事實（電話、地址、時間、數字、規定、對身體的影響）"
+             "時，才在那句話最後用「（資料來源：機構名稱）」標出你實際用到的那個重點的來源機構，機構名稱寫短名、不要在括號裡再加括號；"
+             "一般的鼓勵或做法（例如寫字條、先深呼吸）不用標來源，也不要拿法規來支持這種話。"
+             "用到兩個來源的事實就標兩個；只能寫下面列出的機構，不要提到其他研究或機構，也不要加入用藥建議。"
+             "網址不用寫在回覆裡，頁面會自動在回覆下方附上連結。"]
     for i, card in enumerate(selected, 1):
-        sources = "；".join(f"{s.get('publisher') or s.get('name')}〈{s.get('name', '')}〉支持：{s.get('supports', '')}"
+        sources = "；".join(f"{re.sub(r'[（(].*?[）)]', '', s.get('publisher') or s.get('name'))}〈{s.get('name', '')}〉"
+                           f"支持：{s.get('supports', '')}"
                            for s in card["sources"])
         lines.append(f"卡{i}｜{card['title']}｜重點：{card.get('summary', '')}｜步驟：{'；'.join(card['steps'])}"
                      + (f"｜注意：{'；'.join(card['cautions'])}" if card.get("cautions") else "")

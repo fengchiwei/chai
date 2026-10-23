@@ -322,7 +322,8 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
             "microsystem_flagged": bool(previous.get("microsystem_flagged")),
             # risk_cue picks the wording (peer bullying, leaked images, affect streak); fresh_level is what THIS
             # message shows on its own, for the student-facing safety mode (night review and carry-overs excluded).
-            "risk_cue": "", "night_review": False, "fresh_level": "green", "thoughts_confirmed": False}
+            "risk_cue": "", "night_review": False, "fresh_level": "green", "thoughts_confirmed": False,
+            "check_carries": 0}
     candidates = []
 
     def add(kind, signal, danger, evidence, floor, subject="self", basis=(), cue="", carry=False):
@@ -466,12 +467,17 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
             risk["thoughts_confirmed"] = True
         elif denied:
             risk["safety_denied"] = True
-        elif asked_thoughts and re.search(r"^(?:有|有啊|有耶|對|是|嗯|有一點|會|想過)(?:$|[，,。!！\s])", message):
+        elif asked_thoughts and (re.search(r"^(?:有|有啊|有耶|對|是|嗯|有一點|會|想過)(?:$|[，,。!！\s])", message)
+                                 or (re.search(r"^.{0,10}?(?:有想過|有過|想過|有一點|有啊|有耶)", message)
+                                     and not re.search(r"(?:沒|不曾|從來沒|從沒)有?(?:想過|過)", message))):
             add(previous.get("risk_type", "suicide"), "direct", "possible", message, "orange",
                 previous.get("risk_subject", "self"), ("PSY-01",))
             risk["thoughts_confirmed"] = True
-        elif previous.get("pending_safety_check"):
-            # An unanswered gentle check stays open (the full safety mode carries over in build_state instead).
+        elif previous.get("pending_safety_check") and previous.get("check_carries", 0) < 1:
+            # An unanswered gentle check is asked once more, then left to staff (2026-10-23 live test: 「熱到快往生」
+            # was followed by the same question on four turns while the student talked about sport). The review
+            # level stays; the full safety mode carries over in build_state instead.
+            risk["check_carries"] = previous.get("check_carries", 0) + 1
             add(previous.get("risk_type", "suicide"), previous.get("risk_signal", "ambiguous"),
                 "possible", previous.get("risk_evidence", ""), "yellow", previous.get("risk_subject", "self"),
                 previous.get("theoretical_basis") or (), cue=previous.get("risk_cue", ""), carry=True)
@@ -485,9 +491,16 @@ def observe_safety(message, triage, previous=None, hints=None, hour=None):
     if observation.get("type") == "violence" and not re.search(VIOLENCE_PLAN, message):
         observation = {}  # angry words without a plan: listen to the anger instead of starting a safety check
     evidence = observation.get("evidence", "")
-    if (observation.get("type") in ("suicide", "self_harm") and detect_topics(evidence)
-            and not re.search(SELF_HARM_WORDS, evidence)):
-        observation = {}  # being bullied or harassed is not, by itself, a wish to die
+    topics = detect_topics(evidence)
+    if topics and observation.get("type") not in ("violence",) and not re.search(SELF_HARM_WORDS, evidence):
+        if topics == ["bullying"] and not re.search(PEER_VIOLENCE, evidence):
+            # Being bullied or harassed is not, by itself, a wish to die (2026-10-23 live tests: the model
+            # labelled 「被同學霸凌」 suicide, then 「other」). Listen first; the counseling-office card follows.
+            observation = {}
+        elif observation.get("type") in ("suicide", "self_harm", "other"):
+            # A gender-equity event: check safety now (「你現在安全嗎」), not whether the student wants to die.
+            observation = {**observation, "type": "abuse",
+                           "signal": "ambiguous" if observation.get("signal") == "direct" else observation.get("signal")}
     if observation.get("affirmed") is True and not (pending and denied and not candidates):
         kind, signal, danger = observation.get("type"), observation.get("signal"), observation.get("danger")
         if kind in RISK_TYPES[1:] and signal in ("ambiguous", "indirect", "direct") and danger in ("none", "possible", "imminent"):

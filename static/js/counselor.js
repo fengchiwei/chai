@@ -251,7 +251,7 @@ function renderExplainable(c, E) {
 
 const THEORY_LABELS = {"PSY-01": "C-SSRS 嚴重度", "PSY-02": "IPTS 累贅感／歸屬受挫", "PSY-03": "IMV 困頓感",
   "PSY-04": "NSSI 自傷功能", "LIN-01": "言語行為／否定範疇", "SIG-02": "非對稱損失（啟發式）",
-  "ENG-03": "瑞士起司／高水位棘輪", "DYN-04": "數位表型（深夜／情緒累積，啟發式）", "SOC-05": "同儕危機守門",
+  "ENG-03": "多重防護（燈號只升不降）", "DYN-04": "深夜／情緒累積（啟發式）", "SOC-05": "同儕危機守門",
   "HFE-06": "防警報疲勞／判讀說明"};
 const LEVEL_NAMES = {red: "紅色", orange: "橙色", yellow: "黃色", green: "綠色"};
 function localTime(value) {
