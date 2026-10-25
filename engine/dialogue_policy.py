@@ -720,3 +720,12 @@ def remember_turn(state, message, reply):
     saved.pop("_turn_deadline", None)
     saved.pop("_prepared_reply", None)
     return saved
+
+
+# 日常聊天研究設定；尚未接入模式路由與回覆生成。
+# 日常關鍵詞不可用於略過既有安全判斷。
+DAILY_MODE = {
+    "trigger": ["打羽球", "夜市", "珍奶", "冰沙", "公車", "打工", "追劇", "遊戲"],
+    "response_rule": "95字2句 + 12域南投詞 + 零理論詞 + 肯定20→95% + 問句85→5% + 不做冰山探索",
+    "forbidden": ["你內在的課題", "需要被承接", "喘息空間"],  # 理論詞0%
+}
