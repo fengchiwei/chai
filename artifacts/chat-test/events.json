@@ -1,0 +1,910 @@
+{
+  "events": [
+    {
+      "t": "2026-10-31T05:33:16.406+08:00",
+      "kind": "open",
+      "url": "http://127.0.0.1:5000/"
+    },
+    {
+      "t": "2026-10-31T05:33:17.800+08:00",
+      "kind": "dom",
+      "dom_kind": "observer-ready",
+      "ms": 1793395997793,
+      "detail": {
+        "href": "http://127.0.0.1:5000/"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:17.800+08:00",
+      "kind": "console",
+      "level": "INFO",
+      "message": "http://127.0.0.1:5000/ - Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner."
+    },
+    {
+      "t": "2026-10-31T05:33:17.804+08:00",
+      "kind": "page-state",
+      "aiStatus": "尚未接上 AI",
+      "bubbles": [
+        {
+          "cls": "bubble",
+          "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+        }
+      ],
+      "input": "",
+      "inputDisabled": false,
+      "modalDisplay": "flex",
+      "modalText": "🌱\n歡迎來到「少年仔、安啦會客室」\n\n少年仔你好，先用暱稱聊聊就好。學校、信箱都可以留白；沒關係，慢慢說。\n\n🛡️ 資料使用說明\n本原型會在伺服器加密暫存這次的對話紀錄、你說過的事件與感受等整理，以及你選填的資料，供你查看待分享摘要；暫存於最後使用後 24 小時失效，後續使用時清理。只有你明確同意分享後，摘要和到那時為止的完整對話紀錄才會存入受密碼保護的真人工作臺；之後再聊的內容不會自動分享。唯一例外：對話或自填檢核出現可能危及安全的內容時，系統會自動把必要的安全資訊（燈號、引發警訊的那幾句話、自填檢核結果、時間、鄉鎮）送到真人工作臺讓受過訓練的人員優先查看，不含你的暱稱、學校、聯絡方式與完整對話，送出時畫面會告訴你。若使用雲端 AI，對話文字會傳給該模型服務，請避免在對話中寫出姓名、電話或地址。學校與信箱可以不填；填寫不代表身分已驗證，也不會自動通知學校。目前沒有正式值班服務，若有立即危險，請直接使用下方電話求助。\n 我已閱讀上方資料使用說明，了解本網站不會自動聯絡學校或撥打電話。\n\n需要立即協助：119 救護／110 報案／1925 安心專線\n\n如何稱呼您 (暱稱/代號)：\n所在南投鄉鎮市：\n南投市\n草屯鎮\n埔里鎮\n竹山鎮\n集集鎮\n名間鄉\n鹿谷鄉\n中寮鄉\n魚池鄉\n國姓鄉\n水里鄉\n信義鄉 (原鄉)\n仁愛鄉 (原鄉)\n學校／聯絡信箱（選填，也可以之後再補）\n先聊聊",
+      "offlineHidden": true,
+      "offlineText": "",
+      "sendDisabled": false,
+      "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+      "urgentHidden": true,
+      "urgentText": ""
+    },
+    {
+      "t": "2026-10-31T05:33:18.055+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/01-loaded.png"
+    },
+    {
+      "t": "2026-10-31T05:33:18.089+08:00",
+      "kind": "input-probe-before-onboarding",
+      "displayed": true,
+      "enabled": true,
+      "send_displayed": true,
+      "send_enabled": true,
+      "send_text": "發送 ✈️"
+    },
+    {
+      "t": "2026-10-31T05:33:19.141+08:00",
+      "kind": "type-before-onboarding-error",
+      "error": "ElementClickInterceptedException: Message: element click intercepted: Element <input type=\"text\" id=\"userInput\" maxlength=\"2000\" aria-label=\"想說的話（2000 字以內）\" placeholder=\"輸入文字或點擊左側 🎙️ 說說你的心情...（按 Enter 發送）\" onkeypress=\"if(event.key === 'Enter') sendMessage()\"> is not clickable at point (436, 859). Other element would receive the click: <label style=\"display:block;margin-bottom:.8rem;font-size:.82rem;line-height:1.5;\">...</label>\n  (Session info: chrome=156.0.8078.47); For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#elementclickinterceptedexception\nStacktrace:\n#0 0x55f2802ee0aa <unknown>\n#1 0x55f27fc21875 <unknown>\n#2 0x55f27fc68d61 <unknown>\n#3 0x55f27fc6774e <unknown>\n#4 0x55f27fc65ae6 <unknown>\n#5 0x55f27fc653aa <unknown>\n#6 0x55f27fc5b8e3 <unknown>\n#7 0x55f27fc5b3c3 <unknown>\n#8 0x55f27fc5b369 <unknown>\n#9 0x55f27fca0143 <unknown>\n#10 0x55f27fc9fa51 <unknown>\n#11 0x55f27fc5aa07 <unknown>\n#12 0x55f27fc59d1e <unknown>\n#13 0x55f27fc5a7f1 <unknown>\n#14 0x55f2802b0c5c <unknown>\n#15 0x55f2802af475 <unknown>\n#16 0x55f28029a7f8 <unknown>\n#17 0x55f2802b00ca <unknown>\n#18 0x55f2802833f9 <unknown>\n#19 0x55f2802d8848 <unknown>\n#20 0x55f2802d89e5 <unknown>\n#21 0x55f2802eca43 <unknown>\n#22 0x7f75a589cb84 <unknown>\n#23 0x7f75a5929ecc <unknown>\n"
+    },
+    {
+      "t": "2026-10-31T05:33:20.192+08:00",
+      "kind": "click-send-before-onboarding-intercepted",
+      "error": "Message: element click intercepted: Element <button class=\"btn-send\" onclick=\"sendMessage()\">...</button> is not clickable at point (795, 859). Other element would receive the click: <label style=\"display:block;margin-bottom:.8rem;font-size:.82rem;line-height:1.5;\">...</label>"
+    },
+    {
+      "t": "2026-10-31T05:33:20.441+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/02-before-onboarding.png"
+    },
+    {
+      "t": "2026-10-31T05:33:20.526+08:00",
+      "kind": "onboarding-fill",
+      "alias": "測試同學",
+      "consent": true
+    },
+    {
+      "t": "2026-10-31T05:33:21.476+08:00",
+      "kind": "after-onboarding",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          }
+        ],
+        "input": "",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:21.563+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/03-after-onboarding.png"
+    },
+    {
+      "t": "2026-10-31T05:33:21.603+08:00",
+      "kind": "typed",
+      "label": "空白點發送",
+      "how": "button",
+      "value": ""
+    },
+    {
+      "t": "2026-10-31T05:33:21.627+08:00",
+      "kind": "submitted",
+      "label": "空白點發送",
+      "how": "button",
+      "at": "2026-10-31T05:33:21.603+08:00",
+      "text": ""
+    },
+    {
+      "t": "2026-10-31T05:33:22.957+08:00",
+      "kind": "after-send",
+      "label": "空白點發送",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          }
+        ],
+        "input": "",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:23.047+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/04-empty-send.png"
+    },
+    {
+      "t": "2026-10-31T05:33:23.093+08:00",
+      "kind": "typed",
+      "label": "只有空白字元按 Enter",
+      "how": "enter",
+      "value": "   "
+    },
+    {
+      "t": "2026-10-31T05:33:23.106+08:00",
+      "kind": "submitted",
+      "label": "只有空白字元按 Enter",
+      "how": "enter",
+      "at": "2026-10-31T05:33:23.093+08:00",
+      "text": "   \t   "
+    },
+    {
+      "t": "2026-10-31T05:33:24.424+08:00",
+      "kind": "after-send",
+      "label": "只有空白字元按 Enter",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          }
+        ],
+        "input": "   ",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:24.512+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/05-whitespace-enter.png"
+    },
+    {
+      "t": "2026-10-31T05:33:24.566+08:00",
+      "kind": "typed",
+      "label": "一般問候",
+      "how": "enter",
+      "value": "你好"
+    },
+    {
+      "t": "2026-10-31T05:33:24.575+08:00",
+      "kind": "submitted",
+      "label": "一般問候",
+      "how": "enter",
+      "at": "2026-10-31T05:33:24.566+08:00",
+      "text": "你好"
+    },
+    {
+      "t": "2026-10-31T05:33:24.577+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396004574,
+      "detail": {
+        "cls": "message user",
+        "id": "",
+        "text": "你好",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:24.577+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-appear",
+      "ms": 1793396004575,
+      "detail": {
+        "cls": "message ai",
+        "id": "typing-1793396004573",
+        "text": "",
+        "typing": true
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:24.637+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-text",
+      "ms": 1793396004597,
+      "detail": {
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:24.637+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-disappear",
+      "ms": 1793396004600,
+      "detail": {
+        "id": "typing-1793396004573",
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:24.637+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396004600,
+      "detail": {
+        "cls": "message ai",
+        "id": "",
+        "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:24.950+08:00",
+      "kind": "after-send",
+      "label": "一般問候",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          },
+          {
+            "cls": "bubble",
+            "text": "你好"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          }
+        ],
+        "input": "",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.031+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/06-greeting.png"
+    },
+    {
+      "t": "2026-10-31T05:33:25.092+08:00",
+      "kind": "typed",
+      "label": "心情低落",
+      "how": "button",
+      "value": "最近心情好低落，做什麼事都提不起勁。"
+    },
+    {
+      "t": "2026-10-31T05:33:25.114+08:00",
+      "kind": "submitted",
+      "label": "心情低落",
+      "how": "button",
+      "at": "2026-10-31T05:33:25.092+08:00",
+      "text": "最近心情好低落，做什麼事都提不起勁。"
+    },
+    {
+      "t": "2026-10-31T05:33:25.116+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396005114,
+      "detail": {
+        "cls": "message user",
+        "id": "",
+        "text": "最近心情好低落，做什麼事都提不起勁。",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.117+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-appear",
+      "ms": 1793396005114,
+      "detail": {
+        "cls": "message ai",
+        "id": "typing-1793396005113",
+        "text": "",
+        "typing": true
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.175+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-text",
+      "ms": 1793396005122,
+      "detail": {
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.175+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-disappear",
+      "ms": 1793396005141,
+      "detail": {
+        "id": "typing-1793396005113",
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.175+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396005141,
+      "detail": {
+        "cls": "message ai",
+        "id": "",
+        "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.492+08:00",
+      "kind": "after-send",
+      "label": "心情低落",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          },
+          {
+            "cls": "bubble",
+            "text": "你好"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          },
+          {
+            "cls": "bubble",
+            "text": "最近心情好低落，做什麼事都提不起勁。"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          }
+        ],
+        "input": "",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.583+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/07-low-mood.png"
+    },
+    {
+      "t": "2026-10-31T05:33:25.672+08:00",
+      "kind": "typed",
+      "label": "較長文字",
+      "how": "button",
+      "value": "我想說長一點。這個禮拜每天都讀到半夜，數學段考還是沒有把握，同學都說很簡單，我問問題又怕被笑。回家以後也不太想說話，晚餐常常只吃幾口。我沒有想傷害自己，只是覺得很累，想有人聽我把這些話說完。如果可以的話，先不要叫我做呼吸練習，我現在只想把事情講清楚。"
+    },
+    {
+      "t": "2026-10-31T05:33:25.696+08:00",
+      "kind": "submitted",
+      "label": "較長文字",
+      "how": "button",
+      "at": "2026-10-31T05:33:25.672+08:00",
+      "text": "我想說長一點。這個禮拜每天都讀到半夜，數學段考還是沒有把握，同學都說很簡單，我問問題又怕被笑。回家以後也不太想說話，晚餐常常只吃幾口。我沒有想傷害自己，只是覺得很累，想有人聽我把這些話說完。如果可以的話，先不要叫我做呼吸練習，我現在只想把事情講清楚。"
+    },
+    {
+      "t": "2026-10-31T05:33:25.699+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396005696,
+      "detail": {
+        "cls": "message user",
+        "id": "",
+        "text": "我想說長一點。這個禮拜每天都讀到半夜，數學段考還是沒有把握，同學都說很簡單，我問問題又怕被笑。回家以後也不太想說話，晚餐常常只吃幾口。我沒有想傷害自己，只是覺得很累，想有人聽我把這些話說完。如果可以的話，先不要叫我做呼吸練習，我現在只想把事情講清楚。",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.699+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-appear",
+      "ms": 1793396005696,
+      "detail": {
+        "cls": "message ai",
+        "id": "typing-1793396005695",
+        "text": "",
+        "typing": true
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.759+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-text",
+      "ms": 1793396005705,
+      "detail": {
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.759+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-disappear",
+      "ms": 1793396005707,
+      "detail": {
+        "id": "typing-1793396005695",
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:25.759+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396005707,
+      "detail": {
+        "cls": "message ai",
+        "id": "",
+        "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.075+08:00",
+      "kind": "after-send",
+      "label": "較長文字",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          },
+          {
+            "cls": "bubble",
+            "text": "你好"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          },
+          {
+            "cls": "bubble",
+            "text": "最近心情好低落，做什麼事都提不起勁。"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          },
+          {
+            "cls": "bubble",
+            "text": "我想說長一點。這個禮拜每天都讀到半夜，數學段考還是沒有把握，同學都說很簡單，我問問題又怕被笑。回家以後也不太想說話，晚餐常常只吃幾口。我沒有想傷害自己，只是覺得很累，想有人聽我把這些話說完。如果可以的話，先不要叫我做呼吸練習，我現在只想把事情講清楚。"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          }
+        ],
+        "input": "",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.172+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/08-long-text.png"
+    },
+    {
+      "t": "2026-10-31T05:33:26.222+08:00",
+      "kind": "typed",
+      "label": "求助關鍵字",
+      "how": "button",
+      "value": "我不想活了"
+    },
+    {
+      "t": "2026-10-31T05:33:26.244+08:00",
+      "kind": "submitted",
+      "label": "求助關鍵字",
+      "how": "button",
+      "at": "2026-10-31T05:33:26.222+08:00",
+      "text": "我不想活了"
+    },
+    {
+      "t": "2026-10-31T05:33:26.247+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396006244,
+      "detail": {
+        "cls": "message user",
+        "id": "",
+        "text": "我不想活了",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.247+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-appear",
+      "ms": 1793396006244,
+      "detail": {
+        "cls": "message ai",
+        "id": "typing-1793396006243",
+        "text": "",
+        "typing": true
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.307+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-text",
+      "ms": 1793396006255,
+      "detail": {
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.307+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-disappear",
+      "ms": 1793396006267,
+      "detail": {
+        "id": "typing-1793396006243",
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.307+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396006267,
+      "detail": {
+        "cls": "message ai",
+        "id": "",
+        "text": "謝謝你願意跟我說這麼重的事。我想直接問你：你有想過結束自己的生命嗎？如果已經受傷、吃了藥或正要行動，請現在打 119 或 110；想找人談可以打 1925，二十四小時都有人接。我會在這裡，你也可以繼續說。",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.622+08:00",
+      "kind": "after-send",
+      "label": "求助關鍵字",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          },
+          {
+            "cls": "bubble",
+            "text": "你好"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          },
+          {
+            "cls": "bubble",
+            "text": "最近心情好低落，做什麼事都提不起勁。"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          },
+          {
+            "cls": "bubble",
+            "text": "我想說長一點。這個禮拜每天都讀到半夜，數學段考還是沒有把握，同學都說很簡單，我問問題又怕被笑。回家以後也不太想說話，晚餐常常只吃幾口。我沒有想傷害自己，只是覺得很累，想有人聽我把這些話說完。如果可以的話，先不要叫我做呼吸練習，我現在只想把事情講清楚。"
+          },
+          {
+            "cls": "bubble",
+            "text": "（這個網站目前沒有接上 AI）抱歉，我現在沒辦法好好回覆你，請稍後再傳一次。如果現在有立即危險，請撥 119；想找人談可以打 1925，二十四小時都有人接。"
+          },
+          {
+            "cls": "bubble",
+            "text": "我不想活了"
+          },
+          {
+            "cls": "bubble",
+            "text": "謝謝你願意跟我說這麼重的事。我想直接問你：你有想過結束自己的生命嗎？如果已經受傷、吃了藥或正要行動，請現在打 119 或 110；想找人談可以打 1925，二十四小時都有人接。我會在這裡，你也可以繼續說。"
+          }
+        ],
+        "input": "",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:26.724+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/09-crisis-keyword.png"
+    },
+    {
+      "t": "2026-10-31T05:33:26.728+08:00",
+      "kind": "crisis-visible",
+      "urgentHidden": true,
+      "urgentText": ""
+    },
+    {
+      "t": "2026-10-31T05:33:26.750+08:00",
+      "kind": "end-clear-controls",
+      "matching": [
+        "謝謝你願意跟我說這麼重的事。我想直接問你：你有想過結束自己的生命嗎？如果已經受傷、吃了藥或正要行動，請現在打 119 或 110；想找人談可以打 1925，二十四小時都有人接。我會在這裡，你也可以繼續說。\n🔊 朗讀這段話"
+      ],
+      "new_button": "開始新對話"
+    },
+    {
+      "t": "2026-10-31T05:33:26.809+08:00",
+      "kind": "new-conversation-confirm",
+      "text": "要開始新對話嗎？\n\n剛才的對話會從這個網站的暫存刪除，安啦也不會再記得。已經送到真人工作臺的資料不會被刪除。\n\n如果現在有立即危險，請先撥 119，或打 1925 安心專線。"
+    },
+    {
+      "t": "2026-10-31T05:33:28.027+08:00",
+      "kind": "dom",
+      "dom_kind": "observer-ready",
+      "ms": 1793396008022,
+      "detail": {
+        "href": "http://127.0.0.1:5000/"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:28.028+08:00",
+      "kind": "console",
+      "level": "INFO",
+      "message": "http://127.0.0.1:5000/ - Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner."
+    },
+    {
+      "t": "2026-10-31T05:33:28.030+08:00",
+      "kind": "after-new-conversation",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          }
+        ],
+        "input": "",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:28.110+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/11-after-new-conversation.png"
+    },
+    {
+      "t": "2026-10-31T05:33:28.111+08:00",
+      "kind": "stopping-server"
+    },
+    {
+      "t": "2026-10-31T05:33:30.432+08:00",
+      "kind": "server-after-stop",
+      "curl_exit": 1792
+    },
+    {
+      "t": "2026-10-31T05:33:30.497+08:00",
+      "kind": "typed",
+      "label": "後端停止後送出",
+      "how": "button",
+      "value": "你還在嗎"
+    },
+    {
+      "t": "2026-10-31T05:33:30.523+08:00",
+      "kind": "submitted",
+      "label": "後端停止後送出",
+      "how": "button",
+      "at": "2026-10-31T05:33:30.497+08:00",
+      "text": "你還在嗎"
+    },
+    {
+      "t": "2026-10-31T05:33:30.527+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396010521,
+      "detail": {
+        "cls": "message user",
+        "id": "",
+        "text": "你還在嗎",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:30.527+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-appear",
+      "ms": 1793396010521,
+      "detail": {
+        "cls": "message ai",
+        "id": "typing-1793396010521",
+        "text": "",
+        "typing": true
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:30.527+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-text",
+      "ms": 1793396010522,
+      "detail": {
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:30.527+08:00",
+      "kind": "dom",
+      "dom_kind": "waiting-disappear",
+      "ms": 1793396010525,
+      "detail": {
+        "id": "typing-1793396010521",
+        "text": "安啦正在認真傾聽中...💭"
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:30.527+08:00",
+      "kind": "dom",
+      "dom_kind": "bubble-added",
+      "ms": 1793396010525,
+      "detail": {
+        "cls": "message ai",
+        "id": "",
+        "text": "訊息送出時發生問題：Failed to fetch。剛才打的字已放回輸入框，可以再按一次送出；若現在有立即危險，請直接撥打 119 或找身邊的大人。",
+        "typing": false
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:30.839+08:00",
+      "kind": "console",
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:5000/api/chat - Failed to load resource: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "t": "2026-10-31T05:33:30.842+08:00",
+      "kind": "after-send",
+      "label": "後端停止後送出",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          },
+          {
+            "cls": "bubble",
+            "text": "你還在嗎"
+          },
+          {
+            "cls": "bubble",
+            "text": "訊息送出時發生問題：Failed to fetch。剛才打的字已放回輸入框，可以再按一次送出；若現在有立即危險，請直接撥打 119 或找身邊的大人。"
+          }
+        ],
+        "input": "你還在嗎",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:30.849+08:00",
+      "kind": "after-disconnect",
+      "state": {
+        "aiStatus": "尚未接上 AI",
+        "bubbles": [
+          {
+            "cls": "bubble",
+            "text": "\n              哈囉少年仔！我是「安啦會客室」的 AI 陪伴夥伴。👋\n              無論是段考讀不完、跟朋友有小摩擦、在學校覺得孤單，或是家裡的壓力，\n              在這裡你可以放鬆把心事說出來，按下方麥克風 🎙️ 也可以直接用說的喔！\n              我會先聽你說；如果現在有立即危險，請直接使用下方的電話求助。\n              \n                \n              \n            "
+          },
+          {
+            "cls": "bubble",
+            "text": "你還在嗎"
+          },
+          {
+            "cls": "bubble",
+            "text": "訊息送出時發生問題：Failed to fetch。剛才打的字已放回輸入框，可以再按一次送出；若現在有立即危險，請直接撥打 119 或找身邊的大人。"
+          }
+        ],
+        "input": "你還在嗎",
+        "inputDisabled": false,
+        "modalDisplay": "none",
+        "modalText": "",
+        "offlineHidden": true,
+        "offlineText": "",
+        "sendDisabled": false,
+        "statusText": "安啦會客室 ‧ 可以慢慢說，由你決定是否分享摘要",
+        "urgentHidden": true,
+        "urgentText": ""
+      }
+    },
+    {
+      "t": "2026-10-31T05:33:30.935+08:00",
+      "kind": "screenshot",
+      "file": "/workspace/artifacts/chat-test/12-backend-stopped.png"
+    }
+  ],
+  "console": [
+    {
+      "t": "2026-10-31T05:33:17.800+08:00",
+      "level": "INFO",
+      "message": "http://127.0.0.1:5000/ - Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.",
+      "source": "other",
+      "timestamp": 1793395996585
+    },
+    {
+      "t": "2026-10-31T05:33:28.028+08:00",
+      "level": "INFO",
+      "message": "http://127.0.0.1:5000/ - Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.",
+      "source": "other",
+      "timestamp": 1793396008019
+    },
+    {
+      "t": "2026-10-31T05:33:30.839+08:00",
+      "level": "SEVERE",
+      "message": "http://127.0.0.1:5000/api/chat - Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "source": "network",
+      "timestamp": 1793396010523
+    }
+  ]
+}
