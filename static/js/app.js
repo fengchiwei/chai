@@ -132,6 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==================== 資料使用說明與選填聯絡資料 ====================
 
 function checkOnboardingStatus() {
+  // 首頁只留名稱、歡迎語與「開始聊聊」。資料說明改到進入對話後再出現。
+  if (document.body.classList.contains("show-home")) return;
+  var params = new URLSearchParams(location.search);
+  // 預覽網址只給畫面截圖，略過資料說明，避免擋住示範狀態。
+  if (params.get("demo") || params.get("advanced") === "open") return;
   const badgeAlias = document.getElementById("badgeAlias");
   const badgeEmail = document.getElementById("badgeEmail");
 
@@ -358,7 +363,9 @@ async function sendMessage() {
   } catch (err) {
     removeTypingIndicator(typingId);
     const offlineHint = navigator.onLine === false ? "目前沒有網路，可以先點上方提示打開離線呼吸練習與求助電話。" : "";
-    const reason = err.name === "AbortError" ? "等太久沒有回應" : (err.message || "連線中斷");
+    const raw = err && err.message ? err.message : "";
+    const englishOnly = raw && /[A-Za-z]/.test(raw) && !/[\u4e00-\u9fff]/.test(raw);
+    const reason = err.name === "AbortError" ? "等太久沒有回應" : (englishOnly ? "連線中斷" : (raw || "連線中斷"));
     appendMessage("ai", `訊息送出時發生問題：${reason}。剛才打的字已放回輸入框，可以再按一次送出；若現在有立即危險，請直接撥打 119 或找身邊的大人。${offlineHint}`);
     if (!input.value) input.value = text;  // do not lose what the student wrote
     conversationHistory.pop();

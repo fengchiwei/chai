@@ -1,0 +1,194 @@
+/* 試作單：首頁只留三件事，求助列常駐，進階設定收合。美工包不在倉庫，沿用既有暖色。 */
+
+body.student-page {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.home-gate {
+  display: none;
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 12vh 1.25rem 7rem;
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.9rem;
+  background:
+    radial-gradient(circle at 20% 10%, #fff4e8, transparent 42%),
+    radial-gradient(circle at 80% 0%, #fde7dc, transparent 36%),
+    #fbf6ef;
+  color: #3a2e2a;
+}
+
+body.show-home .home-gate {
+  display: flex;
+}
+
+body.show-home .student-navbar,
+body.show-home .container,
+body.show-home .footer,
+body.show-home .demo-banner,
+body.show-home #offlineBanner {
+  display: none !important;
+}
+
+.home-kicker {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: #9a3412;
+}
+
+.home-gate h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 4vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.home-welcome {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #6b5346;
+}
+
+.home-start {
+  margin-top: 0.6rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.9rem 1.8rem;
+  min-height: 48px;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+  background: #c45c3e;
+  cursor: pointer;
+}
+
+.home-start:focus-visible,
+.resident-help a:focus-visible,
+.advanced-settings summary:focus-visible,
+.demo-state-row button:focus-visible {
+  outline: 3px solid #9a3412;
+  outline-offset: 3px;
+}
+
+.resident-help {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.55rem 0.7rem calc(0.55rem + env(safe-area-inset-bottom));
+  background: #fffdf8;
+  border-top: 1px solid #eadfce;
+}
+
+.resident-help a,
+.btn-hotline.hotline-red,
+.btn-hotline.hotline-warn {
+  flex: 1 1 9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.45rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  text-align: center;
+}
+
+.resident-help a.hotline-red,
+.btn-hotline.hotline-red {
+  background: #b91c1c;
+  color: #fff;
+  border: 1px solid #991b1b;
+}
+
+.resident-help a.hotline-warn,
+.btn-hotline.hotline-warn {
+  background: #f5c16c;
+  color: #6a3b00;
+  border: 1px solid #d97706;
+}
+
+.advanced-settings {
+  margin: 0.4rem 0.8rem 0.2rem;
+  border: 1px solid #eadfce;
+  border-radius: 14px;
+  background: #fffaf4;
+  padding: 0.35rem 0.8rem 0.7rem;
+}
+
+.advanced-settings summary {
+  cursor: pointer;
+  font-weight: 800;
+  padding: 0.45rem 0;
+}
+
+.advanced-note,
+.advanced-label {
+  margin: 0.45rem 0 0.25rem;
+  font-size: 0.85rem;
+  color: #6b5346;
+}
+
+.advanced-label {
+  font-weight: 800;
+}
+
+.advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.55rem;
+}
+
+.advanced-grid label,
+.advanced-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.advanced-grid select,
+.advanced-actions button,
+.demo-state-row button {
+  font: inherit;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid #e4d3c4;
+  background: #fff;
+  padding: 0.35rem 0.55rem;
+}
+
+.advanced-actions,
+.demo-state-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.chat-card.room-window { background: #f4f8fb; }
+.chat-card.room-tree { background: #f3f7f2; }
+.chat-card.room-lamp { background: #fbf6ea; }
+.chat-card.room-parlor { background: #fff; }
+
+.toy-badge {
+  margin-left: 0.35rem;
+  font-size: 1.15rem;
+}
+
+@media (max-width: 420px) {
+  .home-gate { padding-top: 8vh; }
+  .resident-help a { flex-basis: 100%; }
+}
