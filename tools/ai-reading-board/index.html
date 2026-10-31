@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>輪流發言閱讀看板</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div>
+      <p class="kicker">桌機版登入留在小視窗</p>
+      <h1>輪流發言閱讀看板</h1>
+    </div>
+    <p class="limit">小視窗是各家官方網頁，登入會留在那一扇。這個看板讀不到別的網站裡的字，請在小視窗複製回覆，再按「放入看板」。</p>
+  </header>
+
+  <div class="layout">
+    <aside class="rail">
+      <section>
+        <h2>這一輪的題目</h2>
+        <textarea id="topic" rows="4" placeholder="寫下想讓他們回答的話"></textarea>
+        <button type="button" id="copyTopic" class="secondary">複製題目</button>
+      </section>
+
+      <section>
+        <h2>發言順序</h2>
+        <p class="hint">打勾的人才會輪到。可指定某一位插話。</p>
+        <ul id="roster"></ul>
+        <form id="addForm" class="add-form">
+          <input id="addName" type="text" maxlength="40" placeholder="名稱" aria-label="新的名稱">
+          <input id="addUrl" type="url" placeholder="https://" aria-label="網站網址">
+          <button type="submit">加入</button>
+        </form>
+      </section>
+
+      <section class="now">
+        <p class="now-label">現在輪到</p>
+        <p id="currentName" class="now-name">尚未選擇</p>
+        <div class="row">
+          <button type="button" id="openCurrent">開啟這位的小視窗</button>
+          <button type="button" id="skip" class="secondary">換下一位</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>放入看板</h2>
+        <textarea id="draft" rows="6" placeholder="在小視窗複製回覆後，貼在這裡"></textarea>
+        <label class="check"><input id="autoNext" type="checkbox" checked>放入後自動換下一位</label>
+        <div class="row">
+          <button type="button" id="fromClipboard">從剪貼簿放入</button>
+          <button type="button" id="fromDraft" class="secondary">放入上面的文字</button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+      </section>
+    </aside>
+
+    <main class="board-wrap">
+      <div class="board-bar">
+        <h2>閱讀看板</h2>
+        <div class="filters" id="filters"></div>
+        <button type="button" id="clearBoard" class="secondary">清空看板</button>
+      </div>
+      <article id="board" class="board" aria-live="polite"></article>
+    </main>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
