@@ -42,6 +42,8 @@
   document.getElementById("fromDraft").addEventListener("click", function () { commit(draftEl.value); });
   document.getElementById("clearBoard").addEventListener("click", clearBoard);
   document.getElementById("addForm").addEventListener("submit", addCustom);
+  document.getElementById("taskForm").addEventListener("submit", addTask);
+  document.getElementById("downloadTasks").addEventListener("click", downloadTasks);
   draftEl.addEventListener("keydown", function (event) {
     if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) commit(draftEl.value);
   });
@@ -55,7 +57,7 @@
       return { id: item.id, name: item.name, url: item.url, color: item.color, enabled: true, custom: false };
     });
     if (!saved || !Array.isArray(saved.people)) {
-      return { people: people, entries: [], topic: "", cursor: 0, filter: "all", autoNext: true };
+      return { people: people, entries: [], topic: "", cursor: 0, filter: "all", autoNext: true, tasks: [] };
     }
     var known = {};
     people.forEach(function (person) { known[person.id] = person; });
@@ -80,7 +82,8 @@
       topic: typeof saved.topic === "string" ? saved.topic : "",
       cursor: Number.isInteger(saved.cursor) ? saved.cursor : 0,
       filter: typeof saved.filter === "string" ? saved.filter : "all",
-      autoNext: saved.autoNext !== false
+      autoNext: saved.autoNext !== false,
+      tasks: Array.isArray(saved.tasks) ? saved.tasks.filter(validTask) : []
     };
   }
 
@@ -93,7 +96,8 @@
       topic: state.topic,
       cursor: state.cursor,
       filter: state.filter,
-      autoNext: state.autoNext
+      autoNext: state.autoNext,
+      tasks: state.tasks
     };
     try { localStorage.setItem(KEY, JSON.stringify(copy)); } catch (e) { /* 私密模式不記憶 */ }
   }
@@ -110,6 +114,10 @@
 
   function validEntry(entry) {
     return entry && typeof entry.text === "string" && entry.text.trim() && entry.name;
+  }
+
+  function validTask(task) {
+    return task && typeof task.title === "string" && task.title.trim() && task.ownerId && task.status;
   }
 
   function enabledPeople() {
@@ -246,12 +254,232 @@
     render();
   }
 
+  function personById(id) {
+    return state.people.find(function (person) { return person.id === id; }) || null;
+  }
+
+  function addTask(event) {
+    event.preventDefault();
+    var title = document.getElementById("taskTitle").value.trim();
+    var owner = personById(document.getElementById("taskOwner").value);
+    var next = personById(document.getElementById("taskNext").value);
+    if (!title || !owner) {
+      say("請寫工作內容，並指定負責的人。");
+      return;
+    }
+    state.tasks.push({
+      id: "task-" + Date.now().toString(36),
+      title: title.slice(0, 120),
+      ownerId: owner.id,
+      ownerName: owner.name,
+      nextId: next ? next.id : "",
+      nextName: next ? next.name : "",
+      status: "waiting",
+      takenAt: null,
+      doneAt: null
+    });
+    document.getElementById("taskForm").reset();
+    save();
+    render();
+    say("已記下這筆工作，尚未領走。");
+  }
+
+  function takeTask(task) {
+    if (task.status !== "waiting") return;
+    task.status = "taken";
+    task.takenAt = new Date().toISOString();
+    logWork(task.ownerId, task.ownerName, "領走工作：「" + task.title + "」。");
+    save();
+    render();
+    say(task.ownerName + " 已領走，時間已記在看板上。");
+  }
+
+  function finishTask(task) {
+    if (task.status !== "taken") return;
+    task.status = "done";
+    task.doneAt = new Date().toISOString();
+    logWork(task.ownerId, task.ownerName, "完成工作：「" + task.title + "」。");
+    save();
+    render();
+    if (task.nextName) {
+      say("已記下完成。下一手是「" + task.nextName + "」。自動請下一手開始，以後再討論。");
+    } else {
+      say("已記下完成。這筆還沒有指定下一手。");
+    }
+  }
+
+  function undoTask(task) {
+    if (task.status === "done") {
+      task.status = "taken";
+      task.doneAt = null;
+    } else if (task.status === "taken") {
+      task.status = "waiting";
+      task.takenAt = null;
+    }
+    save();
+    render();
+    say("已改回上一種狀態，時間一併更正。");
+  }
+
+  function logWork(aiId, name, text) {
+    var person = personById(aiId);
+    state.entries.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      aiId: aiId,
+      name: name,
+      color: person ? person.color : "#6f6258",
+      text: text,
+      at: new Date().toISOString(),
+      kind: "work"
+    });
+  }
+
+  function downloadTasks() {
+    var blob = new Blob([JSON.stringify({
+      note: "工作流程尚未定案。這是會議上的分配紀錄，可再修正。",
+      tasks: state.tasks
+    }, null, 2)], { type: "application/json" });
+    var link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "工作分配紀錄.json";
+    link.click();
+    setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+  }
+
   function render() {
     renderRoster();
     renderFilters();
     renderBoard();
+    renderTasks();
     var person = current();
     currentEl.textContent = person ? person.name : "尚未選擇";
+  }
+
+  function renderTasks() {
+    var host = document.getElementById("tasks");
+    var ownerSelect = document.getElementById("taskOwner");
+    var nextSelect = document.getElementById("taskNext");
+    fillPersonSelect(ownerSelect, false);
+    fillPersonSelect(nextSelect, true);
+    host.replaceChildren();
+    if (!state.tasks.length) {
+      var empty = document.createElement("p");
+      empty.className = "empty assign-note";
+      empty.textContent = "還沒有分配。會議談完後，把工作、負責人與下一手記在這裡。";
+      host.append(empty);
+      return;
+    }
+    var list = document.createElement("div");
+    list.className = "task-list";
+    state.tasks.forEach(function (task) {
+      list.append(taskCard(task));
+    });
+    host.append(list);
+  }
+
+  function fillPersonSelect(select, allowEmpty) {
+    var currentValue = select.value;
+    select.replaceChildren();
+    if (allowEmpty) {
+      var none = document.createElement("option");
+      none.value = "";
+      none.textContent = "尚未指定";
+      select.append(none);
+    }
+    state.people.forEach(function (person) {
+      var option = document.createElement("option");
+      option.value = person.id;
+      option.textContent = person.name;
+      select.append(option);
+    });
+    if (currentValue && personById(currentValue)) select.value = currentValue;
+  }
+
+  function taskCard(task) {
+    var card = document.createElement("article");
+    card.className = "task-card";
+    var title = document.createElement("input");
+    title.type = "text";
+    title.value = task.title;
+    title.setAttribute("aria-label", "工作內容");
+    title.addEventListener("change", function () {
+      var next = title.value.trim();
+      if (!next) {
+        title.value = task.title;
+        return;
+      }
+      task.title = next.slice(0, 120);
+      save();
+    });
+
+    var owner = document.createElement("select");
+    owner.setAttribute("aria-label", "負責人");
+    fillPersonSelect(owner, false);
+    owner.value = task.ownerId;
+    owner.addEventListener("change", function () {
+      var person = personById(owner.value);
+      if (!person) return;
+      task.ownerId = person.id;
+      task.ownerName = person.name;
+      save();
+      renderTasks();
+    });
+
+    var next = document.createElement("select");
+    next.setAttribute("aria-label", "下一手");
+    fillPersonSelect(next, true);
+    next.value = task.nextId || "";
+    next.addEventListener("change", function () {
+      var person = personById(next.value);
+      task.nextId = person ? person.id : "";
+      task.nextName = person ? person.name : "";
+      save();
+    });
+
+    var times = document.createElement("p");
+    times.className = "times";
+    times.textContent = taskTimes(task);
+
+    var row = document.createElement("div");
+    row.className = "row";
+    row.append(labeled("負責", owner), labeled("下一手", next));
+    if (task.status === "waiting") row.append(actionButton("領走", function () { takeTask(task); }));
+    if (task.status === "taken") {
+      row.append(actionButton("完成", function () { finishTask(task); }));
+      row.append(actionButton("收回領走", function () { undoTask(task); }, true));
+    }
+    if (task.status === "done") row.append(actionButton("收回完成", function () { undoTask(task); }, true));
+    row.append(actionButton("刪除", function () {
+      state.tasks = state.tasks.filter(function (item) { return item.id !== task.id; });
+      save();
+      render();
+    }, true));
+
+    card.append(title, times, row);
+    return card;
+  }
+
+  function labeled(text, control) {
+    var label = document.createElement("label");
+    label.append(document.createTextNode(text), control);
+    return label;
+  }
+
+  function actionButton(text, onClick, secondary) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.textContent = text;
+    if (secondary) button.className = "secondary";
+    button.addEventListener("click", onClick);
+    return button;
+  }
+
+  function taskTimes(task) {
+    var status = task.status === "done" ? "已完成" : task.status === "taken" ? "進行中" : "尚未領走";
+    var taken = task.takenAt ? "領走 " + formatTime(task.takenAt) : "尚未領走";
+    var done = task.doneAt ? "完成 " + formatTime(task.doneAt) : "尚未完成";
+    var next = task.nextName ? "下一手 " + task.nextName : "下一手尚未指定";
+    return status + " · " + taken + " · " + done + " · " + next;
   }
 
   function renderRoster() {
@@ -339,7 +567,7 @@
     if (!entries.length) {
       var empty = document.createElement("p");
       empty.className = "empty";
-      empty.textContent = "看板上還沒有發言。先開小視窗並登入，複製回覆後按「放入看板」。";
+      empty.textContent = "會議紀錄還是空的。與會者在小視窗發言後，把內容放到這裡。";
       boardEl.append(empty);
       return;
     }

@@ -156,7 +156,56 @@ textarea, input[type="text"], input[type="url"] {
 
 .empty { color: var(--muted); max-width: 36rem; }
 
+.assign { border-top: 1px solid var(--line); padding-bottom: 1.4rem; }
+
+.assign-note { color: var(--muted); font-size: 0.95rem; padding: 0.8rem 1.1rem 0; max-width: 46rem; }
+
+.task-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 10rem 10rem auto;
+  gap: 0.55rem;
+  align-items: end;
+  padding: 0.8rem 1.1rem 0.2rem;
+}
+
+.task-form label { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.95rem; color: var(--muted); }
+
+.task-form select, .task-card select {
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.45rem 0.55rem;
+}
+
+.task-list { display: flex; flex-direction: column; gap: 0.8rem; padding: 0.8rem 1.1rem 0; }
+
+.task-card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0.9rem 1rem 1rem;
+  max-width: 46rem;
+}
+
+.task-card h3 { margin: 0 0 0.35rem; font-size: 1.35rem; }
+
+.task-card input[type="text"] {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 1.35rem;
+  padding: 0.1rem 0.2rem;
+}
+
+.task-card input[type="text"]:focus { border-color: var(--line); background: #fff; }
+
+.times { color: var(--muted); font-size: 1.05rem; margin: 0.35rem 0 0.6rem; }
+
+.task-card .row select { min-width: 8rem; }
+
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; }
   .top { flex-direction: column; align-items: start; }
+  .task-form { grid-template-columns: 1fr; }
 }

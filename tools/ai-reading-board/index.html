@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>輪流發言閱讀看板</title>
+  <title>會議閱讀看板</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="top">
     <div>
-      <p class="kicker">桌機版登入留在小視窗</p>
-      <h1>輪流發言閱讀看板</h1>
+      <p class="kicker">像一場會，人留在各自的小視窗</p>
+      <h1>會議閱讀看板</h1>
     </div>
     <p class="limit">小視窗是各家官方網頁，登入會留在那一扇。這個看板讀不到別的網站裡的字，請在小視窗複製回覆，再按「放入看板」。</p>
   </header>
@@ -24,8 +24,8 @@
       </section>
 
       <section>
-        <h2>發言順序</h2>
-        <p class="hint">打勾的人才會輪到。可指定某一位插話。</p>
+        <h2>與會者</h2>
+        <p class="hint">打勾的人才會輪到發言。點名字可指定某一位插話。</p>
         <ul id="roster"></ul>
         <form id="addForm" class="add-form">
           <input id="addName" type="text" maxlength="40" placeholder="名稱" aria-label="新的名稱">
@@ -57,11 +57,29 @@
 
     <main class="board-wrap">
       <div class="board-bar">
-        <h2>閱讀看板</h2>
+        <h2>會議紀錄</h2>
         <div class="filters" id="filters"></div>
         <button type="button" id="clearBoard" class="secondary">清空看板</button>
       </div>
       <article id="board" class="board" aria-live="polite"></article>
+      <section class="assign" aria-labelledby="assignTitle">
+        <div class="board-bar">
+          <h2 id="assignTitle">工作分配紀錄</h2>
+          <button type="button" id="downloadTasks" class="secondary">下載紀錄</button>
+        </div>
+        <p class="assign-note">工作流程還沒定案。開會後可在這裡新增或修正分配。領走與完成都會記下時間。完成後自動請下一手開始，以後再討論，現在只先記下下一手是誰。</p>
+        <form id="taskForm" class="task-form">
+          <input id="taskTitle" maxlength="120" placeholder="這件工作要做什麼" aria-label="工作內容" required>
+          <label>負責
+            <select id="taskOwner" aria-label="負責的與會者"></select>
+          </label>
+          <label>下一手
+            <select id="taskNext" aria-label="下一手與會者"></select>
+          </label>
+          <button type="submit">記下這筆工作</button>
+        </form>
+        <div id="tasks"></div>
+      </section>
     </main>
   </div>
   <script src="app.js"></script>
